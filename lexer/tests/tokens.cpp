@@ -63,3 +63,7 @@ TEST_CASE("integer token should be lexed", "[Lexer]") {
   lexerTest("12", { Token("12", IntTokenData(12)) });
 }
 
+TEST_CASE("one line comments should be skipped", "[Lexer]") {
+  lexerTest("# hello, how are you\n(    # hello", { Token("(", SimpleTokenData::OpeningCircleBrace) });
+}
+

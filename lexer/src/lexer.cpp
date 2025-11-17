@@ -26,7 +26,24 @@ bool Lexer::nextIsFilter(std::function<bool (char)> filter) {
   return false;
 }
 
+bool Lexer::nextIsNotFilter(std::function<bool (char)> filter) {
+  if (position == end) {
+    return true;
+  }
+  if (!filter(*position)) {
+    position++;
+    return true;
+  }
+  return false;
+}
+
 bool Lexer::nextIs(char c) {
+  return this->nextIsFilter([&](char other) {
+    return c == other;
+  });
+}
+
+bool Lexer::nextIsNot(char c) {
   return this->nextIsFilter([&](char other) {
     return c == other;
   });
@@ -50,6 +67,24 @@ void Lexer::skipWhitespaces() {
   });
 }
 
+void Lexer::skipComment() {
+  if (this->nextIs('#')) {
+    std::optional<char> c;
+    do {
+      c = this->getNextChar();
+    } while (c != std::nullopt && c != '\n');
+  }
+}
+
+void Lexer::skipNonToken() {
+  std::string_view::iterator start;
+  do {
+    start = this->position;
+    this->skipWhitespaces();
+    this->skipComment();
+  } while (start != this->position);
+}
+
 static inline bool charIsDigit(char c) {
   return c >= '0' && c <= '9';
 }
@@ -66,7 +101,7 @@ static inline bool charIsIdentContinue(char c) {
 }
 
 std::optional<Token> Lexer::next() {
-  this->skipWhitespaces();
+  this->skipNonToken();
   std::string_view::iterator prev = this->position;
   auto optC = this->getNextChar();
   if (!optC.has_value()) {

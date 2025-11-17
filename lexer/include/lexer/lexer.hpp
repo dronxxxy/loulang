@@ -14,11 +14,16 @@ namespace lexer {
     std::string_view::iterator end;
 
     std::optional<char> getNextChar();
-    bool nextIs(char c);
     bool nextIsFilter(std::function<bool (char)> filter);
+    bool nextIsNotFilter(std::function<bool (char)> filter);
+
+    bool nextIs(char c);
+    bool nextIsNot(char c);
 
     void skipFilter(std::function<bool (char)> filter);
     void skipWhitespaces();
+    void skipComment();
+    void skipNonToken();
 
   public:
     explicit Lexer(
