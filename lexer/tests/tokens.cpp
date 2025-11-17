@@ -47,6 +47,13 @@ TEST_CASE("single simple tokens should be lexed", "[Lexer]") {
   lexerTestSimple("==", SimpleTokenData::Equals);
 }
 
+TEST_CASE("ident token should be lexed", "[Lexer]") {
+  lexerTest("a", { Token("a", IdentTokenData(std::string_view("a"))) });
+  lexerTest("multipleLetters", { Token("multipleLetters", IdentTokenData(std::string_view("multipleLetters"))) });
+  lexerTest("_withUndescore", { Token("_withUndescore", IdentTokenData(std::string_view("_withUndescore"))) });
+  lexerTest("_withNumbers123", { Token("_withNumbers123", IdentTokenData(std::string_view("_withNumbers123"))) });
+}
+
 TEST_CASE("spaces should be removed", "[Lexer]") {
   lexerTest("  \n\r( \n\r", { Token("(", SimpleTokenData::OpeningCircleBrace) });
 }

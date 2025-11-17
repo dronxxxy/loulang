@@ -3,7 +3,7 @@ add_requires("catch2 3.x")
 
 target("lexer")
   set_kind("shared")
-  set_languages("c++20")
+  set_languages("c++23")
   add_deps("logger")
   add_includedirs("include", {
     public = true

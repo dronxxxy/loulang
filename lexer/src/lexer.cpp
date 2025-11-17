@@ -49,6 +49,21 @@ void Lexer::skipWhitespaces() {
   });
 }
 
+static inline bool charIsDigit(char c) {
+  return c >= '0' && c <= '9';
+}
+
+static inline bool charIsIdentStart(char c) {
+  return 
+    c == '_' ||
+    c >= 'a' && c <= 'z' ||
+    c >= 'A' && c <= 'Z';
+}
+
+static inline bool charIsIdentContinue(char c) {
+  return charIsIdentStart(c) || charIsDigit(c);
+}
+
 std::optional<Token> Lexer::next() {
   this->skipWhitespaces();
   std::string_view::iterator prev = this->position;
@@ -56,27 +71,31 @@ std::optional<Token> Lexer::next() {
   if (!optC.has_value()) {
     return std::nullopt;
   }
-  auto make_token = [&](TokenData data) {
-    return Token(std::string_view(prev, this->position), data);
-  };
-  switch (optC.value()) {
-    case '(': return make_token(SimpleTokenData::OpeningCircleBrace);
-    case ')': return make_token(SimpleTokenData::ClosingCircleBrace);
-    case '[': return make_token(SimpleTokenData::OpeningSquareBrace);
-    case ']': return make_token(SimpleTokenData::ClosingSquareBrace);
-    case '{': return make_token(SimpleTokenData::OpeningFigureBrace);
-    case '}': return make_token(SimpleTokenData::ClosingFigureBrace);
+  auto getSlice = [&]() { return std::string_view(prev, this->position); };
+  auto makeToken = [&](TokenData data) { return Token(getSlice(), data); };
+  switch (char c = optC.value()) {
+    case '(': return makeToken(SimpleTokenData::OpeningCircleBrace);
+    case ')': return makeToken(SimpleTokenData::ClosingCircleBrace);
+    case '[': return makeToken(SimpleTokenData::OpeningSquareBrace);
+    case ']': return makeToken(SimpleTokenData::ClosingSquareBrace);
+    case '{': return makeToken(SimpleTokenData::OpeningFigureBrace);
+    case '}': return makeToken(SimpleTokenData::ClosingFigureBrace);
     case '<':
-      if (this->nextIs('=')) return make_token(SimpleTokenData::LessOrEquals);
-      return make_token(SimpleTokenData::LessThan);
+      if (this->nextIs('=')) return makeToken(SimpleTokenData::LessOrEquals);
+      return makeToken(SimpleTokenData::LessThan);
     case '>':
-      if (this->nextIs('=')) return make_token(SimpleTokenData::GreaterOrEquals);
-      return make_token(SimpleTokenData::GreaterThan);
+      if (this->nextIs('=')) return makeToken(SimpleTokenData::GreaterOrEquals);
+      return makeToken(SimpleTokenData::GreaterThan);
     case '=':
-      if (this->nextIs('=')) return make_token(SimpleTokenData::Equals);
-      return make_token(SimpleTokenData::Assign);
-    default:
-      break;
+      if (this->nextIs('=')) return makeToken(SimpleTokenData::Equals);
+      return makeToken(SimpleTokenData::Assign);
+    default: {
+      if (charIsIdentStart(c)) {
+        skipFilter(charIsIdentContinue);
+        return Token(getSlice(), IdentTokenData(getSlice()));
+      }
+      logger->error("unknown token {}", getSlice());
+    }
   }
   return this->next();
 }

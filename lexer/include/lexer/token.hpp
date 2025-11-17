@@ -20,7 +20,7 @@ namespace lexer {
     private:
       T value;
     public:
-      explicit ComplexTokenData(T value) : value(value) {}
+      ComplexTokenData(T value) : value(value) {}
       bool operator==(const ComplexTokenData<T> &other) const { return this->value == other.value; }
       T getValue() const { return this->value; }
   };
