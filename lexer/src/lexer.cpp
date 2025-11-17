@@ -2,6 +2,7 @@
 #include <array>
 #include <functional>
 #include <lexer/lexer.hpp>
+#include <string>
 
 using namespace lexer;
 
@@ -93,6 +94,10 @@ std::optional<Token> Lexer::next() {
       if (charIsIdentStart(c)) {
         skipFilter(charIsIdentContinue);
         return Token(getSlice(), IdentTokenData(getSlice()));
+      }
+      if (charIsDigit(c)) {
+        skipFilter(charIsDigit);
+        return Token(getSlice(), IntTokenData(std::stoll(std::string(getSlice())))); // :P
       }
       logger->error("unknown token {}", getSlice());
     }
