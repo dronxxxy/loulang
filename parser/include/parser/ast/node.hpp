@@ -7,4 +7,6 @@ namespace parser {
   public:
     virtual bool operator==(const AstNode &other) const = 0;
   };
+
+  typedef std::shared_ptr<AstNode> AstNodePtr;
 }

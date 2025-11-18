@@ -11,6 +11,7 @@ namespace parser {
 
   class AstDeclNode final : public AstNode {
   private:
+    bool isPublic;
     AstDeclKind kind;
     std::optional<std::string> externName;
     std::optional<AstExpressionPtr> initializer;
@@ -18,6 +19,7 @@ namespace parser {
 
   public:
     AstDeclNode(
+      bool isPublic,
       AstDeclKind kind,
       std::optional<std::string> externName,
       std::optional<AstExpressionPtr> initializer,
@@ -25,5 +27,7 @@ namespace parser {
     );
     bool operator==(const AstNode &other) const override;
   };
+
+  typedef std::shared_ptr<AstDeclNode> AstDeclNodePtr;
 }
 
