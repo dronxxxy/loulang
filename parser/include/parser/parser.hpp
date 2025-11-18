@@ -11,13 +11,12 @@ namespace parser {
   private:
     std::shared_ptr<logger::Logger> logger;
     lexer::Lexer lexer;
-  
   public:
     Parser(
       std::shared_ptr<logger::Logger> logger,
       lexer::Lexer &&lexer
     );
     
-    std::optional<std::shared_ptr<AstNode>> parseNext();
+    std::optional<AstNodePtr> nextNode();
   };
 }
