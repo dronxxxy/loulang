@@ -2,6 +2,7 @@
 #include <array>
 #include <functional>
 #include <lexer/lexer.hpp>
+#include <map>
 #include <string>
 
 using namespace lexer;
@@ -13,9 +14,10 @@ Lexer::Lexer(
 ) :
   logger(std::move(logger)),
   position(std::move(begin)),
-  end(std::move(end)) {}
+  end(std::move(end)),
+  skippedTokens() {}
 
-bool Lexer::nextIsFilter(std::function<bool (char)> filter) {
+bool Lexer::nextCharIsFilter(std::function<bool (char)> filter) {
   if (position == end) {
     return false;
   }
@@ -26,7 +28,7 @@ bool Lexer::nextIsFilter(std::function<bool (char)> filter) {
   return false;
 }
 
-bool Lexer::nextIsNotFilter(std::function<bool (char)> filter) {
+bool Lexer::nextCharIsNotFilter(std::function<bool (char)> filter) {
   if (position == end) {
     return true;
   }
@@ -37,14 +39,14 @@ bool Lexer::nextIsNotFilter(std::function<bool (char)> filter) {
   return false;
 }
 
-bool Lexer::nextIs(char c) {
-  return this->nextIsFilter([&](char other) {
+bool Lexer::nextCharIs(char c) {
+  return this->nextCharIsFilter([&](char other) {
     return c == other;
   });
 }
 
-bool Lexer::nextIsNot(char c) {
-  return this->nextIsFilter([&](char other) {
+bool Lexer::nextCharIsNot(char c) {
+  return this->nextCharIsFilter([&](char other) {
     return c == other;
   });
 }
@@ -56,19 +58,19 @@ std::optional<char> Lexer::getNextChar() {
   return *(position++);
 }
 
-void Lexer::skipFilter(std::function<bool (char)> filter) {
-  while (this->nextIsFilter(filter)) {}
+void Lexer::skipCharsFilter(std::function<bool (char)> filter) {
+  while (this->nextCharIsFilter(filter)) {}
 }
 
 void Lexer::skipWhitespaces() {
-  this->skipFilter([] (char c) {
+  this->skipCharsFilter([] (char c) {
     auto whitespaces = std::array { '\n', '\t', ' ', '\r' };
     return std::find(whitespaces.begin(), whitespaces.end(), c) != whitespaces.end();
   });
 }
 
 void Lexer::skipComment() {
-  if (this->nextIs('#')) {
+  if (this->nextCharIs('#')) {
     std::optional<char> c;
     do {
       c = this->getNextChar();
@@ -101,6 +103,12 @@ static inline bool charIsIdentContinue(char c) {
 }
 
 std::optional<Token> Lexer::next() {
+  if (!skippedTokens.empty()) {
+    Token token = skippedTokens.front();
+    skippedTokens.pop();
+    return token;
+  }
+
   this->skipNonToken();
   std::string_view::iterator prev = this->position;
   auto optC = this->getNextChar();
@@ -116,26 +124,74 @@ std::optional<Token> Lexer::next() {
     case ']': return makeToken(SimpleTokenData::ClosingSquareBrace);
     case '{': return makeToken(SimpleTokenData::OpeningFigureBrace);
     case '}': return makeToken(SimpleTokenData::ClosingFigureBrace);
+    case ':': return makeToken(SimpleTokenData::Colon);
     case '<':
-      if (this->nextIs('=')) return makeToken(SimpleTokenData::LessOrEquals);
+      if (this->nextCharIs('=')) return makeToken(SimpleTokenData::LessOrEquals);
       return makeToken(SimpleTokenData::LessThan);
     case '>':
-      if (this->nextIs('=')) return makeToken(SimpleTokenData::GreaterOrEquals);
+      if (this->nextCharIs('=')) return makeToken(SimpleTokenData::GreaterOrEquals);
       return makeToken(SimpleTokenData::GreaterThan);
     case '=':
-      if (this->nextIs('=')) return makeToken(SimpleTokenData::Equals);
+      if (this->nextCharIs('=')) return makeToken(SimpleTokenData::Equals);
       return makeToken(SimpleTokenData::Assign);
     default: {
       if (charIsIdentStart(c)) {
-        skipFilter(charIsIdentContinue);
+        skipCharsFilter(charIsIdentContinue);
+        std::map<std::string, SimpleTokenData> keywords = {
+          { "meta", SimpleTokenData::Meta },
+          { "const", SimpleTokenData::Const },
+          { "final", SimpleTokenData::Final },
+          { "var", SimpleTokenData::Var },
+        };
         return Token(getSlice(), IdentTokenData(getSlice()));
       }
       if (charIsDigit(c)) {
-        skipFilter(charIsDigit);
+        skipCharsFilter(charIsDigit);
         return Token(getSlice(), IntTokenData(std::stoll(std::string(getSlice())))); // :P
       }
       logger->error("unknown token {}", getSlice());
     }
   }
   return this->next();
+}
+
+bool Lexer::nextIs(TokenDataFilter filter) {
+  auto next = this->next();
+  if (!next.has_value()) {
+    return false;
+  }
+
+  if (filter(next->getData())) {
+    return true;
+  }
+
+  return false;
+}
+
+bool Lexer::nextIsSimple(SimpleTokenData data) {
+  return this->nextIs([&] (const TokenData &got) {
+    if (auto source = std::get_if<SimpleTokenData>(&got)) {
+      return data == *source;
+    }
+    return false;
+  });
+}
+
+bool Lexer::skipTo(TokenDataFilter filter) {
+  auto token = this->next();
+  while (token.has_value() && filter(token->getData())) {
+    token = this->next();
+  }
+  if (token.has_value()) {
+    skippedTokens.emplace(token.value());
+  }
+  return token.has_value();
+}
+
+bool Lexer::expect(TokenDataFilter filter, TokenDataFilter fallback) {
+  if (!this->nextIs(filter)) {
+    this->skipTo(fallback); 
+    return false;
+  }
+  return true;
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <sstream>
 #include <string_view>
 #include <variant>
 #include <stdint.h>
@@ -13,6 +12,8 @@ namespace lexer {
     LessThan, GreaterThan,
     LessOrEquals, GreaterOrEquals,
     Assign, Equals,
+    Meta, Const, Final, Var,
+    Colon,
   };
 
   template <typename T>
@@ -39,6 +40,7 @@ namespace lexer {
     TokenData data;
     std::string_view slice;
   public:
+    const TokenData& getData() const;
     explicit Token(std::string_view slice, TokenData data);
     bool operator==(const Token &other) const;
     std::string toString() const;

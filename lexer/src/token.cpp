@@ -1,4 +1,5 @@
 #include <lexer/token.hpp>
+#include <string>
 #include <utility>
 
 using namespace lexer;
@@ -29,10 +30,18 @@ std::string Token::toString() const {
         case SimpleTokenData::GreaterOrEquals: return std::string("GreaterOrEquals");
         case SimpleTokenData::Assign: return std::string("Assign");
         case SimpleTokenData::Equals: return std::string("Equals");
+        case SimpleTokenData::Meta: return std::string("Meta");
+        case SimpleTokenData::Const: return std::string("Const");
+        case SimpleTokenData::Final: return std::string("Final");
+        case SimpleTokenData::Var: return std::string("Var");
       }
       std::unreachable();
     },
     [](IntTokenData data) { return std::to_string(data.getValue()); },
     [](IdentTokenData data) { return std::string(data.getValue()); },
   }, this->data);
+}
+
+const TokenData& Token::getData() const {
+  return this->data;
 }
