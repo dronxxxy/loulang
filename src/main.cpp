@@ -1,7 +1,6 @@
 #include <memory>
 #include <logger/std.hpp>
 #include <lexer/lexer.hpp>
-#include <gtest/gtest.h>
 
 using namespace logger;
 using namespace lexer;
