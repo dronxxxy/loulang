@@ -22,10 +22,9 @@ void lexerTest(const std::string_view content, std::vector<lexer::Token> tokens)
   Lexer lexer = Lexer(logger, content.begin(), content.end());
   for (auto token : tokens) {
     auto lexed = lexer.next();
-    REQUIRE(lexed.has_value());
-    REQUIRE(token == lexed.value());
+    REQUIRE(token == lexed);
   }
-  REQUIRE(!lexer.next().has_value());
+  REQUIRE(lexer.next().isEoi());
 }
 
 void lexerTestSimple(const std::string_view content, lexer::SimpleTokenData data) {

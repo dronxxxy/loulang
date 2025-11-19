@@ -8,7 +8,7 @@
 #include <queue>
 
 namespace lexer {
-  typedef std::function<bool (const TokenData&)> TokenDataFilter;
+  using TokenDataFilter = std::function<bool (const TokenData&)>;
 
   class Lexer {
   private:
@@ -36,7 +36,8 @@ namespace lexer {
       std::string_view::iterator end
     );
 
-    std::optional<Token> next();
+    Token next();
+    Token peek();
 
     bool nextIs(TokenDataFilter filter);
     bool nextIsSimple(SimpleTokenData data);

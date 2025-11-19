@@ -3,6 +3,7 @@ add_rules("plugin.compile_commands.autoupdate", { outputdir = "./" })
 
 includes("logger")
 includes("lexer")
+includes("helpers")
 includes("parser")
 
 target("loulang")

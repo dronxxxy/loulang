@@ -1,3 +1,4 @@
+#include <helpers/optional.hpp>
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -102,7 +103,7 @@ static inline bool charIsIdentContinue(char c) {
   return charIsIdentStart(c) || charIsDigit(c);
 }
 
-std::optional<Token> Lexer::next() {
+Token Lexer::next() {
   if (!skippedTokens.empty()) {
     Token token = skippedTokens.front();
     skippedTokens.pop();
@@ -112,12 +113,12 @@ std::optional<Token> Lexer::next() {
   this->skipNonToken();
   std::string_view::iterator prev = this->position;
   auto optC = this->getNextChar();
-  if (!optC.has_value()) {
-    return std::nullopt;
+  if (!optC) {
+    return Token(std::string_view(prev, prev), SimpleTokenData::EndOfInput);
   }
   auto getSlice = [&]() { return std::string_view(prev, this->position); };
   auto makeToken = [&](TokenData data) { return Token(getSlice(), data); };
-  switch (char c = optC.value()) {
+  switch (auto c = optC.value()) {
     case '(': return makeToken(SimpleTokenData::OpeningCircleBrace);
     case ')': return makeToken(SimpleTokenData::ClosingCircleBrace);
     case '[': return makeToken(SimpleTokenData::OpeningSquareBrace);
@@ -142,6 +143,7 @@ std::optional<Token> Lexer::next() {
           { "const", SimpleTokenData::Const },
           { "final", SimpleTokenData::Final },
           { "var", SimpleTokenData::Var },
+          { "public", SimpleTokenData::Public },
         };
         return Token(getSlice(), IdentTokenData(getSlice()));
       }
@@ -157,14 +159,9 @@ std::optional<Token> Lexer::next() {
 
 bool Lexer::nextIs(TokenDataFilter filter) {
   auto next = this->next();
-  if (!next.has_value()) {
-    return false;
-  }
-
-  if (filter(next->getData())) {
+  if (filter(next.getData())) {
     return true;
   }
-
   return false;
 }
 
@@ -179,13 +176,11 @@ bool Lexer::nextIsSimple(SimpleTokenData data) {
 
 bool Lexer::skipTo(TokenDataFilter filter) {
   auto token = this->next();
-  while (token.has_value() && filter(token->getData())) {
+  while (!token.isEoi() && filter(token.getData())) {
     token = this->next();
   }
-  if (token.has_value()) {
-    skippedTokens.emplace(token.value());
-  }
-  return token.has_value();
+  skippedTokens.emplace(token);
+  return !token.isEoi();
 }
 
 bool Lexer::expect(TokenDataFilter filter, TokenDataFilter fallback) {
@@ -194,4 +189,10 @@ bool Lexer::expect(TokenDataFilter filter, TokenDataFilter fallback) {
     return false;
   }
   return true;
+}
+
+Token Lexer::peek() {
+  auto token = this->next();
+  skippedTokens.emplace(token);
+  return token;
 }

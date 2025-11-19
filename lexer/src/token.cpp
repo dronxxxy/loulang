@@ -1,6 +1,8 @@
 #include <lexer/token.hpp>
 #include <string>
 #include <utility>
+#include <variant>
+#include <magic_enum/magic_enum.hpp>
 
 using namespace lexer;
 
@@ -16,30 +18,17 @@ template<class... Ts> struct overloads : Ts... { using Ts::operator()...; };
 
 std::string Token::toString() const {
   return std::visit(overloads {
-    [](SimpleTokenData data) {
-      switch (data) {
-        case SimpleTokenData::OpeningCircleBrace: return std::string("OpeningCircleBrace");
-        case SimpleTokenData::ClosingCircleBrace: return std::string("ClosingCircleBrace");
-        case SimpleTokenData::OpeningFigureBrace: return std::string("OpeningFigureBrace");
-        case SimpleTokenData::ClosingFigureBrace: return std::string("ClosingFigureBrace");
-        case SimpleTokenData::OpeningSquareBrace: return std::string("OpeningSquareBrace");
-        case SimpleTokenData::ClosingSquareBrace: return std::string("ClosingSquareBrace");
-        case SimpleTokenData::LessThan: return std::string("LessThan");
-        case SimpleTokenData::GreaterThan: return std::string("GreaterThan");
-        case SimpleTokenData::LessOrEquals: return std::string("LessOrEquals");
-        case SimpleTokenData::GreaterOrEquals: return std::string("GreaterOrEquals");
-        case SimpleTokenData::Assign: return std::string("Assign");
-        case SimpleTokenData::Equals: return std::string("Equals");
-        case SimpleTokenData::Meta: return std::string("Meta");
-        case SimpleTokenData::Const: return std::string("Const");
-        case SimpleTokenData::Final: return std::string("Final");
-        case SimpleTokenData::Var: return std::string("Var");
-      }
-      std::unreachable();
-    },
+    [](SimpleTokenData data) { return std::string(magic_enum::enum_name(data)); },
     [](IntTokenData data) { return std::to_string(data.getValue()); },
     [](IdentTokenData data) { return std::string(data.getValue()); },
   }, this->data);
+}
+
+bool Token::isEoi() const {
+  if (auto data = std::get_if<SimpleTokenData>(&this->data)) {
+    return *data == SimpleTokenData::EndOfInput;
+  }
+  return false;
 }
 
 const TokenData& Token::getData() const {

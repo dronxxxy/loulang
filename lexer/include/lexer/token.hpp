@@ -12,8 +12,9 @@ namespace lexer {
     LessThan, GreaterThan,
     LessOrEquals, GreaterOrEquals,
     Assign, Equals,
-    Meta, Const, Final, Var,
+    Meta, Const, Final, Var, Public,
     Colon,
+    EndOfInput,
   };
 
   template <typename T>
@@ -39,10 +40,12 @@ namespace lexer {
   private:
     TokenData data;
     std::string_view slice;
+
   public:
     const TokenData& getData() const;
     explicit Token(std::string_view slice, TokenData data);
     bool operator==(const Token &other) const;
     std::string toString() const;
+    bool isEoi() const;
   };
 };
