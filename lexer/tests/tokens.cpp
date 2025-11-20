@@ -66,3 +66,15 @@ TEST_CASE("one line comments should be skipped", "[Lexer]") {
   lexerTest("# hello, how are you\n(    # hello", { Token("(", SimpleTokenData::OpeningCircleBrace) });
 }
 
+TEST_CASE("keywords should be lexed", "[Lexer]") {
+  lexerTest("meta const final var public extern fun", {
+    Token("meta", SimpleTokenData::Meta),
+    Token("const", SimpleTokenData::Const),
+    Token("final", SimpleTokenData::Final),
+    Token("var", SimpleTokenData::Var),
+    Token("public", SimpleTokenData::Public),
+    Token("extern", SimpleTokenData::Extern),
+    Token("fun", SimpleTokenData::Fun),
+  });
+}
+
