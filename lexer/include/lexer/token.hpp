@@ -14,7 +14,8 @@ namespace lexer {
     Assign, Equals,
     Meta, Const, Final, Var, Public,
     Extern, Fun,
-    Colon, Comma,
+    Minus,
+    Colon, Comma, RightArrow,
     EndOfInput,
   };
 
@@ -45,10 +46,15 @@ namespace lexer {
   public:
     const TokenData& getData() const;
     explicit Token(std::string_view slice, TokenData data);
+
     bool operator==(const Token &other) const;
     std::string toString() const;
+
     bool isEoi() const;
+
     const SimpleTokenData *isSimple() const;
+    const IdentTokenData *isIdent() const;
+
     bool isEqualsSimple(SimpleTokenData target) const;
   };
 };

@@ -28,6 +28,10 @@ const SimpleTokenData *Token::isSimple() const {
   return std::get_if<SimpleTokenData>(&this->data);
 }
 
+const IdentTokenData *Token::isIdent() const {
+  return std::get_if<IdentTokenData>(&this->data);
+}
+
 bool Token::isEqualsSimple(SimpleTokenData target) const {
   if (auto simple = this->isSimple()) {
     return *simple == target;

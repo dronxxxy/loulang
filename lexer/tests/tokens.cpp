@@ -46,6 +46,8 @@ TEST_CASE("single simple tokens should be lexed", "[Lexer]") {
   lexerTestSimple("==", SimpleTokenData::Equals);
   lexerTestSimple(":", SimpleTokenData::Colon);
   lexerTestSimple(",", SimpleTokenData::Comma);
+  lexerTestSimple("-", SimpleTokenData::Minus);
+  lexerTestSimple("->", SimpleTokenData::RightArrow);
 }
 
 TEST_CASE("spaces should be removed", "[Lexer]") {
