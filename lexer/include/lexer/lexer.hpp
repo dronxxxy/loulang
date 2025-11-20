@@ -38,6 +38,8 @@ namespace lexer {
 
     Token next();
     Token peek();
+    std::vector<Token> peekN(size_t n);
+    void nextN(size_t n);
 
     bool nextIs(TokenDataFilter filter);
     bool nextIsSimple(SimpleTokenData data);

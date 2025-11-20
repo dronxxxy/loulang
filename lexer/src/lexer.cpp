@@ -198,3 +198,20 @@ Token Lexer::peek() {
   skippedTokens.emplace(token);
   return token;
 }
+
+std::vector<Token> Lexer::peekN(size_t n) {
+  std::vector<Token> result;
+  result.reserve(n);
+  for (size_t i = 0; i < n; i++) {
+    auto token = this->next();
+    result.push_back(token);
+    skippedTokens.emplace(token);
+  }
+  return result;
+}
+
+void Lexer::nextN(size_t n) {
+  for (size_t i = 0; i < n; i++) {
+    this->next();
+  }
+}
