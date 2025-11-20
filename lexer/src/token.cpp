@@ -24,9 +24,13 @@ std::string Token::toString() const {
   }, this->data);
 }
 
+const SimpleTokenData *Token::isSimple() const {
+  return std::get_if<SimpleTokenData>(&this->data);
+}
+
 bool Token::isEoi() const {
-  if (auto data = std::get_if<SimpleTokenData>(&this->data)) {
-    return *data == SimpleTokenData::EndOfInput;
+  if (auto simple = this->isSimple()) {
+    return *simple == SimpleTokenData::EndOfInput;
   }
   return false;
 }

@@ -144,6 +144,8 @@ Token Lexer::next() {
           { "final", SimpleTokenData::Final },
           { "var", SimpleTokenData::Var },
           { "public", SimpleTokenData::Public },
+          { "extern", SimpleTokenData::Extern },
+          { "fun", SimpleTokenData::Fun },
         };
         return Token(getSlice(), IdentTokenData(getSlice()));
       }

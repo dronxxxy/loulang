@@ -13,6 +13,7 @@ namespace lexer {
     LessOrEquals, GreaterOrEquals,
     Assign, Equals,
     Meta, Const, Final, Var, Public,
+    Extern, Fun,
     Colon,
     EndOfInput,
   };
@@ -47,5 +48,6 @@ namespace lexer {
     bool operator==(const Token &other) const;
     std::string toString() const;
     bool isEoi() const;
+    const SimpleTokenData *isSimple() const;
   };
 };
