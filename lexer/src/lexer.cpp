@@ -126,6 +126,7 @@ Token Lexer::next() {
     case '{': return makeToken(SimpleTokenData::OpeningFigureBrace);
     case '}': return makeToken(SimpleTokenData::ClosingFigureBrace);
     case ':': return makeToken(SimpleTokenData::Colon);
+    case ',': return makeToken(SimpleTokenData::Comma);
     case '<':
       if (this->nextCharIs('=')) return makeToken(SimpleTokenData::LessOrEquals);
       return makeToken(SimpleTokenData::LessThan);

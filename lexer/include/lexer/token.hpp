@@ -14,7 +14,7 @@ namespace lexer {
     Assign, Equals,
     Meta, Const, Final, Var, Public,
     Extern, Fun,
-    Colon,
+    Colon, Comma,
     EndOfInput,
   };
 
