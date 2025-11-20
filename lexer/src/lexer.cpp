@@ -149,7 +149,11 @@ Token Lexer::next() {
           { "extern", SimpleTokenData::Extern },
           { "fun", SimpleTokenData::Fun },
         };
-        return Token(getSlice(), IdentTokenData(getSlice()));
+        std::string_view slice = getSlice();
+        if (keywords.contains(slice)) {
+          return Token(slice, keywords[slice]);
+        }
+        return Token(slice, IdentTokenData(slice));
       }
       if (charIsDigit(c)) {
         skipCharsFilter(charIsDigit);
