@@ -28,6 +28,13 @@ const SimpleTokenData *Token::isSimple() const {
   return std::get_if<SimpleTokenData>(&this->data);
 }
 
+bool Token::isEqualsSimple(SimpleTokenData target) const {
+  if (auto simple = this->isSimple()) {
+    return *simple == target;
+  }
+  return false;
+}
+
 bool Token::isEoi() const {
   if (auto simple = this->isSimple()) {
     return *simple == SimpleTokenData::EndOfInput;

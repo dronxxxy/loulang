@@ -5,6 +5,7 @@
 #include <lexer/lexer.hpp>
 #include <map>
 #include <string>
+#include <string_view>
 
 using namespace lexer;
 
@@ -139,7 +140,7 @@ Token Lexer::next() {
     default: {
       if (charIsIdentStart(c)) {
         skipCharsFilter(charIsIdentContinue);
-        std::map<std::string, SimpleTokenData> keywords = {
+        std::map<std::string_view, SimpleTokenData> keywords = {
           { "meta", SimpleTokenData::Meta },
           { "const", SimpleTokenData::Const },
           { "final", SimpleTokenData::Final },
@@ -168,15 +169,6 @@ bool Lexer::nextIs(TokenDataFilter filter) {
   return false;
 }
 
-bool Lexer::nextIsSimple(SimpleTokenData data) {
-  return this->nextIs([&] (const TokenData &got) {
-    if (auto source = std::get_if<SimpleTokenData>(&got)) {
-      return data == *source;
-    }
-    return false;
-  });
-}
-
 bool Lexer::skipTo(TokenDataFilter filter) {
   auto token = this->next();
   while (!token.isEoi() && filter(token.getData())) {
@@ -184,6 +176,7 @@ bool Lexer::skipTo(TokenDataFilter filter) {
   }
   skippedTokens.emplace(token);
   return !token.isEoi();
+  // TODO: brace level
 }
 
 bool Lexer::expect(TokenDataFilter filter, TokenDataFilter fallback) {

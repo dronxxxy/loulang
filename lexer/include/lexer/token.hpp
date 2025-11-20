@@ -49,5 +49,6 @@ namespace lexer {
     std::string toString() const;
     bool isEoi() const;
     const SimpleTokenData *isSimple() const;
+    bool isEqualsSimple(SimpleTokenData target) const;
   };
 };

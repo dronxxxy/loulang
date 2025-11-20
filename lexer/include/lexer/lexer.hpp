@@ -6,10 +6,9 @@
 #include <logger/logger.hpp>
 #include <lexer/token.hpp>
 #include <queue>
+#include <lexer/filters.hpp>
 
 namespace lexer {
-  using TokenDataFilter = std::function<bool (const TokenData&)>;
-
   class Lexer {
   private:
     std::shared_ptr<logger::Logger> logger;
@@ -42,7 +41,6 @@ namespace lexer {
     void nextN(size_t n);
 
     bool nextIs(TokenDataFilter filter);
-    bool nextIsSimple(SimpleTokenData data);
 
     bool skipTo(TokenDataFilter filter);
     bool expect(TokenDataFilter filter, TokenDataFilter fallback);
