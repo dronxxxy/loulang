@@ -43,7 +43,6 @@ static inline size_t arena_remains(const arena_t *arena, size_t alignment) {
 }
 
 void *arena_alloc(arena_t *arena, size_t size, size_t alignment) {
-  arena_t *last_arena;
   for (arena_t *a = arena; a; a = a->next) {
     if (arena_remains(a, alignment) >= size) {
       void *top = arena_top(a, alignment);

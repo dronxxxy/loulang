@@ -10,7 +10,7 @@ typedef struct {
 } log_level_info_t;
 
 void log_register(char id, log_callback_t callback) {
-  log_callbacks[id] = callback;
+  log_callbacks[(int)id] = callback;
 }
 
 inline void log_fmt_va(log_level_t level, const char *fmt, va_list list) {
@@ -26,7 +26,7 @@ inline void log_fmt_va(log_level_t level, const char *fmt, va_list list) {
   fprintf(info->output, "\033[1;%dm" "%s: " "\033[0m", info->color, info->name);
 
   for (size_t i = 0; fmt[i]; i++) {
-    log_callback_t callback = log_callbacks[fmt[i + 1]];
+    log_callback_t callback = log_callbacks[(int)fmt[i + 1]];
     if (fmt[i] == '#' && callback) {
       callback(info->output, list);
       i++;

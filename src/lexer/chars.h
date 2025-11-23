@@ -12,8 +12,8 @@ static inline bool char_is_digit(char c) {
 
 static inline bool char_is_ident_start(char c) {
   return
-    c >= 'a' && c <= 'z' || 
-    c >= 'A' && c <= 'Z' ||
+    (c >= 'a' && c <= 'z') || 
+    (c >= 'A' && c <= 'Z') ||
     c == '_' ||
     c == '$';
 }
