@@ -1,4 +1,4 @@
 public global const main = fun () -> i32 {
   super
-  return super
+  return 0
 }

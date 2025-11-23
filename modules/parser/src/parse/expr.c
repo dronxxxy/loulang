@@ -37,16 +37,11 @@ static inline lou_ast_expr_t *lou_parser_parse_func_expr(lou_parser_t *parser) {
 
 
 lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
-  lou_token_t token = lou_parser_peek(parser);
+  lou_token_t token = lou_parser_take(parser);
   switch (token.kind) {
-    case LOU_TOKEN_IDENT:
-      lou_parser_take(parser);
-      return lou_ast_expr_new_ident(parser->mempool, token.slice);
-
-    case LOU_TOKEN_FUN:
-      lou_parser_take(parser);
-      return lou_parser_parse_func_expr(parser);
-
+    case LOU_TOKEN_IDENT: return lou_ast_expr_new_ident(parser->mempool, token.slice);
+    case LOU_TOKEN_FUN: return lou_parser_parse_func_expr(parser);
+    case LOU_TOKEN_INTEGER: return lou_ast_expr_new_integer(parser->mempool, token.integer);
     default:
       lou_parser_err(parser, token.slice, "expected expression");
       return NULL;

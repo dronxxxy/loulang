@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lou/core/slice.h"
+#include <stdint.h>
 #include <stdio.h>
 
 typedef enum {
@@ -24,16 +25,23 @@ typedef enum {
   LOU_TOKEN_RETURN,
 
   // Other
-  LOU_TOKEN_IDENT, LOU_TOKEN_EOI,
+  LOU_TOKEN_IDENT,
+
+  // Complex
+  LOU_TOKEN_INTEGER,
 
   // Internal
-  LOU_TOKEN_FAILED,
+  LOU_TOKEN_EOI, LOU_TOKEN_FAILED,
 } lou_token_kind_t;
 
 typedef struct {
   lou_token_kind_t kind;
   size_t line;
   lou_slice_t slice;
+
+  union {
+    uint64_t integer;
+  };
 } lou_token_t;
 
 static inline lou_token_t lou_token_new_simple(lou_slice_t slice, size_t line, lou_token_kind_t kind) {
@@ -41,6 +49,15 @@ static inline lou_token_t lou_token_new_simple(lou_slice_t slice, size_t line, l
     .slice = slice,
     .line = line,
     .kind = kind,
+  };
+}
+
+static inline lou_token_t lou_token_new_integer(lou_slice_t slice, size_t line, uint64_t integer) {
+  return (lou_token_t) {
+    .slice = slice,
+    .line = line,
+    .kind = LOU_TOKEN_INTEGER,
+    .integer = integer,
   };
 }
 

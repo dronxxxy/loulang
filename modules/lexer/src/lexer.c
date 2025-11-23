@@ -179,6 +179,16 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
         }
         return lou_lexer_new_simple(lexer, LOU_TOKEN_IDENT);
       }
+      if (char_is_digit(c)) {
+        lexer_skip(lexer, char_is_digit);
+        lou_slice_t slice = lou_lexer_slice(lexer);
+        uint64_t result = 0;
+        for (size_t i = 0; i < slice.length; i++) {
+          result *= 10;
+          result += slice.ptr[i] - '0';
+        }
+        return lou_token_new_integer(lou_lexer_slice(lexer), lexer->start_line, result);
+      }
       return lou_lexer_new_simple(lexer, LOU_TOKEN_FAILED);
     }
   }
