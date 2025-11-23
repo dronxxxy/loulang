@@ -21,6 +21,7 @@ typedef enum {
   LOU_TOKEN_PUBLIC,
   LOU_TOKEN_GLOBAL,
   LOU_TOKEN_META, LOU_TOKEN_CONST, LOU_TOKEN_FINAL, LOU_TOKEN_VAR,
+  LOU_TOKEN_RETURN,
 
   // Other
   LOU_TOKEN_IDENT, LOU_TOKEN_EOI,
@@ -31,12 +32,14 @@ typedef enum {
 
 typedef struct {
   lou_token_kind_t kind;
+  size_t line;
   lou_slice_t slice;
 } lou_token_t;
 
-static inline lou_token_t lou_token_new_simple(lou_slice_t slice, lou_token_kind_t kind) {
+static inline lou_token_t lou_token_new_simple(lou_slice_t slice, size_t line, lou_token_kind_t kind) {
   return (lou_token_t) {
     .slice = slice,
+    .line = line,
     .kind = kind,
   };
 }

@@ -15,6 +15,7 @@ typedef struct lou_lexer_t {
   lou_mempool_t *mempool; 
   lou_slice_t path;
   lou_slice_t content;
+  size_t start_line, line;
   size_t start_pos, pos;
   bool failed;
 } lou_lexer_t;
@@ -25,6 +26,7 @@ lou_lexer_t *lou_lexer_new(lou_slice_t path) {
   lexer->mempool = mempool;
   lexer->failed = false;
   lexer->path = path;
+  lexer->start_line = lexer->line = 0;
   lexer->start_pos = lexer->pos = 0;
   
   char *new_path = lou_mempool_alloc(mempool, path.length + 1, 1);
@@ -65,7 +67,11 @@ static inline char lou_lexer_take(lou_lexer_t *lexer) {
   if (lexer->pos >= lexer->content.length) {
     return EOI;
   }
-  return lexer->content.ptr[lexer->pos++];
+  char c = lexer->content.ptr[lexer->pos++];
+  if (c == '\n') {
+    lexer->line++;
+  }
+  return c;
 }
 
 static inline bool lou_lexer_take_if(lou_lexer_t *lexer, char c) {
@@ -82,6 +88,7 @@ static inline lou_slice_t lou_lexer_slice(const lou_lexer_t *lexer) {
 
 static inline void lou_lexer_begin(lou_lexer_t *lexer) {
   lexer->start_pos = lexer->pos;
+  lexer->start_line = lexer->line;
 }
 
 static inline void lexer_skip(lou_lexer_t *lexer, bool (*filter)(char c)) {
@@ -120,6 +127,10 @@ static inline void lou_lexer_error(lou_lexer_t *lexer, lou_slice_t slice, const 
   lexer->failed = true;
 }
 
+static inline lou_token_t lou_lexer_new_simple(lou_lexer_t *lexer, lou_token_kind_t kind) {
+  return lou_token_new_simple(lou_lexer_slice(lexer), lexer->start_line, kind);
+}
+
 typedef struct {
   const char *name;
   lou_token_kind_t kind;
@@ -133,27 +144,28 @@ static lou_lexer_keyword_t lou_lexer_keywords[] = {
   { .name = "const", .kind = LOU_TOKEN_CONST },
   { .name = "final", .kind = LOU_TOKEN_FINAL },
   { .name = "var", .kind = LOU_TOKEN_VAR },
+  { .name = "return", .kind = LOU_TOKEN_RETURN },
 };
 
 static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
   lou_lexer_begin(lexer);
   char c = lou_lexer_take(lexer);
   switch (c) {
-    case '(': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_OPENING_CIRCLE_BRACE);
-    case ')': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_CLOSING_CIRCLE_BRACE);
-    case '[': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_OPENING_SQUARE_BRACE);
-    case ']': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_CLOSING_SQUARE_BRACE);
-    case '{': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_OPENING_FIGURE_BRACE);
-    case '}': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_CLOSING_FIGURE_BRACE);
-    case ':': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_COLON);
-    case '=': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_ASSIGN);
-    case ',': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_COMMA);
-    case EOI: return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_EOI);
+    case '(': return lou_lexer_new_simple(lexer, LOU_TOKEN_OPENING_CIRCLE_BRACE);
+    case ')': return lou_lexer_new_simple(lexer, LOU_TOKEN_CLOSING_CIRCLE_BRACE);
+    case '[': return lou_lexer_new_simple(lexer, LOU_TOKEN_OPENING_SQUARE_BRACE);
+    case ']': return lou_lexer_new_simple(lexer, LOU_TOKEN_CLOSING_SQUARE_BRACE);
+    case '{': return lou_lexer_new_simple(lexer, LOU_TOKEN_OPENING_FIGURE_BRACE);
+    case '}': return lou_lexer_new_simple(lexer, LOU_TOKEN_CLOSING_FIGURE_BRACE);
+    case ':': return lou_lexer_new_simple(lexer, LOU_TOKEN_COLON);
+    case '=': return lou_lexer_new_simple(lexer, LOU_TOKEN_ASSIGN);
+    case ',': return lou_lexer_new_simple(lexer, LOU_TOKEN_COMMA);
+    case EOI: return lou_lexer_new_simple(lexer, LOU_TOKEN_EOI);
     case '-':
       if (lou_lexer_take_if(lexer, '>')) {
-        return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_FUNCTION_RETURNS);
+        return lou_lexer_new_simple(lexer, LOU_TOKEN_FUNCTION_RETURNS);
       }
-      return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_MINUS);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_MINUS);
 
     default: {
       if (char_is_ident_start(c)) {
@@ -162,12 +174,12 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
         for (size_t i = 0; i < sizeof(lou_lexer_keywords) / sizeof(lou_lexer_keyword_t); i++) {
           lou_lexer_keyword_t *keyword = &lou_lexer_keywords[i];
           if (lou_slice_eq(lou_slice_from_cstr(keyword->name), slice)) {
-            return lou_token_new_simple(slice, keyword->kind);
+            return lou_lexer_new_simple(lexer, keyword->kind);
           }
         }
-        return lou_token_new_simple(slice, LOU_TOKEN_IDENT);
+        return lou_lexer_new_simple(lexer, LOU_TOKEN_IDENT);
       }
-      return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_FAILED);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_FAILED);
     }
   }
 }

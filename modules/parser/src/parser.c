@@ -43,7 +43,7 @@ bool lou_parser_expect(lou_parser_t *parser, lou_token_kind_t kind, lou_token_t 
     *output = lou_parser_take(parser);
     return true;
   }
-  lou_token_t reference = lou_token_new_simple(lou_slice_from_cstr("_"), kind);
+  lou_token_t reference = lou_token_new_simple(lou_slice_from_cstr("_"), 1, kind);
   lou_parser_err(parser, token.slice, "expected #T", &reference);
   return false;
 }

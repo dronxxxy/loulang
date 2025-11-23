@@ -1,0 +1,28 @@
+#include "stmt.h"
+#include "lou/lexer/token.h"
+#include "lou/parser/ast/stmt.h"
+#include "parse/expr.h"
+#include "parser.h"
+#include <stdio.h>
+
+lou_ast_stmt_t *lou_parser_parse_stmt(lou_parser_t *parser) {
+  lou_token_t token = lou_parser_peek(parser);
+
+  switch (token.kind) {
+    case LOU_TOKEN_RETURN: {
+      lou_parser_take(parser);
+      lou_ast_expr_t *expr = NULL;
+      if (token.line == lou_parser_peek(parser).line) {
+        expr = lou_parser_parse_expr(parser);
+      }
+      return lou_ast_stmt_new_ret(parser->mempool, (lou_ast_stmt_ret_t) {
+        .value = expr
+      });
+    }
+    default:
+      lou_parser_err(parser, lou_parser_take(parser).slice, "expected statement");
+      return NULL;
+  }
+}
+
+
