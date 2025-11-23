@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #define EOI ((char)-1)
+#define UNKNOWN_TOKEN_MESSAGE "unknown token"
 
 typedef struct lexer_t {
   mempool_t *mempool; 
@@ -100,11 +101,10 @@ bool lexer_failed(const lexer_t *lexer) {
   return lexer->failed;
 }
 
-static inline void lexer_error(lexer_t *lexer, const char *fmt, ...) {
+static inline void lexer_error(lexer_t *lexer, slice_t slice, const char *fmt, ...) {
   va_list list;
   va_start(list, fmt);
   log_fmt_va(LOG_ERROR, fmt, list);
-  slice_t slice = lexer_slice(lexer);
   fputs("at `", stderr);
   fwrite(slice.ptr, 1, slice.length, stderr);
   fputs("`\n", stderr);
@@ -113,36 +113,52 @@ static inline void lexer_error(lexer_t *lexer, const char *fmt, ...) {
   lexer->failed = true;
 }
 
+static inline token_t lexer_try_next(lexer_t *lexer) {
+  lexer_begin(lexer);
+  char c = lexer_take(lexer);
+  switch (c) {
+    case '(': return token_new_simple(lexer_slice(lexer), TOKEN_OPENING_CIRCLE_BRACE);
+    case ')': return token_new_simple(lexer_slice(lexer), TOKEN_CLOSING_CIRCLE_BRACE);
+    case '[': return token_new_simple(lexer_slice(lexer), TOKEN_OPENING_SQUARE_BRACE);
+    case ']': return token_new_simple(lexer_slice(lexer), TOKEN_CLOSING_SQUARE_BRACE);
+    case '{': return token_new_simple(lexer_slice(lexer), TOKEN_OPENING_FIGURE_BRACE);
+    case '}': return token_new_simple(lexer_slice(lexer), TOKEN_CLOSING_FIGURE_BRACE);
+    case ':': return token_new_simple(lexer_slice(lexer), TOKEN_COLON);
+    case EOI: return token_new_simple(lexer_slice(lexer), TOKEN_EOI);
+    case '-':
+      if (lexer_take_if(lexer, '>')) {
+        return token_new_simple(lexer_slice(lexer), TOKEN_FUNCTION_RETURNS);
+      }
+      return token_new_simple(lexer_slice(lexer), TOKEN_MINUS);
+
+    default: {
+      if (char_is_ident_start(c)) {
+        lexer_skip(lexer, char_is_ident);
+        return token_new_simple(lexer_slice(lexer), TOKEN_IDENT);
+      }
+      return token_new_simple(lexer_slice(lexer), TOKEN_FAILED);
+    }
+  }
+}
+
 token_t lexer_next(lexer_t *lexer) {
-  bool locally_failed = false;
+  slice_t failed_at = slice_new(NULL, 0);
   while (true) {
     lexer_skip_non_token(lexer);
-    lexer_begin(lexer);
-    char c = lexer_take(lexer);
-    switch (c) {
-      case '(': return token_new_simple(lexer_slice(lexer), TOKEN_OPENING_CIRCLE_BRACE);
-      case ')': return token_new_simple(lexer_slice(lexer), TOKEN_CLOSING_CIRCLE_BRACE);
-      case '[': return token_new_simple(lexer_slice(lexer), TOKEN_OPENING_SQUARE_BRACE);
-      case ']': return token_new_simple(lexer_slice(lexer), TOKEN_CLOSING_SQUARE_BRACE);
-      case '{': return token_new_simple(lexer_slice(lexer), TOKEN_OPENING_FIGURE_BRACE);
-      case '}': return token_new_simple(lexer_slice(lexer), TOKEN_CLOSING_FIGURE_BRACE);
-      case ':': return token_new_simple(lexer_slice(lexer), TOKEN_COLON);
-      case '-':
-        if (lexer_take_if(lexer, '>')) {
-          return token_new_simple(lexer_slice(lexer), TOKEN_FUNCTION_RETURNS);
-        }
-        return token_new_simple(lexer_slice(lexer), TOKEN_MINUS);
-      case EOI:
-        return token_new_simple(lexer_slice(lexer), TOKEN_EOI);
-
-      default: {
-        if (char_is_ident_start(c)) {
-          lexer_skip(lexer, char_is_ident);
-          return token_new_simple(lexer_slice(lexer), TOKEN_IDENT);
-        }
-        lexer_error(lexer, "unknown symbol");
-        break;
+    token_t token = lexer_try_next(lexer);
+    if (token.kind != TOKEN_FAILED) {
+      if (failed_at.ptr) {
+        lexer_error(lexer, failed_at, UNKNOWN_TOKEN_MESSAGE);
       }
+      return token; 
+    }
+    if (!failed_at.ptr) {
+      failed_at = token.slice;
+    } else if (token.slice.ptr - failed_at.ptr == failed_at.length) {
+      failed_at.length += token.slice.length;
+    } else {
+      lexer_error(lexer, failed_at, UNKNOWN_TOKEN_MESSAGE);
+      failed_at = token.slice;
     }
   }
 }

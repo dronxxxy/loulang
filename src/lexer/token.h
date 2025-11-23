@@ -19,6 +19,9 @@ typedef enum {
 
   // Other
   TOKEN_IDENT, TOKEN_EOI,
+
+  // Internal
+  TOKEN_FAILED,
 } token_kind_t;
 
 typedef struct {
