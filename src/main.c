@@ -1,21 +1,15 @@
-#include "core/log.h"
-#include "lexer/lexer.h"
 #include "log.h"
+#include "parser/parser.h"
 
 int main(int argc, char** argv) {
   log_init();
 
-  lexer_t *lexer = lexer_create("./examples/test/lexer.lou");
-  if (!lexer) {
+  parser_t *parser = parser_new(slice_from_cstr("./examples/test/lexer.lou"));
+  if (!parser) {
     return 1;
   }
 
-  for (token_t token = lexer_next(lexer); token.kind != TOKEN_EOI; token = lexer_next(lexer)) {
-    log_fmt(LOG_DEBUG, "#T: #S", &token, token.slice); 
-  }
-
-  int status = lexer_failed(lexer) ? 1 : 0;
-
-  lexer_free(lexer);
+  int status = parser_failed(parser) ? 1 : 0;
+  parser_free(parser);
   return status;
 }

@@ -5,7 +5,7 @@
 
 typedef struct lexer_t lexer_t;
 
-lexer_t *lexer_create(const char *path);
+lexer_t *lexer_new(slice_t path);
 void lexer_free(lexer_t *lexer);
 
 bool lexer_failed(const lexer_t *lexer);

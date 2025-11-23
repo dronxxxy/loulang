@@ -7,6 +7,7 @@
 #include "core/slice.h"
 #include "lexer/chars.h"
 #include <stdio.h>
+#include <string.h>
 
 #define EOI ((char)-1)
 #define UNKNOWN_TOKEN_MESSAGE "unknown token"
@@ -19,15 +20,18 @@ typedef struct lexer_t {
   bool failed;
 } lexer_t;
 
-lexer_t *lexer_create(const char *path) {
+lexer_t *lexer_new(slice_t path) {
   mempool_t *mempool = mempool_new();
   lexer_t *lexer = MEMPOOL_ALLOC(mempool, lexer_t);
   lexer->mempool = mempool;
   lexer->failed = false;
-  lexer->path = slice_from_cstr(path);
+  lexer->path = path;
   lexer->start_pos = lexer->pos = 0;
   
-  FILE *file = fopen(path, "r");
+  char *new_path = mempool_alloc(mempool, path.length + 1, 1);
+  memcpy(new_path, path.ptr, path.length);
+  new_path[path.length] = '\0';
+  FILE *file = fopen(new_path, "r");
   if (!file) {
     log_fmt(LOG_ERROR, "failed to open the file: #E"); 
     goto error;
