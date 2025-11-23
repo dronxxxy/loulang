@@ -6,4 +6,5 @@ target("louParser")
   add_includedirs("src")
   add_deps("louCore", "louLexer")
   add_files("src/*.c")
+  project_config() 
 

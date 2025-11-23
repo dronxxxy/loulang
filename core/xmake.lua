@@ -5,4 +5,5 @@ target("louCore")
   add_includedirs("include", { public = true })
   add_includedirs("src")
   add_files("src/*.c")
+  project_config() 
 
