@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   }
 
   for (token_t token = lexer_next(lexer); token.kind != TOKEN_EOI; token = lexer_next(lexer)) {
-    log_fmt(LOG_DEBUG, "token: #T", &token); 
+    log_fmt(LOG_DEBUG, "#T: #S", &token, token.slice); 
   }
 
   int status = lexer_failed(lexer) ? 1 : 0;

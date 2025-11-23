@@ -114,6 +114,7 @@ static inline void lexer_error(lexer_t *lexer, const char *fmt, ...) {
 }
 
 token_t lexer_next(lexer_t *lexer) {
+  bool locally_failed = false;
   while (true) {
     lexer_skip_non_token(lexer);
     lexer_begin(lexer);
@@ -139,7 +140,7 @@ token_t lexer_next(lexer_t *lexer) {
           lexer_skip(lexer, char_is_ident);
           return token_new_simple(lexer_slice(lexer), TOKEN_IDENT);
         }
-        lexer_error(lexer, "unknown token");
+        lexer_error(lexer, "unknown symbol");
         break;
       }
     }

@@ -7,7 +7,7 @@ static inline bool char_is_whitespace(char c) {
 }
 
 static inline bool char_is_digit(char c) {
-  return '0' <= c || c <= '9';
+  return c >= '0' && c <= '9';
 }
 
 static inline bool char_is_ident_start(char c) {
