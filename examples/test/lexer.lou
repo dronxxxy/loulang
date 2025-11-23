@@ -1,4 +1,2 @@
-fun test() {
-  let super = 123;
-  and divide 45 by 123
-}
+public meta asd: super = data
+public meta asd: super = data

@@ -12,3 +12,9 @@ lou_slice_t lou_subslice(lou_slice_t slice, size_t begin, size_t end) {
   return lou_slice_new(&slice.ptr[begin], end - begin);
 }
 
+bool lou_slice_eq(lou_slice_t a, lou_slice_t b) {
+  if (a.length != b.length) {
+    return false;
+  }
+  return !memcmp(a.ptr, b.ptr, a.length);
+}

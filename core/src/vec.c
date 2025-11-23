@@ -74,7 +74,7 @@ void lou_vec_pop(void **vec) {
 
 void lou_vec_unshift(void **vec) {
   lou_vec_header_t *header = lou_vec_header(*vec);
-  memmove(*vec, lou_vec_at(vec, 1), header->length * header->size);
+  memmove(*vec, lou_vec_at(*vec, 1), (header->length - 1) * header->size);
   lou_vec_pop(vec);
 }
 

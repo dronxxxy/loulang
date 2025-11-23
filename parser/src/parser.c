@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "lou/core/vec.h"
 #include "lou/lexer/lexer.h"
+#include "lou/lexer/token.h"
 #include "lou/parser/parser.h"
 #include <stdarg.h>
 
@@ -32,6 +33,17 @@ lou_token_t lou_parser_peek(lou_parser_t *parser) {
     return parser->queue[0];
   }
   return lou_parser_queued(parser, lou_lexer_next(parser->lexer));
+}
+
+bool lou_parser_expect(lou_parser_t *parser, lou_token_kind_t kind, lou_token_t *output) {
+  lou_token_t token = lou_parser_peek(parser);
+  if (token.kind == kind) {
+    *output = lou_parser_take(parser);
+    return true;
+  }
+  lou_token_t reference = lou_token_new_simple(lou_slice_from_cstr("_"), kind);
+  lou_parser_err(parser, token.slice, "expected #T", &reference);
+  return false;
 }
 
 bool lou_parser_take_if(lou_parser_t *parser, lou_token_kind_t kind) {

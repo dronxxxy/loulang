@@ -120,6 +120,20 @@ static inline void lou_lexer_error(lou_lexer_t *lexer, lou_slice_t slice, const 
   lexer->failed = true;
 }
 
+typedef struct {
+  const char *name;
+  lou_token_kind_t kind;
+} lou_lexer_keyword_t;
+
+static lou_lexer_keyword_t lou_lexer_keywords[] = {
+  { .name = "public", .kind = LOU_TOKEN_PUBLIC },
+  { .name = "fun", .kind = LOU_TOKEN_FUN },
+  { .name = "meta", .kind = LOU_TOKEN_META },
+  { .name = "const", .kind = LOU_TOKEN_CONST },
+  { .name = "final", .kind = LOU_TOKEN_FINAL },
+  { .name = "var", .kind = LOU_TOKEN_VAR },
+};
+
 static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
   lou_lexer_begin(lexer);
   char c = lou_lexer_take(lexer);
@@ -131,6 +145,7 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '{': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_OPENING_FIGURE_BRACE);
     case '}': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_CLOSING_FIGURE_BRACE);
     case ':': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_COLON);
+    case '=': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_ASSIGN);
     case EOI: return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_EOI);
     case '-':
       if (lou_lexer_take_if(lexer, '>')) {
@@ -141,7 +156,14 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     default: {
       if (char_is_ident_start(c)) {
         lexer_skip(lexer, char_is_ident);
-        return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_IDENT);
+        lou_slice_t slice = lou_lexer_slice(lexer);
+        for (size_t i = 0; i < sizeof(lou_lexer_keywords) / sizeof(lou_lexer_keyword_t); i++) {
+          lou_lexer_keyword_t *keyword = &lou_lexer_keywords[i];
+          if (lou_slice_eq(lou_slice_from_cstr(keyword->name), slice)) {
+            return lou_token_new_simple(slice, keyword->kind);
+          }
+        }
+        return lou_token_new_simple(slice, LOU_TOKEN_IDENT);
       }
       return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_FAILED);
     }

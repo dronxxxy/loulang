@@ -10,7 +10,7 @@ typedef enum {
   LOU_AST_NODE_DECL,
 } lou_ast_node_kind_t;
 
-typedef struct {
+typedef struct lou_ast_node_t {
   lou_ast_node_kind_t kind;
 
   union {
