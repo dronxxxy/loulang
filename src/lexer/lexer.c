@@ -3,6 +3,7 @@
 #include "core/io.h"
 #include "core/log.h"
 #include "core/mempool.h"
+#include "core/pos_print.h"
 #include "core/slice.h"
 #include "lexer/chars.h"
 #include <stdio.h>
@@ -105,9 +106,8 @@ static inline void lexer_error(lexer_t *lexer, slice_t slice, const char *fmt, .
   va_list list;
   va_start(list, fmt);
   log_fmt_va(LOG_ERROR, fmt, list);
-  fputs("at `", stderr);
-  fwrite(slice.ptr, 1, slice.length, stderr);
-  fputs("`\n", stderr);
+  pos_print(stderr, lexer->content, slice);
+  fprintf(stderr, "\n\n");
   va_end(list);
 
   lexer->failed = true;

@@ -1,6 +1,4 @@
-(){} #asdas
-asdkjalskd #asdas 
-223
-
-438943  2
-
+fun test() {
+  let super = 123;
+  and divide 45 by 123
+}
