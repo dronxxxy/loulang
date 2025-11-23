@@ -1,7 +1,7 @@
 #include "log.h"
 #include <stdio.h>
 
-static log_callback_t log_callbacks[1 << sizeof(char)] = { NULL };
+static log_callback_t log_callbacks[0xFF] = { NULL };
 
 typedef struct {
   FILE *output;

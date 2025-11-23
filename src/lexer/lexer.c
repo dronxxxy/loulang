@@ -13,7 +13,7 @@
 
 typedef struct lexer_t {
   mempool_t *mempool; 
-  const char *path;
+  slice_t path;
   slice_t content;
   size_t start_pos, pos;
   bool failed;
@@ -24,7 +24,7 @@ lexer_t *lexer_create(const char *path) {
   lexer_t *lexer = MEMPOOL_ALLOC(mempool, lexer_t);
   lexer->mempool = mempool;
   lexer->failed = false;
-  lexer->path = path;
+  lexer->path = slice_from_cstr(path);
   lexer->start_pos = lexer->pos = 0;
   
   FILE *file = fopen(path, "r");
@@ -106,7 +106,7 @@ static inline void lexer_error(lexer_t *lexer, slice_t slice, const char *fmt, .
   va_list list;
   va_start(list, fmt);
   log_fmt_va(LOG_ERROR, fmt, list);
-  pos_print(stderr, lexer->content, slice);
+  pos_print(stderr, lexer->path, lexer->content, slice);
   fprintf(stderr, "\n\n");
   va_end(list);
 
