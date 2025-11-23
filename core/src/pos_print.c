@@ -38,7 +38,7 @@ void lou_pos_print(FILE *stream, lou_slice_t path, lou_slice_t file, lou_slice_t
       line++;
       column = START_COLUMN_FROM - 1;
     }
-    if (i <= highlight_begin + 1) {
+    if (i + 1 <= highlight_begin) {
       start = i + 1;
     }
     if (end == file.length && i >= highlight_end) {

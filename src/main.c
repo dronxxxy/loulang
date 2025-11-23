@@ -9,6 +9,8 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  while (lou_parser_next(parser));
+
   int status = lou_parser_failed(parser) ? 1 : 0;
   lou_parser_free(parser);
   return status;

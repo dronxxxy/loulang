@@ -1,5 +1,6 @@
 #include "lou/core/vec.h"
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct {
   size_t size;
@@ -69,6 +70,12 @@ void *lou_vec_push(void **vec) {
 
 void lou_vec_pop(void **vec) {
   lou_vec_header(*vec)->length--;
+}
+
+void lou_vec_unshift(void **vec) {
+  lou_vec_header_t *header = lou_vec_header(*vec);
+  memmove(*vec, lou_vec_at(vec, 1), header->length * header->size);
+  lou_vec_pop(vec);
 }
 
 void lou_vec_unlink(void *vec) {

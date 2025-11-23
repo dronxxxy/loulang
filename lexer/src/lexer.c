@@ -105,12 +105,16 @@ bool lou_lexer_failed(const lou_lexer_t *lexer) {
   return lexer->failed;
 }
 
-static inline void lou_lexer_error(lou_lexer_t *lexer, lou_slice_t slice, const char *fmt, ...) {
-  va_list list;
-  va_start(list, fmt);
+void lou_lexer_log_error(const lou_lexer_t *lexer, lou_slice_t slice, const char *fmt, va_list list) {
   lou_log_fmt_va(LOG_ERROR, fmt, list);
   lou_pos_print(stderr, lexer->path, lexer->content, slice);
   fprintf(stderr, "\n\n");
+}
+
+static inline void lou_lexer_error(lou_lexer_t *lexer, lou_slice_t slice, const char *fmt, ...) {
+  va_list list;
+  va_start(list, fmt);
+  lou_lexer_log_error(lexer, slice, fmt, list);
   va_end(list);
 
   lexer->failed = true;

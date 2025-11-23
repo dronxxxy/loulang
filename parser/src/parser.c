@@ -1,31 +1,47 @@
-#include "lou/parser/parser.h"
-#include "lou/core/mempool.h"
+#include "parser.h"
+#include "lou/core/vec.h"
 #include "lou/lexer/lexer.h"
+#include "lou/parser/parser.h"
+#include <stdarg.h>
 
-typedef struct lou_parser_t {
-  lou_mempool_t *mempool;
-  lou_lexer_t *lexer;
-  bool failed;
-} lou_parser_t;
+void lou_parser_err(lou_parser_t *parser, lou_slice_t slice, const char *fmt, ...) {
+  va_list list;
+  va_start(list, fmt);
+  lou_lexer_log_error(parser->lexer, slice, fmt, list);
+  va_end(list);
 
-lou_parser_t *lou_parser_new(lou_slice_t path) {
-  lou_lexer_t *lexer = lou_lexer_new(path);
-  if (!lexer) {
-    return NULL;
+  parser->failed = true;
+}
+
+static inline lou_token_t lou_parser_queued(lou_parser_t *parser, lou_token_t token) {
+  *LOU_VEC_PUSH(&parser->queue) = token;
+  return token;
+}
+
+lou_token_t lou_parser_take(lou_parser_t *parser) {
+  if (lou_vec_len(parser->queue) != 0) {
+    lou_token_t token = parser->queue[0];
+    LOU_VEC_UNSHIFT(&parser->queue);
+    return token;
   }
-  lou_mempool_t *mempool = lou_mempool_new();
-  lou_parser_t *parser = LOU_MEMPOOL_ALLOC(mempool, lou_parser_t);
-  parser->mempool = mempool;
-  parser->lexer = lexer;
-  parser->failed = false;
-  return parser;
+  return lou_lexer_next(parser->lexer);
 }
 
-void lou_parser_free(lou_parser_t *parser) {
-  lou_lexer_free(parser->lexer);
-  lou_mempool_free(parser->mempool);
+lou_token_t lou_parser_peek(lou_parser_t *parser) {
+  if (lou_vec_len(parser->queue) != 0) {
+    return parser->queue[0];
+  }
+  return lou_parser_queued(parser, lou_lexer_next(parser->lexer));
 }
 
-bool lou_parser_failed(const lou_parser_t *parser) {
-  return lou_lexer_failed(parser->lexer) || parser->failed;
+bool lou_parser_take_if(lou_parser_t *parser, lou_token_kind_t kind) {
+  if (lou_parser_peek(parser).kind == kind) {
+    lou_parser_take(parser);
+    return true;
+  }
+  return false;
+}
+
+bool lou_parser_finished(lou_parser_t *parser) {
+  return lou_parser_peek(parser).kind == LOU_TOKEN_EOI;
 }
