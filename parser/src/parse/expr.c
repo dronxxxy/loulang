@@ -10,6 +10,7 @@ lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
     case LOU_TOKEN_IDENT:
       lou_parser_take(parser);
       return lou_ast_expr_new_ident(parser->mempool, token.slice);
+
     default:
       lou_parser_err(parser, token.slice, "expected expression");
       return NULL;

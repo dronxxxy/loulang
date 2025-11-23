@@ -1,2 +1,4 @@
-public meta asd: super = data
+public meta asd: fun (a: i32, u8) = data
+public meta asd: fun (b: u8, c,) -> c = data
+public meta asd: fun () -> c = data
 public meta asd: super = data

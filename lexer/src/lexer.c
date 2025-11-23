@@ -146,6 +146,7 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '}': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_CLOSING_FIGURE_BRACE);
     case ':': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_COLON);
     case '=': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_ASSIGN);
+    case ',': return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_COMMA);
     case EOI: return lou_token_new_simple(lou_lexer_slice(lexer), LOU_TOKEN_EOI);
     case '-':
       if (lou_lexer_take_if(lexer, '>')) {

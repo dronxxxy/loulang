@@ -9,10 +9,10 @@ typedef struct lou_ast_type_t lou_ast_type_t;
 typedef struct {
   lou_opt_slice_t name;
   lou_ast_type_t *type;
-} lou_ast_type_arg_t;
+} lou_ast_type_func_arg_t;
 
 typedef struct {
-  lou_ast_type_arg_t *args;
+  lou_ast_type_func_arg_t *args;
   lou_ast_type_t *returns;
 } lou_ast_type_func_t;
 
