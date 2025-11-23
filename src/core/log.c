@@ -29,6 +29,7 @@ inline void log_fmt_va(log_level_t level, const char *fmt, va_list list) {
     log_callback_t callback = log_callbacks[fmt[i + 1]];
     if (fmt[i] == '#' && callback) {
       callback(info->output, list);
+      i++;
     } else {
       fputc(fmt[i], info->output);
     }

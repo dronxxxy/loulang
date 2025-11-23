@@ -1,16 +1,21 @@
 #include "core/log.h"
-#include "core/mempool.h"
-#include "core/vec.h"
-#include <stdio.h>
+#include "lexer/lexer.h"
+#include "log.h"
 
 int main(int argc, char** argv) {
-  mempool_t *mempool = mempool_new();
-  for (size_t i = 0; i < 100; i++) {
-    size_t *a = MEMPOOL_ALLOC(mempool, size_t);
-    size_t *b = MEMPOOL_VEC_NEW(mempool, size_t);
-    for (size_t j = 0; j < 100; j++) { *VEC_PUSH(&b) = 10; }
+  log_init();
+
+  lexer_t *lexer = lexer_create("./examples/test/lexer.lou");
+  if (!lexer) {
+    return 1;
   }
-  mempool_free(mempool);
-  log_fmt(LOG_ERROR, "hello, how are you?");
-  return 0;
+
+  for (token_t token = lexer_next(lexer); token.kind != TOKEN_EOI; token = lexer_next(lexer)) {
+    log_fmt(LOG_DEBUG, "token: #T", &token); 
+  }
+
+  int status = lexer_failed(lexer) ? 1 : 0;
+
+  lexer_free(lexer);
+  return status;
 }

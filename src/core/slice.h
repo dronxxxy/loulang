@@ -13,3 +13,6 @@ static inline slice_t slice_new(const char *ptr, size_t length) {
     .length = length,
   };
 }
+
+slice_t slice_from_cstr(const char *cstr);
+slice_t subslice(slice_t slice, size_t begin, size_t end);
