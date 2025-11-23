@@ -10,5 +10,5 @@ The loulang programming language uses `xmake` build system. So, if you wanna bui
 xmake build
 ```
 
-After successfully executing, compiler binary should be located at path `build/<your OS>/release/loulang`
+After successfully executing, compiler binary should be located at path `build/<your OS>/release/lou`
 
