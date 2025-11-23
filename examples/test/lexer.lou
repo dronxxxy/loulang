@@ -1,4 +1,1 @@
-public meta asd: fun (a: i32, u8) = fun (a: i32, b) -> i32 {}
-public meta asd: fun (b: u8, c,) -> i32 = fun () {}
-public meta asd: fun () -> i32 = data
-public meta asd: super = data
+public global const main = fun () -> i32 { }

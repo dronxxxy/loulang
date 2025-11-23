@@ -5,9 +5,7 @@ int main(int argc, char** argv) {
   log_init();
 
   lou_parser_t *parser = lou_parser_new(lou_slice_from_cstr("./examples/test/lexer.lou"));
-  if (!parser) {
-    return 1;
-  }
+  if (!parser) return 1;
 
   while (lou_parser_next(parser));
 

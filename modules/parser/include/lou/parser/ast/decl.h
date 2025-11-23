@@ -15,6 +15,7 @@ typedef enum {
 
 typedef struct {
   bool is_public;
+  bool is_global;
   lou_ast_decl_kind_t kind;
   lou_slice_t name;
   lou_ast_type_t *type;

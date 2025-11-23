@@ -20,6 +20,7 @@ static inline bool lou_parser_peek_decl_kind(lou_parser_t *parser, lou_ast_decl_
 
 lou_ast_node_t *lou_parser_parse_decl_node(lou_parser_t *parser) {
   bool is_public = lou_parser_take_if(parser, LOU_TOKEN_PUBLIC);
+  bool is_global = lou_parser_take_if(parser, LOU_TOKEN_GLOBAL);
 
   lou_ast_decl_kind_t kind;
   if (!lou_parser_peek_decl_kind(parser, &kind)) return NULL;
@@ -32,6 +33,7 @@ lou_ast_node_t *lou_parser_parse_decl_node(lou_parser_t *parser) {
 
   return lou_ast_node_new_decl(parser->mempool, (lou_ast_decl_t) {
     .is_public = is_public,
+    .is_global = is_global,
     .kind = kind,
     .name = name,
     .type = type,

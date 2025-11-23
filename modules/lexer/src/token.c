@@ -21,6 +21,7 @@ void lou_token_write(const lou_token_t *token, FILE *stream) {
     WRITE_TOKEN(MINUS);
     WRITE_TOKEN(FUN);
     WRITE_TOKEN(PUBLIC);
+    WRITE_TOKEN(GLOBAL);
     WRITE_TOKEN(META);
     WRITE_TOKEN(CONST);
     WRITE_TOKEN(FINAL);
