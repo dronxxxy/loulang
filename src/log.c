@@ -19,7 +19,7 @@ static void log_slice(FILE *stream, va_list list) {
 }
 
 static void log_token(FILE *stream, va_list list) {
-  token_write(va_arg(list, token_t *), stream);
+  lou_token_write(va_arg(list, lou_token_t *), stream);
 }
 
 void log_init() {

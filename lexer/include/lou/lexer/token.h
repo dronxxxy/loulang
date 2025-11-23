@@ -5,35 +5,35 @@
 
 typedef enum {
   // Punctuation
-  TOKEN_OPENING_CIRCLE_BRACE, TOKEN_CLOSING_CIRCLE_BRACE,
-  TOKEN_OPENING_FIGURE_BRACE, TOKEN_CLOSING_FIGURE_BRACE,
-  TOKEN_OPENING_SQUARE_BRACE, TOKEN_CLOSING_SQUARE_BRACE,
-  TOKEN_COLON,
-  TOKEN_FUNCTION_RETURNS,
+  LOU_TOKEN_OPENING_CIRCLE_BRACE, LOU_TOKEN_CLOSING_CIRCLE_BRACE,
+  LOU_TOKEN_OPENING_FIGURE_BRACE, LOU_TOKEN_CLOSING_FIGURE_BRACE,
+  LOU_TOKEN_OPENING_SQUARE_BRACE, LOU_TOKEN_CLOSING_SQUARE_BRACE,
+  LOU_TOKEN_COLON,
+  LOU_TOKEN_FUNCTION_RETURNS,
 
   // Math
-  TOKEN_MINUS,
+  LOU_TOKEN_MINUS,
 
   // Keywords
-  TOKEN_FUN,
+  LOU_TOKEN_FUN,
 
   // Other
-  TOKEN_IDENT, TOKEN_EOI,
+  LOU_TOKEN_IDENT, LOU_TOKEN_EOI,
 
   // Internal
-  TOKEN_FAILED,
-} token_kind_t;
+  LOU_TOKEN_FAILED,
+} lou_token_kind_t;
 
 typedef struct {
-  token_kind_t kind;
+  lou_token_kind_t kind;
   lou_slice_t slice;
-} token_t;
+} lou_token_t;
 
-static inline token_t token_new_simple(lou_slice_t slice, token_kind_t kind) {
-  return (token_t) {
+static inline lou_token_t lou_token_new_simple(lou_slice_t slice, lou_token_kind_t kind) {
+  return (lou_token_t) {
     .slice = slice,
     .kind = kind,
   };
 }
 
-void token_write(const token_t *token, FILE *stream);
+void lou_token_write(const lou_token_t *token, FILE *stream);

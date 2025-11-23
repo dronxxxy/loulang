@@ -2,11 +2,11 @@
 #include <stdio.h>
 
 #define WRITE_TOKEN(NAME) \
-    case TOKEN_##NAME: \
+    case LOU_TOKEN_##NAME: \
       fputs(#NAME, stream); \
       return; \
 
-void token_write(const token_t *token, FILE *stream) {
+void lou_token_write(const lou_token_t *token, FILE *stream) {
   switch (token->kind) {
     WRITE_TOKEN(OPENING_CIRCLE_BRACE);
     WRITE_TOKEN(CLOSING_CIRCLE_BRACE);

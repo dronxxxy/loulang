@@ -3,10 +3,10 @@
 #include "token.h"
 #include <stdbool.h>
 
-typedef struct lexer_t lexer_t;
+typedef struct lou_lexer_t lou_lexer_t;
 
-lexer_t *lexer_new(lou_slice_t path);
-void lexer_free(lexer_t *lexer);
+lou_lexer_t *lou_lexer_new(lou_slice_t path);
+void lou_lexer_free(lou_lexer_t *lexer);
 
-bool lexer_failed(const lexer_t *lexer);
-token_t lexer_next(lexer_t *lexer);
+bool lou_lexer_failed(const lou_lexer_t *lexer);
+lou_token_t lou_lexer_next(lou_lexer_t *lexer);
