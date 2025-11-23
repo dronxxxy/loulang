@@ -19,9 +19,13 @@ lou_ast_stmt_t *lou_parser_parse_stmt(lou_parser_t *parser) {
         .value = expr
       });
     }
-    default:
-      lou_parser_err(parser, lou_parser_take(parser).slice, "expected statement");
-      return NULL;
+    default: {
+      lou_ast_expr_t *expr = lou_parser_parse_expr(parser);
+      if (!expr) {
+        return NULL;
+      }
+      return lou_ast_stmt_new_expr(parser->mempool, expr);
+    }
   }
 }
 
