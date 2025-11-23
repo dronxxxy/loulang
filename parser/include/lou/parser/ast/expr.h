@@ -2,6 +2,7 @@
 
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
+#include "lou/parser/ast/body.h"
 
 typedef struct lou_ast_expr_t lou_ast_expr_t;
 typedef struct lou_ast_type_t lou_ast_type_t;
@@ -14,6 +15,7 @@ typedef struct {
 typedef struct {
   lou_ast_expr_func_arg_t *args;
   lou_ast_type_t *returns;
+  lou_ast_body_t *body;
 } lou_ast_expr_func_t;
 
 typedef enum {
