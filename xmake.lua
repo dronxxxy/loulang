@@ -13,7 +13,7 @@ end
 
 includes("core", "lexer", "parser")
 
-target("loulang")
+target("lou")
   set_kind("binary")
   add_includedirs("src")
   add_files("src/*.c")
