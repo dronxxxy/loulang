@@ -11,7 +11,7 @@ function project_config()
   end
 end
 
-includes("core", "lexer", "parser")
+includes("modules/core", "modules/lexer", "modules/parser")
 
 target("lou")
   set_kind("binary")
