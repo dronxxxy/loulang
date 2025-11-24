@@ -9,5 +9,15 @@ public global const main = fun () -> i32 {
 }
 
 #`
-  FIRST STAGE
+  FIRST_STAGE {
+    decl putChar: fun (u8)
+    decl main: fun () -> i32
+  }
 
+  SECOND_STAGE {
+    decl putChar: fun (u8) | extern "putChar"
+    decl main: fun () -> i32 | global fun () -> i32 {
+      ...
+    }
+  }
+`#
