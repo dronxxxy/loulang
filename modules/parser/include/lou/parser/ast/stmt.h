@@ -3,6 +3,7 @@
 #include "lou/core/mempool.h"
 
 typedef struct lou_ast_expr_t lou_ast_expr_t;
+typedef struct lou_ast_node_t lou_ast_node_t;
 
 typedef struct {
   lou_ast_expr_t *value;
@@ -11,6 +12,7 @@ typedef struct {
 typedef enum {
   LOU_AST_STMT_RETURN,
   LOU_AST_STMT_EXPR,
+  LOU_AST_STMT_NODE,
 } lou_ast_stmt_kind_t;
 
 typedef struct lou_ast_stmt_t {
@@ -19,6 +21,7 @@ typedef struct lou_ast_stmt_t {
   union {
     lou_ast_stmt_ret_t ret;
     lou_ast_expr_t *expr;
+    lou_ast_node_t *node;
   };
 } lou_ast_stmt_t;
 
@@ -26,6 +29,13 @@ static inline lou_ast_stmt_t *lou_ast_stmt_new_expr(lou_mempool_t *mempool, lou_
   lou_ast_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_ast_stmt_t);
   stmt->kind = LOU_AST_STMT_EXPR;
   stmt->expr = expr;
+  return stmt;
+}
+
+static inline lou_ast_stmt_t *lou_ast_stmt_new_node(lou_mempool_t *mempool, lou_ast_node_t *node) {
+  lou_ast_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_ast_stmt_t);
+  stmt->kind = LOU_AST_STMT_NODE;
+  stmt->node = node;
   return stmt;
 }
 

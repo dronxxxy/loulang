@@ -2,6 +2,7 @@
 #include "lou/lexer/token.h"
 #include "lou/parser/ast/stmt.h"
 #include "parse/expr.h"
+#include "parse/node.h"
 #include "parser.h"
 #include <stdio.h>
 
@@ -19,6 +20,7 @@ lou_ast_stmt_t *lou_parser_parse_stmt(lou_parser_t *parser) {
         .value = expr
       });
     }
+    LOU_PARSER_CASE_NODE: return lou_ast_stmt_new_node(parser->mempool, lou_parser_parse_node(parser));
     default: {
       lou_ast_expr_t *expr = lou_parser_parse_expr(parser);
       if (!expr) {

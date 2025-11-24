@@ -1,6 +1,9 @@
 public extern const putChar: fun (u8)
 
 public global const main = fun () -> i32 {
-  putChar(97)
+  final a: u8 = 97
+  final new_line: u8 = 97
+  putChar(a)
+  putChar(new_line)
   return 0
 }
