@@ -7,3 +7,7 @@ public global const main = fun () -> i32 {
   putChar(new_line)
   return 0
 }
+
+#`
+  FIRST STAGE
+`#

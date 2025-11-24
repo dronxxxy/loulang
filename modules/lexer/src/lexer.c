@@ -103,6 +103,11 @@ static inline void lou_lexer_skip_non_token(lou_lexer_t *lexer) {
     pos = lexer->pos;
     lexer_skip(lexer, char_is_whitespace);
     if (lou_lexer_take_if(lexer, '#')) {
+      if (lou_lexer_take_if(lexer, '`')) {
+        while (!(lou_lexer_take_if(lexer, '`') && lou_lexer_take_if(lexer, '#'))) {
+          lou_lexer_take(lexer);
+        }
+      }
       lexer_skip(lexer, char_is_not_nl);
     }
   } while (pos != lexer->pos);
