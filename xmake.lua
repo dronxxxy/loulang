@@ -11,12 +11,12 @@ function project_config()
   end
 end
 
-includes("modules/core", "modules/lexer", "modules/parser")
+includes("modules/core", "modules/lexer", "modules/parser", "modules/sema")
 
 target("lou")
   set_kind("binary")
   add_includedirs("src")
   add_files("src/*.c")
-  add_deps("louCore", "louLexer", "louParser")
+  add_deps("louCore", "louLexer", "louParser", "louSema")
   project_config() 
 
