@@ -13,9 +13,15 @@ typedef enum {
   LOU_AST_DECL_VAR,
 } lou_ast_decl_kind_t;
 
+typedef enum {
+  LOU_AST_DECL_LINK_NONE = 0,
+  LOU_AST_DECL_LINK_GLOBAL,
+  LOU_AST_DECL_LINK_EXTERN,
+} lou_ast_decl_link_kind_t;
+
 typedef struct {
   bool is_public;
-  bool is_global;
+  lou_ast_decl_link_kind_t link_kind;
   lou_ast_decl_kind_t kind;
   lou_slice_t name;
   lou_ast_type_t *type;

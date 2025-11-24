@@ -139,6 +139,7 @@ typedef struct {
 static lou_lexer_keyword_t lou_lexer_keywords[] = {
   { .name = "public", .kind = LOU_TOKEN_PUBLIC },
   { .name = "global", .kind = LOU_TOKEN_GLOBAL },
+  { .name = "extern", .kind = LOU_TOKEN_EXTERN },
   { .name = "fun", .kind = LOU_TOKEN_FUN },
   { .name = "meta", .kind = LOU_TOKEN_META },
   { .name = "const", .kind = LOU_TOKEN_CONST },

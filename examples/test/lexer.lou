@@ -1,4 +1,6 @@
+public extern const putChar: fun (u8)
+
 public global const main = fun () -> i32 {
-  super(0, 1, 2)
+  putChar(97)
   return 0
 }
