@@ -5,11 +5,11 @@
 #define START_LINE_FROM 0
 #define START_COLUMN_FROM 1
 
-static inline void lou_pos_print_content(FILE *stream, const char *ptr, size_t length) {
+static inline void lou_pos_print_content(FILE *stream, const char *ptr, size_t length, bool is_error) {
   for (size_t i = 0; i < length; i++) {
     fputc(ptr[i], stream);
     if (ptr[i] == '\n') {
-      fprintf(stream, "| ");
+      fprintf(stream, is_error ? "\033[0m| \033[31m" : "| ");
     }
   }
 }
@@ -54,10 +54,10 @@ void lou_pos_print(FILE *stream, lou_slice_t path, lou_slice_t file, lou_slice_t
   fwrite(path.ptr, 1, path.length, stderr);
   fprintf(stderr, ":%lu:%lu\n", line, column);
   fprintf(stream, "| ");
-  lou_pos_print_content(stream, file.ptr + start, highlight_begin - start);
+  lou_pos_print_content(stream, file.ptr + start, highlight_begin - start, false);
   fprintf(stream, "\033[31m");
-  lou_pos_print_content(stream, file.ptr + highlight_begin, highlight_end - highlight_begin);
+  lou_pos_print_content(stream, file.ptr + highlight_begin, highlight_end - highlight_begin, true);
   fprintf(stream, "\033[0m");
-  lou_pos_print_content(stream, file.ptr + highlight_end, end - highlight_end);
+  lou_pos_print_content(stream, file.ptr + highlight_end, end - highlight_end, false);
 }
 
