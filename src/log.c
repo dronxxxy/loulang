@@ -22,9 +22,14 @@ static void log_token(FILE *stream, va_list list) {
   lou_token_write(va_arg(list, lou_token_t *), stream);
 }
 
+static void log_size_t(FILE *stream, va_list list) {
+  fprintf(stream, "%lu", va_arg(list, size_t));
+}
+
 void log_init() {
   lou_log_register('#', log_sharp);
   lou_log_register('E', log_errno);
   lou_log_register('T', log_token);
   lou_log_register('S', log_slice);
+  lou_log_register('l', log_size_t);
 }

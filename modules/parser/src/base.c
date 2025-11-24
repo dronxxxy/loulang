@@ -16,6 +16,7 @@ lou_parser_t *lou_parser_new(lou_slice_t path) {
   parser->queue = LOU_MEMPOOL_VEC_NEW(mempool, lou_token_t);
   parser->lexer = lexer;
   parser->failed = false;
+  parser->last_line = 0;
   return parser;
 }
 

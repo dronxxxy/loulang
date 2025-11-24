@@ -25,9 +25,12 @@ lou_token_t lou_parser_take(lou_parser_t *parser) {
   if (lou_vec_len(parser->queue) != 0) {
     lou_token_t token = parser->queue[0];
     LOU_VEC_UNSHIFT(&parser->queue);
+    parser->last_line = token.line;
     return token;
   }
-  return lou_lexer_next(parser->lexer);
+  lou_token_t token = lou_lexer_next(parser->lexer);
+  parser->last_line = token.line;
+  return token;
 }
 
 lou_token_t lou_parser_peek(lou_parser_t *parser) {
@@ -122,4 +125,8 @@ bool lou_parser_peek_n(lou_parser_t *parser, size_t length, const lou_token_kind
     lou_parser_queue(parser, tokens[i]);
   }
   return result;
+}
+
+bool lou_parser_is_nl(lou_parser_t *parser) {
+  return lou_parser_peek(parser).line != parser->last_line;
 }

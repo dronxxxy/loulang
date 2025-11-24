@@ -7,6 +7,7 @@ typedef struct lou_parser_t {
   lou_mempool_t *mempool;
   lou_lexer_t *lexer;
   lou_token_t *queue;
+  size_t last_line;
   bool failed;
 } lou_parser_t;
 
@@ -19,6 +20,7 @@ bool lou_parser_take_if(lou_parser_t *parser, lou_token_kind_t kind);
 void lou_parser_skip_to(lou_parser_t *parser, lou_token_kind_t kind);
 bool lou_parser_finished(lou_parser_t *parser);
 bool lou_parser_is_list_end(lou_parser_t *parser, lou_token_kind_t kind);
+bool lou_parser_is_nl(lou_parser_t *parser);
 bool lou_parser_peek_n(lou_parser_t *parser, size_t length, const lou_token_kind_t *kinds);
 
 #define LOU_PARSER_EXPECT(PARSER, KIND) ({ \

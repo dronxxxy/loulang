@@ -12,7 +12,7 @@ lou_ast_stmt_t *lou_parser_parse_stmt(lou_parser_t *parser) {
     case LOU_TOKEN_RETURN: {
       lou_parser_take(parser);
       lou_ast_expr_t *expr = NULL;
-      if (token.line == lou_parser_peek(parser).line) {
+      if (lou_parser_is_nl(parser)) {
         expr = lou_parser_parse_expr(parser);
       }
       return lou_ast_stmt_new_ret(parser->mempool, (lou_ast_stmt_ret_t) {
