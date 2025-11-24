@@ -8,6 +8,8 @@ public global const main = fun () -> i32 {
   return 0
 }
 
+# askdjlsajdklsjal
+
 #`
   FIRST_STAGE {
     decl putChar: fun (u8)
