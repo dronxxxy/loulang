@@ -97,15 +97,28 @@ static inline void lexer_skip(lou_lexer_t *lexer, bool (*filter)(char c)) {
   }
 }
 
+static inline void lou_lexer_error(lou_lexer_t *lexer, lou_slice_t slice, const char *fmt, ...) {
+  va_list list;
+  va_start(list, fmt);
+  lou_lexer_log_error(lexer, slice, fmt, list);
+  va_end(list);
+
+  lexer->failed = true;
+}
+
 static inline void lou_lexer_skip_non_token(lou_lexer_t *lexer) {
   size_t pos;
   do {
     pos = lexer->pos;
     lexer_skip(lexer, char_is_whitespace);
+    lou_lexer_begin(lexer);
     if (lou_lexer_take_if(lexer, '#')) {
       if (lou_lexer_take_if(lexer, '`')) {
         while (!(lou_lexer_take_if(lexer, '`') && lou_lexer_take_if(lexer, '#'))) {
-          lou_lexer_take(lexer);
+          if (lou_lexer_take(lexer) == EOI) {
+            lou_lexer_error(lexer, lou_lexer_slice(lexer), "expected end of comment");
+            break;
+          }
         }
       }
       lexer_skip(lexer, char_is_not_nl);
@@ -121,15 +134,6 @@ void lou_lexer_log_error(const lou_lexer_t *lexer, lou_slice_t slice, const char
   lou_log_fmt_va(LOG_ERROR, fmt, list);
   lou_pos_print(stderr, lexer->path, lexer->content, slice);
   fprintf(stderr, "\n\n");
-}
-
-static inline void lou_lexer_error(lou_lexer_t *lexer, lou_slice_t slice, const char *fmt, ...) {
-  va_list list;
-  va_start(list, fmt);
-  lou_lexer_log_error(lexer, slice, fmt, list);
-  va_end(list);
-
-  lexer->failed = true;
 }
 
 static inline lou_token_t lou_lexer_new_simple(lou_lexer_t *lexer, lou_token_kind_t kind) {
