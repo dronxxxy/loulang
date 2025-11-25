@@ -16,13 +16,14 @@ includes(
   "modules/lexer",
   "modules/parser",
   "modules/sema",
-  "modules/hir"
+  "modules/hir",
+  "modules/lir"
 )
 
 target("lou")
   set_kind("binary")
   add_includedirs("src")
   add_files("src/*.c")
-  add_deps("louCore", "louLexer", "louParser", "louSema", "louHir")
+  add_deps("louCore", "louLexer", "louParser", "louSema", "louHir", "louLir")
   project_config() 
 
