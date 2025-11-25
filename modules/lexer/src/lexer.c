@@ -155,6 +155,7 @@ static lou_lexer_keyword_t lou_lexer_keywords[] = {
   { .name = "final", .kind = LOU_TOKEN_FINAL },
   { .name = "var", .kind = LOU_TOKEN_VAR },
   { .name = "return", .kind = LOU_TOKEN_RETURN },
+  { .name = "if", .kind = LOU_TOKEN_IF },
 };
 
 static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
