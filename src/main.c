@@ -104,7 +104,6 @@ void build_lir(lou_mempool_t *mempool) {
 */
 
 int main(int argc, char** argv) {
-  lir_test();
   log_init();
 
   lou_mempool_t *mempool = lou_mempool_new();

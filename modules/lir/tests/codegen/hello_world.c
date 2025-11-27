@@ -1,38 +1,8 @@
-#include "builder.h"
-#include "codegen/x86/x86.h"
-#include "elf/dump64.h"
-#include "lou/core/mempool.h"
-#include "lou/core/slice.h"
-#include "lou/core/vec.h"
-#include <assert.h>
-#include <stdio.h>
+#include "hello_world.h"
+#include "lir/elf/builder.h"
+#include "x86.h"
 
-elf_builder_t *elf_builder_new(elf_info_t info) {
-  lou_mempool_t *mempool = lou_mempool_new();
-  elf_builder_t *builder = LOU_MEMPOOL_ALLOC(mempool, elf_builder_t);
-  builder->stable = LOU_MEMPOOL_VEC_NEW(mempool, elf_section_t);
-  builder->ptable = LOU_MEMPOOL_VEC_NEW(mempool, elf_program_t);
-  builder->mempool = mempool;
-  builder->info = info;
-  return builder;
-}
-
-void elf_builder_dump(const elf_builder_t *builder, FILE *stream) {
-  assert(builder->info.bits == ELF_BITS_64);
-  elf_builder_dump64(builder, stream);
-}
-
-void elf_builder_free(elf_builder_t *builder) {
-  lou_mempool_free(builder->mempool);
-}
-
-void elf_builder_add_program(elf_builder_t *builder, elf_program_t program) {
-  *LOU_VEC_PUSH(&builder->ptable) = program;
-}
-
-
-// this is so bad to have test here but i just wanna now)
-void lir_test() {
+void test_hello_world() {
   size_t vma = 0x400000;
   x86_builder_t *x86_builder = x86_builder_new((x86_machine_t) {
     .code = X86_CODE64,
@@ -44,7 +14,7 @@ void lir_test() {
   x86_label_t *hello_world = x86_builder_label_create(x86_builder);
   const char hello_world_data[] = "Hello, world!\n";
   x86_builder_movlr(x86_builder, hello_world, X86_REG_RSI);
-  x86_builder_movir(x86_builder, sizeof(hello_world_data), X86_REG_RDX);
+  x86_builder_movir(x86_builder, sizeof(hello_world_data) - 1, X86_REG_RDX);
   x86_builder_syscall(x86_builder);
 
   x86_builder_movir(x86_builder, 60, X86_REG_RAX);
@@ -68,9 +38,8 @@ void lir_test() {
       .buf = x86_builder_buffer(x86_builder),
     },
   });
-  FILE *file = fopen("build/out", "wb");
-  elf_builder_dump(builder, file);
-  fclose(file);
+  elf_builder_dump(builder, stdout);
   elf_builder_free(builder);
   x86_builder_free(x86_builder);
 }
+
