@@ -2,6 +2,7 @@
 
 #include "lou/core/mempool.h"
 #include "lou/hir/const.h"
+#include "lou/hir/mutability.h"
 
 typedef struct lou_hir_decl_t lou_hir_decl_t;
 typedef struct lou_hir_const_t lou_hir_const_t;
@@ -45,3 +46,4 @@ static inline lou_hir_value_t *lou_hir_value_new_decl(lou_mempool_t *mempool, lo
 }
 
 lou_hir_type_t *lou_hir_value_typeof(lou_hir_value_t *value);
+lou_hir_mutability_t lou_hir_value_mutability(lou_hir_value_t *value);
