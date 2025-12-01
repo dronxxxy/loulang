@@ -5,11 +5,19 @@
 #define START_LINE_FROM 0
 #define START_COLUMN_FROM 1
 
+#define ERROR_START_COLOR "\033[31m"
+#define START_COLOR "\033[94m"
+#define PRINT_START " \033[90m| "
+#define PRINT_BEGIN PRINT_START START_COLOR 
+
 static inline void lou_pos_print_content(FILE *stream, const char *ptr, size_t length, bool is_error) {
+  if (!is_error) {
+    fprintf(stream, START_COLOR);
+  }
   for (size_t i = 0; i < length; i++) {
     fputc(ptr[i], stream);
     if (ptr[i] == '\n') {
-      fprintf(stream, is_error ? "\033[0m| \033[31m" : "| ");
+      fprintf(stream, is_error ? PRINT_START ERROR_START_COLOR : PRINT_BEGIN);
     }
   }
 }
@@ -53,11 +61,11 @@ void lou_pos_print(FILE *stream, lou_slice_t path, lou_slice_t file, lou_slice_t
   fprintf(stderr, "at ");
   fwrite(path.ptr, 1, path.length, stderr);
   fprintf(stderr, ":%lu:%lu\n", line, column);
-  fprintf(stream, "| ");
+  fprintf(stream, PRINT_BEGIN);
   lou_pos_print_content(stream, file.ptr + start, highlight_begin - start, false);
-  fprintf(stream, "\033[31m");
+  fprintf(stream, ERROR_START_COLOR);
   lou_pos_print_content(stream, file.ptr + highlight_begin, highlight_end - highlight_begin, true);
-  fprintf(stream, "\033[0m");
+  fprintf(stream, START_COLOR);
   lou_pos_print_content(stream, file.ptr + highlight_end, end - highlight_end, false);
 }
 
