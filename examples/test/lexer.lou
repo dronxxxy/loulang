@@ -1,30 +1,8 @@
-public meta Fun = import("typings").Fun
+meta Fun = import("@meta/typings").Fun
 
-public var putChar = extern(Fun([u8, i32], i32))
+const putString = extern("puts", Fun([u8], null))
 
-public const main = global("main", fun () -> i32 {
-  if false {
-    return 1 
-  }
-  final a: u8 = 97
-  final new_line: u8 = 97
-  putChar(a)
-  putChar(new_line)
+const main = global("main", fun () -> i32 {
+  putChar("super\0")
   return 0
 })
-
-# askdjlsajdklsjal
-
-#`
-  FIRST_STAGE {
-    decl putChar: fun (u8)
-    decl main: fun () -> i32
-  }
-
-  SECOND_STAGE {
-    decl putChar: fun (u8) | extern "putChar"
-    decl main: fun () -> i32 | global fun () -> i32 {
-      ...
-    }
-  }
-`#

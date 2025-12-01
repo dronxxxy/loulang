@@ -13,6 +13,7 @@ typedef enum {
   LOU_TOKEN_COMMA,
   LOU_TOKEN_FUNCTION_RETURNS,
   LOU_TOKEN_ASSIGN,
+  LOU_TOKEN_DOT,
 
   // Math
   LOU_TOKEN_MINUS,
@@ -20,8 +21,6 @@ typedef enum {
   // Keywords
   LOU_TOKEN_FUN,
   LOU_TOKEN_PUBLIC,
-  LOU_TOKEN_GLOBAL,
-  LOU_TOKEN_EXTERN,
   LOU_TOKEN_META, LOU_TOKEN_CONST, LOU_TOKEN_FINAL, LOU_TOKEN_VAR,
   LOU_TOKEN_RETURN,
   LOU_TOKEN_IF,
@@ -31,6 +30,7 @@ typedef enum {
 
   // Complex
   LOU_TOKEN_INTEGER,
+  LOU_TOKEN_STRING,
 
   // Internal
   LOU_TOKEN_EOI, LOU_TOKEN_FAILED,
@@ -43,6 +43,7 @@ typedef struct {
 
   union {
     uint64_t integer;
+    lou_slice_t string;
   };
 } lou_token_t;
 
@@ -51,6 +52,15 @@ static inline lou_token_t lou_token_new_simple(lou_slice_t slice, size_t line, l
     .slice = slice,
     .line = line,
     .kind = kind,
+  };
+}
+
+static inline lou_token_t lou_token_new_string(lou_slice_t slice, size_t line, lou_slice_t string) {
+  return (lou_token_t) {
+    .slice = slice,
+    .line = line,
+    .kind = LOU_TOKEN_INTEGER,
+    .string = string,
   };
 }
 

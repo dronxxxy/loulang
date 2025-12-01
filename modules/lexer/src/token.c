@@ -18,11 +18,10 @@ void lou_token_write(const lou_token_t *token, FILE *stream) {
     WRITE_TOKEN(FUNCTION_RETURNS);
     WRITE_TOKEN(ASSIGN);
     WRITE_TOKEN(COMMA);
+    WRITE_TOKEN(DOT);
     WRITE_TOKEN(MINUS);
     WRITE_TOKEN(FUN);
     WRITE_TOKEN(PUBLIC);
-    WRITE_TOKEN(GLOBAL);
-    WRITE_TOKEN(EXTERN);
     WRITE_TOKEN(META);
     WRITE_TOKEN(CONST);
     WRITE_TOKEN(FINAL);
@@ -30,6 +29,7 @@ void lou_token_write(const lou_token_t *token, FILE *stream) {
     WRITE_TOKEN(RETURN);
     WRITE_TOKEN(IF);
     WRITE_TOKEN(IDENT);
+    WRITE_TOKEN(STRING);
     WRITE_TOKEN(INTEGER);
     WRITE_TOKEN(EOI);
     WRITE_TOKEN(FAILED);

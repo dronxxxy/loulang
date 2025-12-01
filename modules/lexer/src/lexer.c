@@ -5,6 +5,7 @@
 #include "lou/core/mempool.h"
 #include "lou/core/pos_print.h"
 #include "lou/core/slice.h"
+#include "lou/lexer/token.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -147,8 +148,6 @@ typedef struct {
 
 static lou_lexer_keyword_t lou_lexer_keywords[] = {
   { .name = "public", .kind = LOU_TOKEN_PUBLIC },
-  { .name = "global", .kind = LOU_TOKEN_GLOBAL },
-  { .name = "extern", .kind = LOU_TOKEN_EXTERN },
   { .name = "fun", .kind = LOU_TOKEN_FUN },
   { .name = "meta", .kind = LOU_TOKEN_META },
   { .name = "const", .kind = LOU_TOKEN_CONST },
@@ -171,6 +170,11 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case ':': return lou_lexer_new_simple(lexer, LOU_TOKEN_COLON);
     case '=': return lou_lexer_new_simple(lexer, LOU_TOKEN_ASSIGN);
     case ',': return lou_lexer_new_simple(lexer, LOU_TOKEN_COMMA);
+    case '.': return lou_lexer_new_simple(lexer, LOU_TOKEN_DOT);
+    case '"':
+      lexer_skip(lexer, char_is_not_string_end);
+      lou_lexer_take(lexer);
+      return lou_token_new_string(lou_lexer_slice(lexer), lexer->start_line, lou_lexer_slice(lexer));
     case EOI: return lou_lexer_new_simple(lexer, LOU_TOKEN_EOI);
     case '-':
       if (lou_lexer_take_if(lexer, '>')) {

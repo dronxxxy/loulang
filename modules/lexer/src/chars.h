@@ -18,6 +18,10 @@ static inline bool char_is_ident_start(char c) {
     c == '$';
 }
 
+static inline bool char_is_not_string_end(char c) {
+  return c != '\"';
+}
+
 static inline bool char_is_not_nl(char c) {
   return c != '\n';
 }
