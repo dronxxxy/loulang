@@ -3,6 +3,6 @@ meta Fun = import("@meta/typings").Fun
 const putString = extern("puts", Fun([u8], null))
 
 const main = global("main", fun () -> i32 {
-  putChar("super\0")
+  putString("super\0")
   return 0
 })
