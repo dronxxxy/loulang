@@ -1,0 +1,17 @@
+meta (@Select, @Case) = import("@meta/conditional").(@Select, @Case)
+meta (@Arch, ArchKind) = import("@meta/machine").(@Arch, ArchKind)
+
+const Arch = @Arch()
+meta (write, StdOut) = @import(@Select([
+  Case($arch.kind == ArchKind.x86, "linux/syscalls:x86"),
+  Case($arch.kind == ArchKind.arm, "linux/syscalls:arm"),
+  Case($arch.kind == ArchKind.aarch64, "linux/syscalls:aarch64"),
+])).(write, StdOut)
+
+const putChar = extern("putchar", Fun([u8], null))
+
+global("main", fun () -> i32 {
+  write(StdOut, "superDuper", 10)
+  return 0
+})
+
