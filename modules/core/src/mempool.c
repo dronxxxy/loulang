@@ -2,6 +2,7 @@
 #include "lou/core/arena.h"
 #include "lou/core/vec.h"
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct lou_mempool_t {
   void **vecs;
@@ -22,6 +23,12 @@ lou_mempool_t *lou_mempool_new() {
 
 void *lou_mempool_alloc(lou_mempool_t *mempool, size_t size, size_t alignment) {
   return lou_arena_alloc(mempool->arena, size, alignment);
+}
+
+char *lou_mempool_slice_to_cstr(lou_mempool_t *mempool, lou_slice_t slice) {
+  char *result = lou_mempool_alloc(mempool, slice.length + 1, 1);
+  memcpy(result, slice.ptr, slice.length + 1);
+  return result;
 }
 
 static inline void lou_mempool_relink(lou_mempool_t *mempool) {

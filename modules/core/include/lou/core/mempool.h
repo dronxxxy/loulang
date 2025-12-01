@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lou/core/slice.h"
 #include <stddef.h>
 
 typedef struct lou_mempool_t lou_mempool_t;
@@ -9,6 +10,7 @@ lou_mempool_t *lou_mempool_new();
 void lou_mempool_free(lou_mempool_t *mempool);
 
 void *lou_mempool_alloc(lou_mempool_t *mempool, size_t size, size_t alignment);
+char *lou_mempool_slice_to_cstr(lou_mempool_t *mempool, lou_slice_t slice);
 
 void *lou_mempool_vec_new_with_capacity(lou_mempool_t *mempool, size_t size, size_t capacity);
 void *lou_mempool_vec_new(lou_mempool_t *mempool, size_t size);

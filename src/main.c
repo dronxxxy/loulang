@@ -1,6 +1,3 @@
-#include "lir/const.h"
-#include "lir/node.h"
-#include "lir/type.h"
 #include "log.h"
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
@@ -13,7 +10,25 @@
 #include "lou/hir/value.h"
 #include "lou/sema/sema.h"
 #include "lou/hir/hir.h"
-#include "lir/lir.h"
+#include "lou/llvm/module.h"
+#include <string.h>
+
+void call_putchar(lou_mempool_t *mempool, lou_hir_stmt_t ***stmts, lou_hir_decl_t *put_char, char c) {
+  lou_hir_type_t *type_u8 = lou_hir_type_new_integer(mempool, (lou_hir_type_int_t) {
+    .size = LOU_HIR_INT_8,
+    .is_signed = false,
+  });
+  *LOU_VEC_PUSH(stmts) = lou_hir_stmt_new_call(mempool, (lou_hir_stmt_call_t) {
+    .output = NULL,
+    .callable = lou_hir_value_new_decl(mempool, put_char),
+    .args = ({
+      lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_value_t*);
+      *LOU_VEC_PUSH(&args) = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_u8, (lou_hir_const_int_t) { c }));
+      args;
+    }),
+  });
+
+}
 
 lou_hir_t *build_hir(lou_mempool_t *mempool) {
   lou_hir_type_t *type_u8 = lou_hir_type_new_integer(mempool, (lou_hir_type_int_t) {
@@ -28,19 +43,18 @@ lou_hir_t *build_hir(lou_mempool_t *mempool) {
 
   lou_hir_t *hir = lou_hir_new(mempool);
   lou_hir_decl_t *put_char = lou_hir_decl_new(mempool, LOU_HIR_MUTABLE, lou_hir_type_new_func(mempool,
-    (lou_hir_type_func_t) {
-      .args = ({
-        lou_hir_type_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*);
-        *LOU_VEC_PUSH(&args) = type_u8;
-        args;
-      }),
-      .returns = NULL,
-    })
-  );
+  (lou_hir_type_func_t) {
+    .args = ({
+      lou_hir_type_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*);
+      *LOU_VEC_PUSH(&args) = type_u8;
+      args;
+    }),
+    .returns = NULL,
+  }));
   lou_hir_decl_add(hir, put_char);
-  lou_hir_decl_init_extern(put_char, (lou_hir_decl_extern_t) {
+  lou_hir_decl_init(put_char, lou_hir_const_new_extern(mempool, put_char->type, (lou_hir_const_extern_t) {
     .name = lou_slice_from_cstr("putchar"),
-  });
+  }));
 
   lou_hir_decl_t *main = lou_hir_decl_new(mempool, LOU_HIR_MUTABLE, lou_hir_type_new_func(mempool, (lou_hir_type_func_t) {
     .args = ({
@@ -51,63 +65,38 @@ lou_hir_t *build_hir(lou_mempool_t *mempool) {
     .returns = NULL,
   }));
   lou_hir_decl_add(hir, main);
-  lou_hir_func_t *main_func = lou_hir_func_new(mempool);
+
+  lou_hir_func_t *main_func = lou_hir_func_new(mempool, (lou_opt_slice_t){ true, lou_slice_from_cstr("main") });
   lou_hir_func_init(main_func, lou_hir_code_new(mempool, ({
     lou_hir_stmt_t **stmts = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_stmt_t*);
-    *LOU_VEC_PUSH(&stmts) = lou_hir_stmt_new_call(mempool, (lou_hir_stmt_call_t) {
-      .output = NULL,
-      .callable = lou_hir_value_new_decl(mempool, put_char),
-      .args = ({
-        lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_value_t*);
-        *LOU_VEC_PUSH(&args) = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_u8, (lou_hir_const_int_t) { 97 }));
-        args;
-      }),
-    });
+    const char *message = "hello, world!\n";
+    for (size_t i = 0; i < strlen(message); i++) {
+      call_putchar(mempool, &stmts, put_char, message[i]);
+    }
     *LOU_VEC_PUSH(&stmts) = lou_hir_stmt_new_ret(mempool, (lou_hir_stmt_ret_t) {
       .value = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, (lou_hir_const_int_t) { 0 })),
     });
     stmts;
   })));
-  lou_hir_decl_init_global(main, (lou_hir_decl_global_t) {
-    .name = {
-      .has_value = true,
-      .value = lou_slice_from_cstr("main"),
-    },
-    .initializer = lou_hir_const_new_func(mempool,
+  lou_hir_decl_init(main, lou_hir_const_new_func(mempool,
       lou_hir_type_new_func(mempool, (lou_hir_type_func_t) {
         .args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*),
         .returns = type_i32,
       }),
       main_func
     )
-  });
+  );
   return hir;
 }
-
-/*
-void build_lir(lou_mempool_t *mempool) {
-  lir_t *lir = lir_new(mempool);
-  lir_type_t *type_u8 = lir_type_new_int(mempool, LIR_TYPE_INT_8, false);
-  lir_node_t *put_char = lir_node_new_extern(mempool, lir_type_new_func(mempool, ({
-    lir_type_t **type = LOU_MEMPOOL_VEC_NEW(mempool, lir_type_t*);
-    *LOU_VEC_PUSH(&type) = type_u8;
-    type;
-  }), NULL), lou_slice_from_cstr("putchar"));
-  lir_add_extern(lir, put_char);
-
-  lir_node_t *main = lir_node_new_func(mempool);
-  lir_node_t *a = lir_node_new_const(mempool, lir_const_new_int(mempool, type_u8, 97));
-  lir_node_t *call_put_char = lir_node_new_call(mempool, main, main, put_char, a, NULL);
-  lir_node_new_return(mempool, call_put_char, call_put_char);
-  lir_add_func(lir, main);
-}
-*/
 
 int main(int argc, char** argv) {
   log_init();
 
   lou_mempool_t *mempool = lou_mempool_new();
-  build_hir(mempool);
+  lou_llvm_module_t *llvm = lou_llvm_module_new(build_hir(mempool));
+  lou_llvm_module_emit(llvm);
+  lou_llvm_module_dump(llvm, "build/out");
+  lou_llvm_module_free(llvm);
   lou_mempool_free(mempool);
 
   lou_sema_t *sema = lou_sema_new(lou_slice_from_cstr("./examples/test/lexer.lou"));
