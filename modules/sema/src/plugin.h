@@ -23,3 +23,12 @@ static inline lou_sema_plugin_t *lou_sema_plugin_new(lou_mempool_t *mempool, lou
 }
 
 bool lou_sema_plugin_ctx_check_args_count(lou_sema_plugin_call_ctx_t *ctx, size_t length);
+
+#define LOU_SEMA_PLUGIN_EXPECT_ARG(NUMBER, CHECK, WHAT) ({ \
+  typeof(CHECK(ctx->args[NUMBER])) __value = CHECK(ctx->args[NUMBER]); \
+  if (!__value) { \
+    lou_sema_err(ctx->sema, ctx->arg_slices[NUMBER], "expected " WHAT " got #v", ctx->args[NUMBER]); \
+    return NULL; \
+  }; \
+  __value; \
+})
