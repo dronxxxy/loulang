@@ -32,6 +32,7 @@ typedef struct {
     lou_sema_plugin_val_constraint_t global_decl;
   };
 } lou_sema_plugin_constraint_t;
+// TODO: add constraints
 
 typedef lou_sema_value_t *(*lou_sema_plugin_func_t)(lou_sema_plugin_call_ctx_t *ctx);
 
