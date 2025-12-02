@@ -33,9 +33,12 @@ bool lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
   }
   *LOU_VEC_PUSH(&sema->node_stack) = node;
   switch (node->kind) {
-    case LOU_AST_NODE_DECL:
-      lou_sema_init_decl(node->decl.sema, lou_sema_analyze_expr(sema, node->decl.initializer));
+    case LOU_AST_NODE_DECL: {
+      lou_sema_type_t *type = node->decl.type ? lou_sema_analyze_type(sema, node->decl.type) : NULL;
+      // TODO: check types are equals
+      lou_sema_init_decl(node->decl.sema, lou_sema_analyze_expr(sema, node->decl.initializer, lou_sema_expr_ctx_new(type)));
       break;
+    }
   }
   return true;
 }

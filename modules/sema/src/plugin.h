@@ -3,12 +3,35 @@
 #include "lou/core/slice.h"
 #include "sema.h"
 
+typedef struct lou_sema_type_t lou_sema_type_t;
+
 typedef struct {
   lou_sema_t *sema;
   lou_sema_value_t **args;
   lou_slice_t *arg_slices;
   lou_slice_t slice;
 } lou_sema_plugin_call_ctx_t;
+
+typedef enum {
+  LOU_SEMA_PLUGIN_CONSTRAINT_NONE,
+  LOU_SEMA_PLUGIN_CONSTRAINT_TYPE,
+  LOU_SEMA_PLUGIN_CONSTRAINT_CONST,
+  LOU_SEMA_PLUGIN_CONSTRAINT_GLOBAL_DECL,
+} lou_sema_plugin_constraint_kind_t;
+
+typedef struct {
+  lou_sema_type_t *type;
+} lou_sema_plugin_val_constraint_t;
+
+typedef struct {
+  lou_sema_plugin_constraint_kind_t kind;
+
+  union {
+    lou_sema_type_t *type;
+    lou_sema_plugin_val_constraint_t constant;
+    lou_sema_plugin_val_constraint_t global_decl;
+  };
+} lou_sema_plugin_constraint_t;
 
 typedef lou_sema_value_t *(*lou_sema_plugin_func_t)(lou_sema_plugin_call_ctx_t *ctx);
 

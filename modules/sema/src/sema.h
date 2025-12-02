@@ -3,6 +3,7 @@
 #include "lou/core/mempool.h"
 #include "lou/parser/ast/node.h"
 #include "lou/parser/parser.h"
+#include "value.h"
 #include <stdbool.h>
 
 typedef enum {
@@ -16,15 +17,23 @@ typedef struct lou_sema_t lou_sema_t;
 typedef struct lou_sema_plugin_t lou_sema_plugin_t;
 typedef struct lou_sema_value_t lou_sema_value_t;
 
+typedef struct { } lou_sema_stack_frame_t;
+
 typedef struct lou_sema_decl_t {
   lou_sema_t *in;
   bool is_public;
   lou_slice_t name;
+  lou_sema_type_t *type;
   lou_sema_decl_kind_t kind;
 
   lou_ast_node_t *prefetch_node;
   lou_sema_value_t *value;
+  lou_sema_stack_frame_t *stack_frame;
 } lou_sema_decl_t;
+
+typedef struct {
+  lou_sema_decl_t **decls;
+} lou_sema_scope_t;
 
 typedef struct lou_sema_t {
   lou_parser_t *parser;
@@ -34,6 +43,7 @@ typedef struct lou_sema_t {
   
   lou_ast_node_t **node_stack;
   lou_sema_decl_t **global_decls;
+  lou_sema_scope_t **scopes;
 } lou_sema_t;
 
 void lou_sema_init_decl(lou_sema_decl_t *decl, lou_sema_value_t *value);
@@ -49,3 +59,7 @@ lou_sema_decl_t *lou_sema_add_decl(
 void lou_sema_err(lou_sema_t *sema, lou_slice_t slice, const char *fmt, ...);
 lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);
 lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_slice_t slice, lou_slice_t *arg_slices, lou_sema_value_t **args);
+lou_sema_type_t *lou_sema_expect_type(lou_sema_t *sema, lou_slice_t at, lou_sema_value_t *value);
+
+lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema);
+

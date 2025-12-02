@@ -1,11 +1,11 @@
 #include "sema.h"
 #include "analyze/node.h"
-#include "lou/core/assertions.h"
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
 #include "lou/core/vec.h"
 #include "lou/parser/ast/decl.h"
 #include "plugin.h"
+#include "type.h"
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -75,4 +75,19 @@ lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plug
     .arg_slices = arg_slices,
   };
   return plugin->func(&ctx);
+}
+
+lou_sema_type_t *lou_sema_expect_type(lou_sema_t *sema, lou_slice_t at, lou_sema_value_t *value) {
+  if (value->kind != LOU_SEMA_VALUE_TYPE) {
+    lou_sema_err(sema, at, "expected type got #v", value);
+    return NULL;
+  }
+  return value->type;
+}
+
+lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema) {
+  return lou_sema_type_new_integer(sema->mempool, (lou_sema_type_int_t) {
+    .size = LOU_SEMA_INT_32,
+    .is_signed = true,
+  });
 }
