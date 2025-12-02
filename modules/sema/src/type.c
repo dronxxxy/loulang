@@ -1,4 +1,40 @@
 #include "type.h"
+#include "lou/core/assertions.h"
+#include "lou/core/log.h"
+#include "lou/core/vec.h"
+#include <stdio.h>
+
+void lou_sema_type_print(FILE *stream, lou_sema_type_t *type) {
+  switch (type->kind) {
+    case LOU_SEMA_TYPE_INTEGER:
+      fprintf(stream, type->integer.is_signed ? "i" : "u");
+      switch (type->integer.size) {
+        case LOU_SEMA_INT_8: fprintf(stream, "8"); return;
+        case LOU_SEMA_INT_16: fprintf(stream, "16"); return;
+        case LOU_SEMA_INT_32: fprintf(stream, "32"); return;
+        case LOU_SEMA_INT_64: fprintf(stream, "64"); return;
+      }
+      break;
+    case LOU_SEMA_TYPE_FUNCTION:
+      fprintf(stream, "@fun([");
+      for (size_t i = 0; i < lou_vec_len(type->func.args); i++) {
+        lou_log_puts(stream, i == 0 ? "#T" : ", #T", type->func.args[i]);
+      }
+      fprintf(stream, "]");
+      if (type->func.returns) {
+        lou_log_puts(stream, ", #T", type->func.returns);
+      }
+      fprintf(stream, ")");
+      return;
+    case LOU_SEMA_TYPE_STRING:
+      fprintf(stream, "string");
+      return;
+    case LOU_SEMA_TYPE_POINTER:
+      lou_log_puts(stream, "@ptr(#T)", type->pointer_to);
+      return;
+  }
+  UNREACHABLE();
+}
 
 lou_sema_type_t *lou_sema_type_new_string(lou_mempool_t *mempool) {
   lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);

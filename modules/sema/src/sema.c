@@ -7,6 +7,7 @@
 #include "plugin.h"
 #include "scope.h"
 #include "type.h"
+#include "value.h"
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -79,14 +80,6 @@ lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plug
   return plugin->func(&ctx);
 }
 
-lou_sema_type_t *lou_sema_expect_type(lou_sema_t *sema, lou_slice_t at, lou_sema_value_t *value) {
-  if (value->kind != LOU_SEMA_VALUE_TYPE) {
-    lou_sema_err(sema, at, "expected type got #v", value);
-    return NULL;
-  }
-  return value->type;
-}
-
 lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema) {
   return lou_sema_type_new_integer(sema->mempool, (lou_sema_type_int_t) {
     .size = LOU_SEMA_INT_32,
@@ -103,8 +96,12 @@ void lou_sema_pop_scope_frame(lou_sema_t *sema) {
 }
 
 void lou_sema_push_scope(lou_sema_t *sema) {
-  assert(lou_vec_len(sema->scope_frames));
+  assert(lou_vec_len(sema->scope_frames) > 0);
   lou_sema_scope_add(*LOU_VEC_LAST(sema->scope_frames));
 }
 
-void lou_sema_pop_scope(lou_sema_t *sema);
+void lou_sema_pop_scope(lou_sema_t *sema) {
+  assert(lou_vec_len(sema->scope_frames) > 0);
+  lou_sema_scope_add(*LOU_VEC_LAST(sema->scope_frames));
+}
+

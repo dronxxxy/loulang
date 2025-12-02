@@ -1,7 +1,7 @@
 #include "log.h"
 #include "lou/core/log.h"
 #include "lou/lexer/token.h"
-#include "lou/sema/value.h"
+#include "lou/sema/log.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,10 +31,6 @@ static void log_size_t(FILE *stream, va_list list) {
   fprintf(stream, "%lu", va_arg(list, size_t));
 }
 
-static void log_sema_value(FILE *stream, va_list list) {
-  lou_sema_value_print(stream, va_arg(list, lou_sema_value_t *));
-}
-
 void log_init() {
   lou_log_register('#', log_sharp);
   lou_log_register('E', log_errno);
@@ -42,5 +38,5 @@ void log_init() {
   lou_log_register('S', log_slice);
   lou_log_register('s', log_cstr);
   lou_log_register('l', log_size_t);
-  lou_log_register('v', log_sema_value);
+  lou_sema_init_log();
 }

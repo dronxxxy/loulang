@@ -1,7 +1,6 @@
 #include "const.h"
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
-#include "lou/sema/value.h"
 #include "plugin.h"
 #include "sema.h"
 #include "type.h"
