@@ -1,8 +1,8 @@
-meta Fun = import("@meta/typings").Fun
+meta @fun = @import("@meta/typings").@fun
 
-const putString = extern("puts", Fun([u8], null))
+const putString = @extern("puts", @fun([u8], null))
 
-const main = global("main", fun () -> i32 {
+const main = @global("main", fun () -> i32 {
   putString("super\0")
   return 0
 })

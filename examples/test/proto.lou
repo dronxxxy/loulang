@@ -1,5 +1,5 @@
-meta (@Select, @Case) = import("@meta/conditional").(@Select, @Case)
-meta (@Arch, ArchKind) = import("@meta/machine").(@Arch, ArchKind)
+meta (@Select, @Case) = @import("@meta/conditional").(@Select, @Case)
+meta (@Arch, ArchKind) = @import("@meta/machine").(@Arch, ArchKind)
 
 const Arch = @Arch()
 meta (write, StdOut) = @import(@Select([

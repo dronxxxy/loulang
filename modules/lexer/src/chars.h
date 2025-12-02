@@ -15,7 +15,7 @@ static inline bool char_is_ident_start(char c) {
     (c >= 'a' && c <= 'z') || 
     (c >= 'A' && c <= 'Z') ||
     c == '_' ||
-    c == '$';
+    c == '@';
 }
 
 static inline bool char_is_not_string_end(char c) {
