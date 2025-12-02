@@ -1,17 +1,44 @@
-meta (@Select, @Case) = @import("@meta/conditional").(@Select, @Case)
+# ------------------------------------
+meta lou = @__import("@meta/internals") # import is built in compiler
+meta @undefined = @import("@meta/undefined").@undefined # import is built in compiler
+
+const @import = fun (var context: lou.Context) -> (lou.Value, bool) {
+  if !context.shouldBeNArgs(1) {
+    return @undefined(), false
+  }
+
+  final (path, ok) = context.arg(0).shouldBeString()
+  if !ok {
+    return @undefined(), false
+  } 
+
+  final (module, ok) = context.loadModule(path)
+  if !ok {
+    return @undefined(), false
+  } 
+
+  return lou.value.newModule(module), true
+}
+# ------------------------------------
+
+meta (@if, @case) = @import("@meta/conditional").(@if, @case)
 meta (@Arch, ArchKind) = @import("@meta/machine").(@Arch, ArchKind)
+meta String = @import("string").String
 
 const Arch = @Arch()
-meta (write, StdOut) = @import(@Select([
-  Case($arch.kind == ArchKind.x86, "linux/syscalls:x86"),
-  Case($arch.kind == ArchKind.arm, "linux/syscalls:arm"),
-  Case($arch.kind == ArchKind.aarch64, "linux/syscalls:aarch64"),
-])).(write, StdOut)
+meta putS = @import(@if([
+  @case(Arch.kind == ArchKind.x86,     "linux/libc:x86"),
+  @case(Arch.kind == ArchKind.arm,     "linux/libc:arm"),
+  @case(Arch.kind == ArchKind.aarch64, "linux/libc:aarch64"),
+])).puts
 
-const putChar = extern("putchar", Fun([u8], null))
+const printString = fun (var str: String) {
+  str.push('\0');
+  putS.raw();
+}
 
 global("main", fun () -> i32 {
-  write(StdOut, "superDuper", 10)
+  printString("hello, world!\n");
   return 0
 })
 
