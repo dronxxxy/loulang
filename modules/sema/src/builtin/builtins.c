@@ -2,6 +2,7 @@
 #include "builtin/extern.h"
 #include "builtin/global.h"
 #include "builtin/fun.h"
+#include "builtin/ptr.h"
 #include "lou/core/slice.h"
 #include "plugin.h"
 #include "sema.h"
@@ -22,6 +23,13 @@ static inline void lou_sema_add_int(lou_sema_t *sema, const char *name, lou_sema
   }));
 }
 
+static inline void lou_sema_add_plugin(lou_sema_t *sema, const char *name, lou_sema_plugin_t *plugin) {
+  lou_sema_init_decl(
+    lou_sema_add_decl(sema, false, lou_slice_from_cstr(name), LOU_SEMA_DECL_META, NULL),
+    lou_sema_value_new_plugin(sema->mempool, plugin)
+  );
+}
+
 void lou_sema_apply_builtins(lou_sema_t *sema) {
   lou_sema_add_int(sema, "u8", LOU_SEMA_INT_8, false);
   lou_sema_add_int(sema, "i8", LOU_SEMA_INT_8, true);
@@ -32,16 +40,8 @@ void lou_sema_apply_builtins(lou_sema_t *sema) {
   lou_sema_add_int(sema, "u64", LOU_SEMA_INT_64, false);
   lou_sema_add_int(sema, "i64", LOU_SEMA_INT_64, true);
 
-  lou_sema_init_decl(
-    lou_sema_add_decl(sema, false, lou_slice_from_cstr("@global"), LOU_SEMA_DECL_META, NULL),
-    lou_sema_value_new_plugin(sema->mempool, lou_sema_plugin_new(sema->mempool, lou_global_builtin))
-  );
-  lou_sema_init_decl(
-    lou_sema_add_decl(sema, false, lou_slice_from_cstr("@extern"), LOU_SEMA_DECL_META, NULL),
-    lou_sema_value_new_plugin(sema->mempool, lou_sema_plugin_new(sema->mempool, lou_extern_builtin))
-  );
-  lou_sema_init_decl(
-    lou_sema_add_decl(sema, false, lou_slice_from_cstr("@procFun"), LOU_SEMA_DECL_META, NULL),
-    lou_sema_value_new_plugin(sema->mempool, lou_sema_plugin_new(sema->mempool, lou_fun_builtin))
-  );
+  lou_sema_add_plugin(sema, "@global", lou_sema_plugin_new(sema->mempool, lou_global_builtin));
+  lou_sema_add_plugin(sema, "@extern", lou_sema_plugin_new(sema->mempool, lou_extern_builtin));
+  lou_sema_add_plugin(sema, "@procFun", lou_sema_plugin_new(sema->mempool, lou_fun_builtin));
+  lou_sema_add_plugin(sema, "@ptr", lou_sema_plugin_new(sema->mempool, lou_ptr_builtin));
 }
