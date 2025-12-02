@@ -67,5 +67,6 @@ void lou_pos_print(FILE *stream, lou_slice_t path, lou_slice_t file, lou_slice_t
   lou_pos_print_content(stream, file.ptr + highlight_begin, highlight_end - highlight_begin, true);
   fprintf(stream, START_COLOR);
   lou_pos_print_content(stream, file.ptr + highlight_end, end - highlight_end, false);
+  fprintf(stream, "\033[0m");
 }
 

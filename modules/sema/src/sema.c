@@ -60,6 +60,6 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
       return decl->value;
     }
   }
-  lou_sema_err(sema, name, "declaration was not found!");
+  lou_sema_err(sema, name, "declaration `#S` was not found!", name);
   return NULL;
 }
