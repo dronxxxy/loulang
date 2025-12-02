@@ -27,33 +27,10 @@ typedef struct lou_sema_value_t {
   };
 } lou_sema_value_t;
 
-static inline lou_sema_value_t *lou_sema_value_new_decl(lou_mempool_t *mempool, lou_sema_decl_t *decl) {
-  lou_sema_value_t *value = LOU_MEMPOOL_ALLOC(mempool, lou_sema_value_t);
-  value->kind = LOU_SEMA_VALUE_DECL;
-  value->decl = decl;
-  return value;
-}
-
-static inline lou_sema_value_t *lou_sema_value_new_plugin(lou_mempool_t *mempool, lou_sema_plugin_t *plugin) {
-  lou_sema_value_t *value = LOU_MEMPOOL_ALLOC(mempool, lou_sema_value_t);
-  value->kind = LOU_SEMA_VALUE_PLUGIN;
-  value->plugin= plugin;
-  return value;
-}
-
-static inline lou_sema_value_t *lou_sema_value_new_type(lou_mempool_t *mempool, lou_sema_type_t *type) {
-  lou_sema_value_t *value = LOU_MEMPOOL_ALLOC(mempool, lou_sema_value_t);
-  value->kind = LOU_SEMA_VALUE_TYPE;
-  value->type = type;
-  return value;
-}
-
-static inline lou_sema_value_t *lou_sema_value_new_constant(lou_mempool_t *mempool, lou_sema_const_t *constant) {
-  lou_sema_value_t *value = LOU_MEMPOOL_ALLOC(mempool, lou_sema_value_t);
-  value->kind = LOU_SEMA_VALUE_CONSTANT;
-  value->constant = constant;
-  return value;
-}
+lou_sema_value_t *lou_sema_value_new_decl(lou_mempool_t *mempool, lou_sema_decl_t *decl);
+lou_sema_value_t *lou_sema_value_new_plugin(lou_mempool_t *mempool, lou_sema_plugin_t *plugin);
+lou_sema_value_t *lou_sema_value_new_type(lou_mempool_t *mempool, lou_sema_type_t *type);
+lou_sema_value_t *lou_sema_value_new_constant(lou_mempool_t *mempool, lou_sema_const_t *constant);
 
 lou_slice_t *lou_sema_value_is_const_string(lou_sema_value_t *value);
 lou_sema_const_func_t *lou_sema_value_is_const_func(lou_sema_value_t *value);

@@ -60,6 +60,7 @@ lou_sema_value_t *lou_sema_analyze_expr(lou_sema_t *sema, lou_ast_expr_t *expr, 
       return NULL;
     }
     case LOU_AST_EXPR_FUNC: {
+
       lou_sema_err(sema, expr->slice, "functions are NIY");
       return NULL;
     }

@@ -56,5 +56,10 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);
 lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_slice_t slice, lou_slice_t *arg_slices, lou_sema_value_t **args);
 lou_sema_type_t *lou_sema_expect_type(lou_sema_t *sema, lou_slice_t at, lou_sema_value_t *value);
 
+void lou_sema_push_scope_frame(lou_sema_t *sema);
+void lou_sema_pop_scope_frame(lou_sema_t *sema);
+void lou_sema_push_scope(lou_sema_t *sema);
+void lou_sema_pop_scope(lou_sema_t *sema);
+
 lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema);
 

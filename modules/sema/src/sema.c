@@ -5,6 +5,7 @@
 #include "lou/core/vec.h"
 #include "lou/parser/ast/decl.h"
 #include "plugin.h"
+#include "scope.h"
 #include "type.h"
 #include <assert.h>
 #include <stdarg.h>
@@ -30,6 +31,7 @@ lou_sema_decl_t *lou_sema_add_decl(
     .kind = kind,
     .prefetch_node = prefetch_node,
     .value = NULL,
+    .scope_frame = lou_vec_len(sema->scope_frames) ? *LOU_VEC_LAST(sema->scope_frames) : NULL,
   };
   *LOU_VEC_PUSH(&sema->global_decls) = result;
   return result;
@@ -91,3 +93,18 @@ lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema) {
     .is_signed = true,
   });
 }
+
+void lou_sema_push_scope_frame(lou_sema_t *sema) {
+  *LOU_VEC_PUSH(&sema->scope_frames) = lou_sema_scope_frame_new(sema->mempool);
+}
+
+void lou_sema_pop_scope_frame(lou_sema_t *sema) {
+  LOU_VEC_POP(&sema->scope_frames);
+}
+
+void lou_sema_push_scope(lou_sema_t *sema) {
+  assert(lou_vec_len(sema->scope_frames));
+  lou_sema_scope_add(*LOU_VEC_LAST(sema->scope_frames));
+}
+
+void lou_sema_pop_scope(lou_sema_t *sema);
