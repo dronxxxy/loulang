@@ -19,8 +19,7 @@ static inline bool lou_parser_peek_decl_kind(lou_parser_t *parser, lou_ast_decl_
 static inline lou_ast_decl_link_kind_t lou_parser_peek_decl_link_kind(lou_parser_t *parser) {
   lou_token_t token = lou_parser_peek(parser);
   switch (token.kind) {
-    default:
-      return LOU_AST_DECL_LINK_NONE;
+    default: return LOU_AST_DECL_LINK_NONE;
   }
 }
 

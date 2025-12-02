@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lou/core/slice.h"
+#include <stdarg.h>
 #include <stdbool.h>
 
 typedef struct lou_ast_node_t lou_ast_node_t;
@@ -12,3 +13,4 @@ void lou_parser_free(lou_parser_t *parser);
 bool lou_parser_failed(const lou_parser_t *parser);
 
 lou_ast_node_t *lou_parser_next(lou_parser_t *parser);
+void lou_parser_log_error(const lou_parser_t *parser, lou_slice_t slice, const char *fmt, va_list list);

@@ -18,6 +18,9 @@ typedef enum {
   LOU_AST_DECL_LINK_EXTERN,
 } lou_ast_decl_link_kind_t;
 
+// this isn't so good but i wanna type-checking :)
+typedef struct lou_sema_decl_t lou_sema_decl_t;
+
 typedef struct {
   bool is_public;
   lou_ast_decl_link_kind_t link_kind;
@@ -25,5 +28,7 @@ typedef struct {
   lou_slice_t name;
   lou_ast_expr_t *type;
   lou_ast_expr_t *initializer;
+
+  lou_sema_decl_t *sema;
 } lou_ast_decl_t;
 

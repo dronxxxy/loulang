@@ -18,3 +18,19 @@ bool lou_slice_eq(lou_slice_t a, lou_slice_t b) {
   }
   return !memcmp(a.ptr, b.ptr, a.length);
 }
+
+lou_slice_t lou_slice_union(lou_slice_t a, lou_slice_t b) {
+  if (a.ptr > b.ptr) {
+    lou_slice_t temp = a;
+    a = b;
+    b = temp;
+  }
+  size_t length = b.ptr - a.ptr + b.length;
+  if (length < a.length) {
+    length = a.length;
+  }
+  return (lou_slice_t) {
+    .ptr = a.ptr,
+    .length = length
+  };
+}

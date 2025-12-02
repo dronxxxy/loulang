@@ -4,6 +4,7 @@
 #include "parse/node.h"
 #include "parser.h"
 #include <assert.h>
+#include <stdarg.h>
 
 lou_parser_t *lou_parser_new(lou_slice_t path) {
   lou_lexer_t *lexer = lou_lexer_new(path);
@@ -40,3 +41,6 @@ lou_ast_node_t *lou_parser_next(lou_parser_t *parser) {
   return NULL;
 }
 
+void lou_parser_log_error(const lou_parser_t *parser, lou_slice_t slice, const char *fmt, va_list list) {
+  lou_lexer_log_error(parser->lexer, slice, fmt, list);
+}

@@ -10,7 +10,7 @@
 void lou_parser_err(lou_parser_t *parser, lou_slice_t slice, const char *fmt, ...) {
   va_list list;
   va_start(list, fmt);
-  lou_lexer_log_error(parser->lexer, slice, fmt, list);
+  lou_parser_log_error(parser, slice, fmt, list);
   va_end(list);
 
   parser->failed = true;

@@ -1,6 +1,4 @@
 #include "analyze/node.h"
-#include "lou/core/assertions.h"
-#include "lou/core/log.h"
 #include "lou/core/vec.h"
 #include "lou/sema/sema.h"
 #include "lou/core/mempool.h"
@@ -17,6 +15,8 @@ lou_sema_t *lou_sema_new(lou_slice_t path) {
   sema->parser = parser;
   sema->mempool = mempool;
   sema->nodes = LOU_MEMPOOL_VEC_NEW(mempool, lou_ast_node_t*);
+  sema->node_stack = LOU_MEMPOOL_VEC_NEW(mempool, lou_ast_node_t*);
+  sema->global_decls = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_decl_t*);
   sema->failed = false;
   return sema;
 }
@@ -34,7 +34,7 @@ void lou_sema_read(lou_sema_t *sema) {
   lou_ast_node_t *node;
   while ((node = lou_parser_next(sema->parser))) {
     *LOU_VEC_PUSH(&sema->nodes) = node;
-    lou_sema_read_node(sema, node);
+    lou_sema_prefetch_node(sema, node);
   }
 }
 
