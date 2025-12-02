@@ -7,6 +7,7 @@ typedef struct lou_parser_t {
   lou_mempool_t *mempool;
   lou_lexer_t *lexer;
   lou_token_t *queue;
+  lou_slice_t last_slice;
   size_t last_line;
   bool failed;
 } lou_parser_t;

@@ -44,6 +44,7 @@ typedef enum {
 
 typedef struct lou_ast_expr_t {
   lou_ast_expr_kind_t kind;
+  lou_slice_t slice;
 
   union {
     lou_slice_t ident;
@@ -60,6 +61,7 @@ typedef struct lou_ast_expr_t {
 static inline lou_ast_expr_t *lou_ast_expr_new_ident(lou_mempool_t *mempool, lou_slice_t ident) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_IDENT;
+  expr->slice = ident;
   expr->ident = ident;
   return expr;
 }
@@ -67,41 +69,47 @@ static inline lou_ast_expr_t *lou_ast_expr_new_ident(lou_mempool_t *mempool, lou
 static inline lou_ast_expr_t *lou_ast_expr_new_get_ident(lou_mempool_t *mempool, lou_ast_expr_get_ident_t get_ident) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_GET_IDENT;
+  expr->slice = get_ident.ident;
   expr->get_ident = get_ident;
   return expr;
 }
 
-static inline lou_ast_expr_t *lou_ast_expr_new_array(lou_mempool_t *mempool, lou_ast_expr_array_t array) {
+static inline lou_ast_expr_t *lou_ast_expr_new_array(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_array_t array) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_ARRAY;
+  expr->slice = slice;
   expr->array = array;
   return expr;
 }
 
-static inline lou_ast_expr_t *lou_ast_expr_new_call(lou_mempool_t *mempool, lou_ast_expr_call_t call) {
+static inline lou_ast_expr_t *lou_ast_expr_new_call(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_call_t call) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_CALL;
+  expr->slice = slice;
   expr->call = call;
   return expr;
 }
 
-static inline lou_ast_expr_t *lou_ast_expr_new_integer(lou_mempool_t *mempool, uint64_t integer) {
+static inline lou_ast_expr_t *lou_ast_expr_new_integer(lou_mempool_t *mempool, lou_slice_t slice, uint64_t integer) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_INTEGER;
+  expr->slice = slice;
   expr->integer = integer;
   return expr;
 }
 
-static inline lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t string) {
+static inline lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t slice, lou_slice_t string) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_STRING;
+  expr->slice = slice;
   expr->string = string;
   return expr;
 }
 
-static inline lou_ast_expr_t *lou_ast_expr_new_func(lou_mempool_t *mempool, lou_ast_expr_func_t func) {
+static inline lou_ast_expr_t *lou_ast_expr_new_func(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_func_t func) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_FUNC;
+  expr->slice = slice;
   expr->func = func;
   return expr;
 }

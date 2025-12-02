@@ -1,1 +1,1 @@
-project_module("louSema", { "louCore", "louParser" })
+project_module("louSema", { "louCore", "louParser", "louHir" })

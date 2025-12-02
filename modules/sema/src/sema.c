@@ -1,5 +1,6 @@
 #include "sema.h"
 #include "analyze/node.h"
+#include "lou/core/assertions.h"
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
 #include "lou/core/vec.h"
@@ -62,4 +63,8 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
   }
   lou_sema_err(sema, name, "declaration `#S` was not found!", name);
   return NULL;
+}
+
+lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_sema_value_t **args) {
+  NOT_IMPLEMENTED;
 }

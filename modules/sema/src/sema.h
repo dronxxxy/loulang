@@ -13,6 +13,7 @@ typedef enum {
 } lou_sema_decl_kind_t;
 
 typedef struct lou_sema_t lou_sema_t;
+typedef struct lou_sema_plugin_t lou_sema_plugin_t;
 typedef struct lou_sema_value_t lou_sema_value_t;
 
 typedef struct lou_sema_decl_t {
@@ -47,3 +48,4 @@ lou_sema_decl_t *lou_sema_add_decl(
 
 void lou_sema_err(lou_sema_t *sema, lou_slice_t slice, const char *fmt, ...);
 lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);
+lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_sema_value_t **args);

@@ -26,10 +26,12 @@ lou_token_t lou_parser_take(lou_parser_t *parser) {
     lou_token_t token = parser->queue[0];
     LOU_VEC_UNSHIFT(&parser->queue);
     parser->last_line = token.line;
+    parser->last_slice = token.slice;
     return token;
   }
   lou_token_t token = lou_lexer_next(parser->lexer);
   parser->last_line = token.line;
+  parser->last_slice = token.slice;
   return token;
 }
 

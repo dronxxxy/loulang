@@ -2,7 +2,7 @@
 meta lou = @__import("@meta/internals") # @import will be built in compiler
 meta @undefined = @__import("@meta/undefined").@undefined
 
-const @import = fun (var context: lou.Context) -> (lou.Value, bool) {
+const @import = fun (var context: lou.plugin.Context) -> (lou.Value, bool) {
   if !context.shouldBeNArgs(1) {
     return @undefined(), false
   }
