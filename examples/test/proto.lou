@@ -1,6 +1,6 @@
 # ------------------------------------
-meta lou = @__import("@meta/internals") # import is built in compiler
-meta @undefined = @import("@meta/undefined").@undefined # import is built in compiler
+meta lou = @__import("@meta/internals") # @import will be built in compiler
+meta @undefined = @__import("@meta/undefined").@undefined
 
 const @import = fun (var context: lou.Context) -> (lou.Value, bool) {
   if !context.shouldBeNArgs(1) {
