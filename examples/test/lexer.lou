@@ -1,4 +1,5 @@
-meta @fun = @import("@meta/typings").@fun
+# @fun is built-in plugin
+# meta @fun = @import("@meta/typings").@fun
 
 const putString = @extern("puts", @fun([u8], null))
 
