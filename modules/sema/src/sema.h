@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lou/core/mempool.h"
+#include "lou/hir/code.h"
 #include "lou/parser/ast/node.h"
 #include "lou/parser/parser.h"
 #include "scope.h"
@@ -56,12 +57,13 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);
 lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_slice_t slice, lou_slice_t *arg_slices, lou_sema_value_t **args);
 
 void lou_sema_push_scope_frame(lou_sema_t *sema);
-void lou_sema_pop_scope_frame(lou_sema_t *sema);
+lou_sema_scope_frame_t *lou_sema_pop_scope_frame(lou_sema_t *sema);
 void lou_sema_push_scope(lou_sema_t *sema);
 void lou_sema_pop_scope(lou_sema_t *sema);
 
 lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema);
 
+void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt);
 
 #define LOU_SEMA_EXPECT_NOT_NULL(SEMA, AT, VALUE, MESSAGE, ...) ({ \
   typeof(VALUE) __value = VALUE; \

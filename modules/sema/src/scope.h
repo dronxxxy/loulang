@@ -1,11 +1,14 @@
 #pragma once
 
 #include "lou/core/mempool.h"
+#include "lou/hir/code.h"
+#include "lou/hir/func.h"
 
 typedef struct lou_sema_decl_t lou_sema_decl_t;
 
 typedef struct {
   lou_sema_decl_t **decls;
+  lou_hir_stmt_t **stmts;
 } lou_sema_scope_t;
 
 typedef struct lou_sema_scope_frame_t {
@@ -14,4 +17,7 @@ typedef struct lou_sema_scope_frame_t {
 } lou_sema_scope_frame_t;
 
 lou_sema_scope_frame_t *lou_sema_scope_frame_new(lou_mempool_t *mempool);
+void lou_sema_scope_frame_push_instr(lou_sema_scope_frame_t *frame, lou_hir_stmt_t *stmt);
 void lou_sema_scope_add(lou_sema_scope_frame_t *frame);
+lou_sema_scope_t *lou_sema_scope_pop(lou_sema_scope_frame_t *frame);
+lou_hir_code_t *lou_sema_scope_get_code(lou_mempool_t *mempool, lou_sema_scope_t *scope);

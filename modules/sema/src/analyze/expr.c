@@ -1,8 +1,11 @@
 #include "expr.h"
+#include "analyze/body.h"
 #include "const.h"
 #include "lou/core/assertions.h"
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
+#include "lou/hir/func.h"
+#include "scope.h"
 #include "sema.h"
 #include "type.h"
 #include "value.h"
@@ -61,9 +64,15 @@ lou_sema_value_t *lou_sema_analyze_expr(lou_sema_t *sema, lou_ast_expr_t *expr, 
       return NULL;
     }
     case LOU_AST_EXPR_FUNC: {
-
-      lou_sema_err(sema, expr->slice, "functions are NIY");
-      return NULL;
+      lou_sema_push_scope_frame(sema);
+      lou_sema_scope_t *scope = lou_sema_analyze_body(sema, expr->func.body);
+      lou_sema_pop_scope_frame(sema);
+      if (!scope) return NULL;
+      lou_hir_code_t *code = lou_sema_scope_get_code(sema->mempool, scope);
+      lou_hir_func_t *func = lou_hir_func_new(sema->mempool);
+      lou_hir_func_init(func, code);
+      lou_sema_type_t *type = NULL;
+      return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_func(sema->mempool, type, func));
     }
   }
   UNREACHABLE();

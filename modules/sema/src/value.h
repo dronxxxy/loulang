@@ -63,6 +63,6 @@ lou_sema_const_t *lou_sema_value_is_const(lou_sema_value_t *value);
 lou_sema_decl_t *lou_sema_value_is_decl(lou_sema_value_t *value);
 
 lou_slice_t *lou_sema_value_is_const_string(lou_sema_value_t *value);
-lou_sema_const_func_t *lou_sema_value_is_const_func(lou_sema_value_t *value);
+lou_sema_const_t *lou_sema_value_is_const_func(lou_sema_value_t *value);
 
 void lou_sema_value_print(FILE *stream, lou_sema_value_t *value);

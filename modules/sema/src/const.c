@@ -1,6 +1,6 @@
 #include "const.h"
 
-lou_sema_const_t *lou_sema_const_new_func(lou_mempool_t *mempool, lou_sema_type_t *type, lou_sema_const_func_t func) {
+lou_sema_const_t *lou_sema_const_new_func(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_func_t *func) {
   lou_sema_const_t *constant = LOU_MEMPOOL_ALLOC(mempool, lou_sema_const_t);
   constant->kind = LOU_SEMA_CONST_FUNCTION;
   constant->func = func;

@@ -6,10 +6,6 @@
 
 typedef struct lou_sema_type_t lou_sema_type_t;
 
-typedef struct lou_sema_const_func_t {
-  lou_hir_func_t *func;
-} lou_sema_const_func_t;
-
 typedef enum {
   LOU_SEMA_CONST_INTEGER,
   LOU_SEMA_CONST_STRING,
@@ -23,11 +19,11 @@ typedef struct lou_sema_const_t {
   union {
     uint64_t integer;
     lou_slice_t string;
-    lou_sema_const_func_t func;
+    lou_hir_func_t *func;
   };
 } lou_sema_const_t;
 
-lou_sema_const_t *lou_sema_const_new_func(lou_mempool_t *mempool, lou_sema_type_t *type, lou_sema_const_func_t func);
+lou_sema_const_t *lou_sema_const_new_func(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_func_t *func);
 lou_sema_const_t *lou_sema_const_new_integer(lou_mempool_t *mempool, lou_sema_type_t *type, uint64_t integer);
 lou_sema_const_t *lou_sema_const_new_string(lou_mempool_t *mempool, lou_sema_type_t *type, lou_slice_t string);
 

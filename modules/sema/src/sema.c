@@ -91,8 +91,11 @@ void lou_sema_push_scope_frame(lou_sema_t *sema) {
   *LOU_VEC_PUSH(&sema->scope_frames) = lou_sema_scope_frame_new(sema->mempool);
 }
 
-void lou_sema_pop_scope_frame(lou_sema_t *sema) {
+lou_sema_scope_frame_t *lou_sema_pop_scope_frame(lou_sema_t *sema) {
+  assert(lou_vec_len(sema->scope_frames));
+  lou_sema_scope_frame_t *frame = *LOU_VEC_LAST(sema->scope_frames);
   LOU_VEC_POP(&sema->scope_frames);
+  return frame;
 }
 
 void lou_sema_push_scope(lou_sema_t *sema) {
@@ -105,3 +108,7 @@ void lou_sema_pop_scope(lou_sema_t *sema) {
   lou_sema_scope_add(*LOU_VEC_LAST(sema->scope_frames));
 }
 
+void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt) {
+  assert(lou_vec_len(sema->scope_frames) > 0);
+  lou_sema_scope_frame_push_instr(*LOU_VEC_LAST(sema->scope_frames), stmt);
+}

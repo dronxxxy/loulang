@@ -59,12 +59,12 @@ lou_slice_t *lou_sema_value_is_const_string(lou_sema_value_t *value) {
   return &constant->string;
 }
 
-lou_sema_const_func_t *lou_sema_value_is_const_func(lou_sema_value_t *value) {
+lou_sema_const_t *lou_sema_value_is_const_func(lou_sema_value_t *value) {
   lou_sema_const_t *constant = NOT_NULL(lou_sema_value_is_const(value));
   if (constant->kind != LOU_SEMA_CONST_FUNCTION) {
     return NULL;
   }
-  return &constant->func;
+  return constant;
 }
 
 static inline lou_sema_value_t *lou_sema_value_new_runtime(lou_mempool_t *mempool, lou_sema_value_runtime_t runtime) {

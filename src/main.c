@@ -14,16 +14,13 @@
 #include <string.h>
 
 void call_putchar(lou_mempool_t *mempool, lou_hir_stmt_t ***stmts, lou_hir_decl_t *put_char, char c) {
-  lou_hir_type_t *type_u8 = lou_hir_type_new_integer(mempool, (lou_hir_type_int_t) {
-    .size = LOU_HIR_INT_8,
-    .is_signed = false,
-  });
+  lou_hir_type_t *type_u8 = lou_hir_type_new_integer(mempool, LOU_HIR_INT_8, false);
   *LOU_VEC_PUSH(stmts) = lou_hir_stmt_new_call(mempool, (lou_hir_stmt_call_t) {
     .output = NULL,
     .callable = lou_hir_value_new_decl(mempool, put_char),
     .args = ({
       lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_value_t*);
-      *LOU_VEC_PUSH(&args) = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_u8, (lou_hir_const_int_t) { c }));
+      *LOU_VEC_PUSH(&args) = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_u8, c));
       args;
     }),
   });
@@ -31,42 +28,27 @@ void call_putchar(lou_mempool_t *mempool, lou_hir_stmt_t ***stmts, lou_hir_decl_
 }
 
 lou_hir_t *build_hir(lou_mempool_t *mempool) {
-  lou_hir_type_t *type_u8 = lou_hir_type_new_integer(mempool, (lou_hir_type_int_t) {
-    .size = LOU_HIR_INT_8,
-    .is_signed = false,
-  });
-
-  lou_hir_type_t *type_i32 = lou_hir_type_new_integer(mempool, (lou_hir_type_int_t) {
-    .size = LOU_HIR_INT_8,
-    .is_signed = false,
-  });
+  lou_hir_type_t *type_u8 = lou_hir_type_new_integer(mempool, LOU_HIR_INT_8, false);
+  lou_hir_type_t *type_i32 = lou_hir_type_new_integer(mempool, LOU_HIR_INT_8, false);
 
   lou_hir_t *hir = lou_hir_new(mempool);
-  lou_hir_decl_t *put_char = lou_hir_decl_new(mempool, LOU_HIR_IMMUTABLE, lou_hir_type_new_func(mempool,
-  (lou_hir_type_func_t) {
-    .args = ({
-      lou_hir_type_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*);
-      *LOU_VEC_PUSH(&args) = type_u8;
-      args;
-    }),
-    .returns = NULL,
-  }));
+  lou_hir_decl_t *put_char = lou_hir_decl_new(mempool, LOU_HIR_IMMUTABLE, lou_hir_type_new_func(mempool, ({
+    lou_hir_type_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*);
+    *LOU_VEC_PUSH(&args) = type_u8;
+    args;
+  }), NULL));
   lou_hir_decl_add(hir, put_char);
-  lou_hir_decl_init(put_char, lou_hir_const_new_extern(mempool, put_char->type, (lou_hir_const_extern_t) {
-    .name = lou_slice_from_cstr("putchar"),
-  }));
+  lou_hir_decl_init(put_char, lou_hir_const_new_extern(mempool, put_char->type, lou_slice_from_cstr("putchar")));
 
-  lou_hir_decl_t *main = lou_hir_decl_new(mempool, LOU_HIR_IMMUTABLE, lou_hir_type_new_func(mempool, (lou_hir_type_func_t) {
-    .args = ({
-      lou_hir_type_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*);
-      *LOU_VEC_PUSH(&args) = type_i32;
-      args;
-    }),
-    .returns = NULL,
-  }));
+  lou_hir_decl_t *main = lou_hir_decl_new(mempool, LOU_HIR_IMMUTABLE, lou_hir_type_new_func(mempool, ({
+    lou_hir_type_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*);
+    *LOU_VEC_PUSH(&args) = type_i32;
+    args;
+  }), NULL));
   lou_hir_decl_add(hir, main);
 
-  lou_hir_func_t *main_func = lou_hir_func_new(mempool, (lou_opt_slice_t){ true, lou_slice_from_cstr("main") });
+  lou_hir_func_t *main_func = lou_hir_func_new(mempool);
+  lou_hir_func_set_global(main_func, lou_slice_from_cstr("main"));
   lou_hir_func_init(main_func, lou_hir_code_new(mempool, ({
     lou_hir_stmt_t **stmts = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_stmt_t*);
     const char *message = "hello, world!\n";
@@ -74,15 +56,12 @@ lou_hir_t *build_hir(lou_mempool_t *mempool) {
       call_putchar(mempool, &stmts, put_char, message[i]);
     }
     *LOU_VEC_PUSH(&stmts) = lou_hir_stmt_new_ret(mempool, (lou_hir_stmt_ret_t) {
-      .value = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, (lou_hir_const_int_t) { 0 })),
+      .value = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, 0)),
     });
     stmts;
   })));
   lou_hir_decl_init(main, lou_hir_const_new_func(mempool,
-      lou_hir_type_new_func(mempool, (lou_hir_type_func_t) {
-        .args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*),
-        .returns = type_i32,
-      }),
+      lou_hir_type_new_func(mempool, LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*), type_i32),
       main_func
     )
   );
