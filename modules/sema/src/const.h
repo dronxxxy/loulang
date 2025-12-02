@@ -4,7 +4,7 @@
 #include "lou/hir/func.h"
 #include <stdint.h>
 
-typedef struct {
+typedef struct lou_sema_const_func_t {
   lou_hir_func_t *func;
 } lou_sema_const_func_t;
 
@@ -44,3 +44,5 @@ static inline lou_sema_const_t *lou_sema_const_new_string(lou_mempool_t *mempool
   constant->string = string;
   return constant;
 }
+
+

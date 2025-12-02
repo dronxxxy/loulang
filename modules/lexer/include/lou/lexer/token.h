@@ -59,7 +59,7 @@ static inline lou_token_t lou_token_new_string(lou_slice_t slice, size_t line, l
   return (lou_token_t) {
     .slice = slice,
     .line = line,
-    .kind = LOU_TOKEN_INTEGER,
+    .kind = LOU_TOKEN_STRING,
     .string = string,
   };
 }

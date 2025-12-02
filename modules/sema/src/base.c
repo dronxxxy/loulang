@@ -1,4 +1,5 @@
 #include "analyze/node.h"
+#include "builtin/builtins.h"
 #include "lou/core/vec.h"
 #include "lou/sema/sema.h"
 #include "lou/core/mempool.h"
@@ -31,6 +32,7 @@ bool lou_sema_failed(const lou_sema_t *sema) {
 }
 
 void lou_sema_read(lou_sema_t *sema) {
+  lou_sema_apply_builtins(sema);
   lou_ast_node_t *node;
   while ((node = lou_parser_next(sema->parser))) {
     *LOU_VEC_PUSH(&sema->nodes) = node;

@@ -48,4 +48,4 @@ lou_sema_decl_t *lou_sema_add_decl(
 
 void lou_sema_err(lou_sema_t *sema, lou_slice_t slice, const char *fmt, ...);
 lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);
-lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_sema_value_t **args);
+lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_slice_t slice, lou_slice_t *arg_slices, lou_sema_value_t **args);

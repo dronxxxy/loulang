@@ -21,7 +21,11 @@ lou_sema_value_t *lou_sema_analyze_expr(lou_sema_t *sema, lou_ast_expr_t *expr) 
         return NULL;
       }
       if (callable->kind == LOU_SEMA_VALUE_PLUGIN) {
-        return lou_sema_call_plugin(sema, callable->plugin, args);
+        lou_slice_t *arg_slices = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_slice_t);
+        for (size_t i = 0; i < lou_vec_len(expr->call.args); i++) {
+          *LOU_VEC_PUSH(&arg_slices) = expr->call.args[i]->slice;
+        }
+        return lou_sema_call_plugin(sema, callable->plugin, expr->call.inner->slice, arg_slices, args);
       }
       lou_sema_err(sema, expr->slice, "#v is not callable", callable);
       return NULL;
@@ -48,6 +52,8 @@ lou_sema_value_t *lou_sema_analyze_expr(lou_sema_t *sema, lou_ast_expr_t *expr) 
       return NULL;
     }
     case LOU_AST_EXPR_FUNC:
+      // TODO: remove, temporary
+      return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_string(sema->mempool, expr->string));
       lou_sema_err(sema, expr->slice, "functions are NIY");
       return NULL;
   }

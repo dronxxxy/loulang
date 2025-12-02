@@ -5,6 +5,7 @@
 #include "lou/core/slice.h"
 #include "lou/core/vec.h"
 #include "lou/parser/ast/decl.h"
+#include "plugin.h"
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -52,6 +53,7 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
     lou_sema_decl_t *decl = sema->global_decls[i];
     if (lou_slice_eq(decl->name, name)) {
       if (lou_sema_decl_is_initialized(decl)) {
+        assert(decl->value);
         return decl->value;
       }
       if (!lou_sema_analyze_node(sema, decl->prefetch_node)) {
@@ -65,6 +67,12 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
   return NULL;
 }
 
-lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_sema_value_t **args) {
-  NOT_IMPLEMENTED;
+lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_slice_t slice, lou_slice_t *arg_slices, lou_sema_value_t **args) {
+  lou_sema_plugin_call_ctx_t ctx = {
+    .slice = slice,
+    .sema = sema,
+    .args = args,
+    .arg_slices = arg_slices,
+  };
+  return plugin->func(&ctx);
 }
