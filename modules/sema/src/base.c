@@ -1,3 +1,6 @@
+#include "analyze/node.h"
+#include "lou/core/assertions.h"
+#include "lou/core/log.h"
 #include "lou/core/vec.h"
 #include "lou/sema/sema.h"
 #include "lou/core/mempool.h"
@@ -31,9 +34,12 @@ void lou_sema_read(lou_sema_t *sema) {
   lou_ast_node_t *node;
   while ((node = lou_parser_next(sema->parser))) {
     *LOU_VEC_PUSH(&sema->nodes) = node;
+    lou_sema_read_node(sema, node);
   }
 }
 
 void lou_sema_analyze(lou_sema_t *sema) {
-  // TODO: analyzing
+  for (size_t i = 0; i < lou_vec_len(sema->nodes); i++) {
+    lou_sema_analyze_node(sema, sema->nodes[i]);
+  }
 }
