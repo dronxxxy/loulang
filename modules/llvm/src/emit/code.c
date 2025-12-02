@@ -12,6 +12,12 @@
 
 static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *stmt) {
   switch (stmt->kind) {
+    case LOU_HIR_STMT_ARG:
+      lou_llvm_store(llvm,
+        stmt->arg.output,
+        LLVMGetParam(llvm->function, stmt->arg.num)
+      );
+      return;
     case LOU_HIR_STMT_CALL: {
       LLVMTypeRef type = lou_llvm_emit_function_type(llvm, lou_hir_value_typeof(stmt->call.callable));
       LLVMValueRef *args = alloca(sizeof(LLVMValueRef) * lou_vec_len(stmt->call.args));

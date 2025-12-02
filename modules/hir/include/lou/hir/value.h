@@ -3,6 +3,7 @@
 #include "lou/core/mempool.h"
 #include "lou/hir/const.h"
 #include "lou/hir/mutability.h"
+#include <stddef.h>
 
 typedef struct lou_hir_decl_t lou_hir_decl_t;
 typedef struct lou_hir_const_t lou_hir_const_t;
