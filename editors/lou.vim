@@ -9,12 +9,18 @@ syn keyword louBuiltInTypes bool
 
 syn match louOneLineComment "#.*$"
 syn region louMultiLineComment start='#`' end='`#' contains=louMultiLineComment 
-syn match louIdent "[a-zA-Z_$][a-zA-Z0-9_$]*"
+syn match louIdent "[a-zA-Z_][a-zA-Z0-9_]*"
+syn match louPlugin "@[a-zA-Z0-9_]*"
 syn match louInteger "\d\+"
+syn region louString start='\"' end='\"' contains=louSpecialChar
+syn match louEscapeChar "\\[nrt0"]" containedIn=louString
 
 hi def link louKeywords Keyword
+hi def link louPlugin PreProc
 hi def link louMultiLineComment Comment
 hi def link louOneLineComment Comment
+hi def link louString Constant
+hi def link louEscapeChar SpecialChar
 hi def link louInteger Constant
 hi def link louBuiltInTypes Type
 
