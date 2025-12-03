@@ -15,6 +15,7 @@ lou_sema_const_t *lou_sema_const_new_integer(lou_mempool_t *mempool, lou_sema_ty
   assert(type->kind == LOU_SEMA_TYPE_INTEGER);
   lou_sema_const_t *constant = LOU_MEMPOOL_ALLOC(mempool, lou_sema_const_t);
   constant->kind = LOU_SEMA_CONST_INTEGER;
+  constant->type = type;
   constant->integer = integer;
   return constant;
 }
@@ -29,7 +30,7 @@ lou_sema_const_t *lou_sema_const_new_string(lou_mempool_t *mempool, lou_sema_typ
 }
 
 lou_sema_const_t *lou_sema_const_new_extern(lou_mempool_t *mempool, lou_sema_type_t *type, lou_slice_t name) {
-  assert(type->kind == LOU_SEMA_TYPE_POINTER);
+  assert(type->kind == LOU_SEMA_TYPE_POINTER || type->kind == LOU_SEMA_TYPE_FUNCTION);
   lou_sema_const_t *constant = LOU_MEMPOOL_ALLOC(mempool, lou_sema_const_t);
   constant->kind = LOU_SEMA_CONST_EXTERN;
   constant->type = type;

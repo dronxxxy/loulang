@@ -18,27 +18,25 @@ lou_ast_stmt_t *lou_parser_parse_stmt(lou_parser_t *parser) {
       if (!expr || !body) {
         return NULL;
       }
-      return lou_ast_stmt_new_if(parser->mempool, (lou_ast_stmt_if_t) {
+      return lou_ast_stmt_new_if(parser->mempool, lou_parser_slice(parser, token.slice), (lou_ast_stmt_if_t) {
         .condition = expr,
       });
     }
     case LOU_TOKEN_RETURN: {
       lou_parser_take(parser);
       lou_ast_expr_t *expr = NULL;
-      if (lou_parser_is_nl(parser)) {
+      if (!lou_parser_is_nl(parser)) {
         expr = lou_parser_parse_expr(parser);
       }
-      return lou_ast_stmt_new_ret(parser->mempool, (lou_ast_stmt_ret_t) {
-        .value = expr
-      });
+      return lou_ast_stmt_new_ret(parser->mempool, lou_parser_slice(parser, token.slice), token.slice, expr);
     }
-    LOU_PARSER_CASE_NODE: return lou_ast_stmt_new_node(parser->mempool, lou_parser_parse_node(parser));
+    LOU_PARSER_CASE_NODE: return lou_ast_stmt_new_node(parser->mempool, lou_parser_slice(parser, token.slice), lou_parser_parse_node(parser));
     default: {
       lou_ast_expr_t *expr = lou_parser_parse_expr(parser);
       if (!expr) {
         return NULL;
       }
-      return lou_ast_stmt_new_expr(parser->mempool, expr);
+      return lou_ast_stmt_new_expr(parser->mempool, lou_parser_slice(parser, token.slice), expr);
     }
   }
 }

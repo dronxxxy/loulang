@@ -5,6 +5,10 @@
 #include <stdio.h>
 
 void lou_sema_type_print(FILE *stream, lou_sema_type_t *type) {
+  if (!type) {
+    fprintf(stream, "nothing");
+    return;
+  }
   switch (type->kind) {
     case LOU_SEMA_TYPE_INTEGER:
       fprintf(stream, type->integer.is_signed ? "i" : "u");
@@ -70,6 +74,9 @@ static inline bool lou_sema_types_veq(const lou_sema_type_t **a, const lou_sema_
 bool lou_sema_types_eq(const lou_sema_type_t *a, const lou_sema_type_t *b) {
   if (a == b) {
     return true;
+  }
+  if (a == NULL || b == NULL) {
+    return false;
   }
   if (a->kind != b->kind) {
     return false;

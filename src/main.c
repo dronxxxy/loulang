@@ -55,9 +55,7 @@ lou_hir_t *build_hir(lou_mempool_t *mempool) {
     for (size_t i = 0; i < strlen(message); i++) {
       call_putchar(mempool, &stmts, put_char, message[i]);
     }
-    *LOU_VEC_PUSH(&stmts) = lou_hir_stmt_new_ret(mempool, (lou_hir_stmt_ret_t) {
-      .value = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, 0)),
-    });
+    *LOU_VEC_PUSH(&stmts) = lou_hir_stmt_new_ret(mempool, lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, 0)));
     stmts;
   })));
   lou_hir_decl_init(main, lou_hir_const_new_func(mempool,

@@ -49,7 +49,13 @@ void lou_sema_apply_builtins(lou_sema_t *sema) {
     *LOU_VEC_PUSH(&args) = NULL;
     args;
   })));
-  lou_sema_add_plugin(sema, "@extern", lou_sema_plugin_new(sema->mempool, lou_extern_builtin, ({
+  lou_sema_add_plugin(sema, "@externFun", lou_sema_plugin_new(sema->mempool, lou_extern_fun_builtin, ({
+    lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
+    *LOU_VEC_PUSH(&args) = lou_sema_type_new_string(sema->mempool);
+    *LOU_VEC_PUSH(&args) = NULL;
+    args;
+  })));
+  lou_sema_add_plugin(sema, "@externVar", lou_sema_plugin_new(sema->mempool, lou_extern_var_builtin, ({
     lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
     *LOU_VEC_PUSH(&args) = lou_sema_type_new_string(sema->mempool);
     *LOU_VEC_PUSH(&args) = NULL;

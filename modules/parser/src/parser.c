@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "lou/core/mempool.h"
+#include "lou/core/slice.h"
 #include "lou/core/vec.h"
 #include "lou/lexer/lexer.h"
 #include "lou/lexer/token.h"
@@ -131,4 +132,8 @@ bool lou_parser_peek_n(lou_parser_t *parser, size_t length, const lou_token_kind
 
 bool lou_parser_is_nl(lou_parser_t *parser) {
   return lou_parser_peek(parser).line != parser->last_line;
+}
+
+lou_slice_t lou_parser_slice(lou_parser_t *parser, lou_slice_t from) {
+  return lou_slice_union(from, parser->last_slice);
 }

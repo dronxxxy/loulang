@@ -2,6 +2,7 @@
 #include "analyze/body.h"
 #include "const.h"
 #include "lou/core/assertions.h"
+#include "lou/core/log.h"
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
 #include "lou/hir/func.h"
@@ -12,18 +13,27 @@
 #include "plugin.h"
 
 lou_sema_value_t *lou_sema_analyze_func_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
-  lou_sema_push_scope_frame(sema);
+  // TODO: function args type inferring
+  lou_sema_type_t *type = ctx.expectation;
+  if (!type) {
+    lou_sema_err(sema, expr->slice, "function args type inferring is NIY");
+    return NULL;
+  }
+  if (type->kind != LOU_SEMA_TYPE_FUNCTION) {
+    lou_sema_err(sema, expr->slice, "expected function type expects but got #T", type);
+    return NULL;
+  }
+
+  // TODO: push func args
+  lou_sema_push_scope_frame(sema, lou_sema_scope_frame_new(sema->mempool, type->func.returns));
   lou_sema_scope_t *scope = lou_sema_analyze_body(sema, expr->func.body);
   lou_sema_pop_scope_frame(sema);
+
   if (!scope) return NULL;
   lou_hir_code_t *code = lou_sema_scope_get_code(sema->mempool, scope);
   lou_hir_func_t *func = lou_hir_func_new(sema->mempool);
   lou_hir_func_init(func, code);
-  lou_sema_type_t *type = ctx.expectation;
-  if (!type) {
-    lou_sema_err(sema, expr->slice, "automatic function type resolving is NIY");
-    return NULL;
-  }
+
   return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_func(sema->mempool, type, func));
 }
 
@@ -93,6 +103,14 @@ lou_sema_value_t *lou_sema_analyze_expr(lou_sema_t *sema, lou_ast_expr_t *expr, 
     case LOU_AST_EXPR_FUNC: return lou_sema_analyze_func_expr(sema, expr, ctx);
   }
   UNREACHABLE();
+}
+
+lou_sema_value_t *lou_sema_analyze_runtime_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
+  lou_sema_value_t *value = NOT_NULL(lou_sema_analyze_expr(sema, expr, ctx));
+  if (!lou_sema_value_is_runtime(value)) {
+    lou_sema_err(sema, expr->slice, "expected runtime vaue got #v", value);
+  }
+  return value;
 }
 
 lou_sema_type_t *lou_sema_analyze_type(lou_sema_t *sema, lou_ast_expr_t *expr) {

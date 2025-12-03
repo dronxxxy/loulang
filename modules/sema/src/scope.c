@@ -4,9 +4,10 @@
 #include "lou/hir/code.h"
 #include <assert.h>
 
-lou_sema_scope_frame_t *lou_sema_scope_frame_new(lou_mempool_t *mempool) {
+lou_sema_scope_frame_t *lou_sema_scope_frame_new(lou_mempool_t *mempool, lou_sema_type_t *returns) {
   lou_sema_scope_frame_t *frame = LOU_MEMPOOL_ALLOC(mempool, lou_sema_scope_frame_t);
   frame->scopes = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_scope_t*);
+  frame->returns = returns;
   return frame;
 }
 

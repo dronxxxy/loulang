@@ -42,3 +42,15 @@ global("main", fun () -> i32 {
   return 0
 })
 
+# ----------------------------------
+const lou = @import("@lou/plugins")
+
+const @importLib = fun (sema: lou.Sema, arg1: Arg, ....) -> lou.Value {
+  ...
+  return ...
+}
+
+@definePlugins( # @global("__louPlugins", ...)
+  @plugin("plugin", @importLib),
+)
+# ----------------------------------

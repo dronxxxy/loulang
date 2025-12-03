@@ -23,6 +23,7 @@ bool lou_parser_finished(lou_parser_t *parser);
 bool lou_parser_is_list_end(lou_parser_t *parser, lou_token_kind_t kind);
 bool lou_parser_is_nl(lou_parser_t *parser);
 bool lou_parser_peek_n(lou_parser_t *parser, size_t length, const lou_token_kind_t *kinds);
+lou_slice_t lou_parser_slice(lou_parser_t *parser, lou_slice_t from);
 
 #define LOU_PARSER_EXPECT(PARSER, KIND) ({ \
   lou_token_t __token; \

@@ -14,10 +14,10 @@ lou_hir_stmt_t *lou_hir_stmt_new_call(lou_mempool_t *mempool, lou_hir_stmt_call_
   return stmt;
 }
 
-lou_hir_stmt_t *lou_hir_stmt_new_ret(lou_mempool_t *mempool, lou_hir_stmt_ret_t ret)  {
+lou_hir_stmt_t *lou_hir_stmt_new_ret(lou_mempool_t *mempool, lou_hir_value_t *value) {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_RETURN;
-  stmt->ret = ret;
+  stmt->ret.value = value;
   return stmt;
 }
 

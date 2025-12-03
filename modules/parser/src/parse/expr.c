@@ -27,11 +27,7 @@ static inline lou_ast_expr_t *lou_parser_parse_func_expr(lou_parser_t *parser, l
   lou_ast_expr_t *returns = lou_parser_take_if(parser, LOU_TOKEN_FUNCTION_RETURNS) ? lou_parser_parse_expr(parser) : NULL;
   lou_ast_body_t *body = lou_parser_parse_body(parser);
 
-  return lou_ast_expr_new_func(parser->mempool, lou_slice_union(start_token.slice, parser->last_slice), (lou_ast_expr_func_t) {
-    .args = args,
-    .returns = returns,
-    .body = body,
-  });
+  return lou_ast_expr_new_func(parser->mempool, lou_parser_slice(parser, start_token.slice), args, returns, body);
 }
 
 lou_ast_expr_t *lou_parser_parse_post_expr(lou_parser_t *parser, lou_ast_expr_t *expr) {
@@ -65,7 +61,7 @@ lou_ast_expr_t *lou_parser_parse_post_expr(lou_parser_t *parser, lou_ast_expr_t 
         } while (!lou_parser_is_list_end(parser, LOU_TOKEN_CLOSING_CIRCLE_BRACE));
       }
 
-      return lou_ast_expr_new_call(parser->mempool, lou_slice_union(expr->slice, parser->last_slice), (lou_ast_expr_call_t) {
+      return lou_ast_expr_new_call(parser->mempool, lou_parser_slice(parser, expr->slice), (lou_ast_expr_call_t) {
         .inner = expr,
         .args = args,
       });
@@ -94,7 +90,7 @@ lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
         } while (!lou_parser_is_list_end(parser, LOU_TOKEN_CLOSING_SQUARE_BRACE));
       }
 
-      return lou_ast_expr_new_array(parser->mempool, lou_slice_union(token.slice, parser->last_slice), (lou_ast_expr_array_t) {
+      return lou_ast_expr_new_array(parser->mempool, lou_parser_slice(parser, token.slice), (lou_ast_expr_array_t) {
         .values = values,
       });
     }
