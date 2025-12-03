@@ -14,7 +14,6 @@
 static inline void lou_sema_analyze_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
   switch (stmt->kind) {
     case LOU_AST_STMT_RETURN: {
-      // TODO: function returns
       lou_sema_value_t *value = stmt->ret.value ?
         lou_sema_analyze_runtime_expr(sema, stmt->ret.value, lou_sema_expr_ctx_new(lou_sema_func_returns(sema))) :
         NULL;

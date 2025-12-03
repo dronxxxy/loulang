@@ -48,7 +48,7 @@ typedef struct lou_sema_type_t {
 } lou_sema_type_t;
 
 lou_sema_type_t *lou_sema_type_new_string(lou_mempool_t *mempool);
-lou_sema_type_t *lou_sema_type_new_function(lou_mempool_t *mempool, lou_sema_type_func_t func);
+lou_sema_type_t *lou_sema_type_new_function(lou_mempool_t *mempool, lou_sema_type_func_arg_t *args, lou_sema_type_t *returns);
 lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool, lou_sema_type_t *to);
 lou_sema_type_t *lou_sema_type_new_integer(lou_mempool_t *mempool, lou_sema_type_int_t integer);
 

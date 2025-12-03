@@ -21,6 +21,7 @@ typedef struct {
   lou_ast_expr_func_arg_t *args;
   lou_ast_expr_t *returns;
   lou_ast_body_t *body;
+  lou_slice_t fun_slice;
 } lou_ast_expr_func_t;
 
 typedef struct {

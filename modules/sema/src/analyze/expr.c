@@ -2,7 +2,6 @@
 #include "analyze/body.h"
 #include "const.h"
 #include "lou/core/assertions.h"
-#include "lou/core/log.h"
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
 #include "lou/hir/func.h"
@@ -12,16 +11,51 @@
 #include "value.h"
 #include "plugin.h"
 
-lou_sema_value_t *lou_sema_analyze_func_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
-  // TODO: function args type inferring
-  lou_sema_type_t *type = ctx.expectation;
-  if (!type) {
-    lou_sema_err(sema, expr->slice, "function args type inferring is NIY");
-    return NULL;
+static inline lou_sema_type_t *lou_sema_infer_func_type(lou_sema_t *sema, lou_ast_expr_func_t *func) {
+  lou_sema_type_func_arg_t *args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_func_arg_t);
+  for (size_t i = 0; i < lou_vec_len(func->args); i++) {
+    if (!func->args[i].type) {
+      lou_sema_err(sema, func->args[i].name, "cannot infer function argument type");
+      return NULL;
+    }
+    *LOU_VEC_PUSH(&args) = (lou_sema_type_func_arg_t) {
+      .name = (lou_opt_slice_t) { true, func->args[i].name},
+      .type = lou_sema_analyze_type(sema, func->args[i].type),
+    };
   }
-  if (type->kind != LOU_SEMA_TYPE_FUNCTION) {
-    lou_sema_err(sema, expr->slice, "expected function type expects but got #T", type);
-    return NULL;
+  lou_sema_type_t *returns = func->returns ? NOT_NULL(lou_sema_analyze_type(sema, func->returns)) : NULL;
+  return lou_sema_type_new_function(sema->mempool, args, returns);
+}
+
+static inline bool lou_sema_check_func_inferring(lou_sema_t *sema, lou_slice_t slice, lou_ast_expr_func_t *func, lou_sema_type_t *expectation) {
+  if (lou_vec_len(expectation->func.args) != lou_vec_len(func->args)) {
+    lou_sema_err(sema, slice, "expected #l arguments but got #l", lou_vec_len(expectation->func.args), lou_vec_len(func->args));
+      return false;
+  }
+  for (size_t i = 0; i < lou_vec_len(func->args); i++) {
+    if (!func->args[i].type) continue;
+    lou_sema_type_t *type = lou_sema_analyze_type(sema, func->args[i].type);
+    if (!type) continue;
+    if (!lou_sema_types_eq(type, expectation->func.args[i].type)) {
+      lou_sema_err(sema, func->args[i].type->slice, "expected argument of type #T but got argument of type #T", expectation->func.args[i].type, type);
+      return false;
+    }
+  }
+  lou_sema_type_t *returns = func->returns ? lou_sema_analyze_type(sema, func->returns) : NULL;
+  if (returns && !lou_sema_types_eq(expectation->func.returns, returns)) {
+    lou_sema_err(sema, slice, "expected return value of type #T but got value returning #T", expectation->func.returns, returns);
+    return false;
+  }
+  return true;
+}
+
+lou_sema_value_t *lou_sema_analyze_func_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
+  lou_sema_type_t *type = ctx.expectation && ctx.expectation->kind == LOU_SEMA_TYPE_FUNCTION ? ctx.expectation : NULL;
+
+  if (!type) {
+    type = NOT_NULL(lou_sema_infer_func_type(sema, &expr->func));
+  } else {
+    NOT_NULL(lou_sema_check_func_inferring(sema, expr->slice, &expr->func, type));
   }
 
   // TODO: push func args
