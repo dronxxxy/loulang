@@ -35,8 +35,25 @@ bool lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
   switch (node->kind) {
     case LOU_AST_NODE_DECL: {
       lou_sema_type_t *type = node->decl.type ? lou_sema_analyze_type(sema, node->decl.type) : NULL;
-      // TODO: check types are equals
-      lou_sema_init_decl(node->decl.sema, lou_sema_analyze_expr(sema, node->decl.initializer, lou_sema_expr_ctx_new(type)));
+      if (node->decl.kind == LOU_AST_DECL_META && type) {
+        lou_sema_err(sema, node->decl.type->slice, "meta declaration should not have a type");
+        type = NULL;
+      }
+      lou_sema_value_t *value = lou_sema_analyze_expr(sema, node->decl.initializer, lou_sema_expr_ctx_new(type));
+      lou_sema_init_decl(node->decl.sema, value);
+      if (!value) {
+        return NULL;
+      }
+      lou_sema_type_t *value_type = lou_sema_value_is_runtime(value);
+      if (type) {
+        if (!value_type) {
+          lou_sema_err(sema, node->decl.type->slice, "trying to assign comptime value #v to runtime declaration", value);
+          return false;
+        }
+        if (!lou_sema_types_eq(type, value_type)) {
+          lou_sema_err(sema, node->decl.type->slice, "types missmatch - expected #T got #T", type, value_type);
+        }
+      }
       break;
     }
   }

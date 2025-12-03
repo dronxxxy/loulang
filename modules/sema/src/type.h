@@ -52,4 +52,6 @@ lou_sema_type_t *lou_sema_type_new_function(lou_mempool_t *mempool, lou_sema_typ
 lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool, lou_sema_type_t *to);
 lou_sema_type_t *lou_sema_type_new_integer(lou_mempool_t *mempool, lou_sema_type_int_t integer);
 
+bool lou_sema_types_eq(const lou_sema_type_t *a, const lou_sema_type_t *b);
+
 void lou_sema_type_print(FILE *stream, lou_sema_type_t *type);

@@ -18,6 +18,16 @@ lou_sema_value_t *lou_fun_builtin(lou_sema_plugin_call_ctx_t *ctx) {
 
   return lou_sema_value_new_type(ctx->sema->mempool, lou_sema_type_new_function(ctx->sema->mempool, (lou_sema_type_func_t) {
     .args = args,
+    .returns = NULL,
+  }));
+}
+
+lou_sema_value_t *lou_ret_fun_builtin(lou_sema_plugin_call_ctx_t *ctx) {
+  if (!lou_sema_plugin_ctx_check_args_count(ctx, 1)) return NULL;
+  lou_sema_type_t *type = LOU_SEMA_PLUGIN_EXPECT_ARG(0, lou_sema_value_is_type, "type");
+
+  return lou_sema_value_new_type(ctx->sema->mempool, lou_sema_type_new_function(ctx->sema->mempool, (lou_sema_type_func_t) {
+    .args = LOU_MEMPOOL_VEC_NEW(ctx->sema->mempool, lou_sema_type_func_arg_t),
     .returns = type
   }));
 }

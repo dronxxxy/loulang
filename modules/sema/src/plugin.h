@@ -16,9 +16,10 @@ typedef lou_sema_value_t *(*lou_sema_plugin_func_t)(lou_sema_plugin_call_ctx_t *
 
 typedef struct lou_sema_plugin_t {
   lou_sema_plugin_func_t func; 
+  lou_sema_type_t **args; // TODO: more flexible arg constraints
 } lou_sema_plugin_t;
 
-lou_sema_plugin_t *lou_sema_plugin_new(lou_mempool_t *mempool, lou_sema_plugin_func_t func);
+lou_sema_plugin_t *lou_sema_plugin_new(lou_mempool_t *mempool, lou_sema_plugin_func_t func, lou_sema_type_t **args);
 bool lou_sema_plugin_ctx_check_args_count(lou_sema_plugin_call_ctx_t *ctx, size_t length);
 
 #define LOU_SEMA_PLUGIN_EXPECT_ARG(NUMBER, CHECK, WHAT) ({ \

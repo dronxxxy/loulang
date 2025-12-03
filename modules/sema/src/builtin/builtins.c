@@ -3,11 +3,14 @@
 #include "builtin/global.h"
 #include "builtin/fun.h"
 #include "builtin/ptr.h"
+#include "lou/core/mempool.h"
 #include "lou/core/slice.h"
+#include "lou/core/vec.h"
 #include "plugin.h"
 #include "sema.h"
 #include "type.h"
 #include "value.h"
+#include <stdarg.h>
 
 static inline void lou_sema_add_type(lou_sema_t *sema, lou_slice_t name, lou_sema_type_t *type) {
   lou_sema_init_decl(
@@ -40,8 +43,31 @@ void lou_sema_apply_builtins(lou_sema_t *sema) {
   lou_sema_add_int(sema, "u64", LOU_SEMA_INT_64, false);
   lou_sema_add_int(sema, "i64", LOU_SEMA_INT_64, true);
 
-  lou_sema_add_plugin(sema, "@global", lou_sema_plugin_new(sema->mempool, lou_global_builtin));
-  lou_sema_add_plugin(sema, "@extern", lou_sema_plugin_new(sema->mempool, lou_extern_builtin));
-  lou_sema_add_plugin(sema, "@procFun", lou_sema_plugin_new(sema->mempool, lou_fun_builtin));
-  lou_sema_add_plugin(sema, "@ptr", lou_sema_plugin_new(sema->mempool, lou_ptr_builtin));
+  lou_sema_add_plugin(sema, "@global", lou_sema_plugin_new(sema->mempool, lou_global_builtin, ({
+    lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
+    *LOU_VEC_PUSH(&args) = lou_sema_type_new_string(sema->mempool);
+    *LOU_VEC_PUSH(&args) = NULL;
+    args;
+  })));
+  lou_sema_add_plugin(sema, "@extern", lou_sema_plugin_new(sema->mempool, lou_extern_builtin, ({
+    lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
+    *LOU_VEC_PUSH(&args) = lou_sema_type_new_string(sema->mempool);
+    *LOU_VEC_PUSH(&args) = NULL;
+    args;
+  })));
+  lou_sema_add_plugin(sema, "@procFun", lou_sema_plugin_new(sema->mempool, lou_fun_builtin, ({
+    lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
+    *LOU_VEC_PUSH(&args) = NULL;
+    args;
+  })));
+  lou_sema_add_plugin(sema, "@retFun", lou_sema_plugin_new(sema->mempool, lou_ret_fun_builtin, ({
+    lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
+    *LOU_VEC_PUSH(&args) = NULL;
+    args;
+  })));
+  lou_sema_add_plugin(sema, "@ptr", lou_sema_plugin_new(sema->mempool, lou_ptr_builtin, ({
+    lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
+    *LOU_VEC_PUSH(&args) = NULL;
+    args;
+  })));
 }

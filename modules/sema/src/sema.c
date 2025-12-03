@@ -1,5 +1,6 @@
 #include "sema.h"
 #include "analyze/node.h"
+#include "lou/core/assertions.h"
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
 #include "lou/core/vec.h"
@@ -51,19 +52,23 @@ static inline bool lou_sema_decl_is_initialized(lou_sema_decl_t *decl) {
   return decl->prefetch_node == NULL;
 }
 
+lou_sema_value_t *lou_sema_decl_ensure_initialized(lou_sema_t *sema, lou_sema_decl_t *decl) {
+  if (lou_sema_decl_is_initialized(decl)) {
+    assert(decl->value);
+    return decl->value;
+  }
+  if (!lou_sema_analyze_node(sema, decl->prefetch_node)) {
+    return NULL;
+  }
+  assert(decl->value);
+  return decl->value;
+}
+
 lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
   for (ssize_t i = lou_vec_len(sema->global_decls) - 1; i >= 0; i--) {
     lou_sema_decl_t *decl = sema->global_decls[i];
     if (lou_slice_eq(decl->name, name)) {
-      if (lou_sema_decl_is_initialized(decl)) {
-        assert(decl->value);
-        return decl->value;
-      }
-      if (!lou_sema_analyze_node(sema, decl->prefetch_node)) {
-        return NULL;
-      }
-      assert(decl->value);
-      return decl->value;
+      return lou_sema_decl_ensure_initialized(sema, decl);
     }
   }
   lou_sema_err(sema, name, "declaration `#S` was not found!", name);
@@ -71,6 +76,10 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
 }
 
 lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_slice_t slice, lou_slice_t *arg_slices, lou_sema_value_t **args) {
+  if (lou_vec_len(args) != lou_vec_len(plugin->args)) {
+    lou_sema_err(sema, slice, "plugin takes #l arguments but #l were passsed", lou_vec_len(plugin->args), lou_vec_len(args));
+    return NULL;
+  }
   lou_sema_plugin_call_ctx_t ctx = {
     .slice = slice,
     .sema = sema,
@@ -100,15 +109,16 @@ lou_sema_scope_frame_t *lou_sema_pop_scope_frame(lou_sema_t *sema) {
 
 void lou_sema_push_scope(lou_sema_t *sema) {
   assert(lou_vec_len(sema->scope_frames) > 0);
-  lou_sema_scope_add(*LOU_VEC_LAST(sema->scope_frames));
+  lou_sema_scope_add(sema->mempool, *LOU_VEC_LAST(sema->scope_frames));
 }
 
-void lou_sema_pop_scope(lou_sema_t *sema) {
+lou_sema_scope_t *lou_sema_pop_scope(lou_sema_t *sema) {
   assert(lou_vec_len(sema->scope_frames) > 0);
-  lou_sema_scope_add(*LOU_VEC_LAST(sema->scope_frames));
+  return lou_sema_scope_pop(*LOU_VEC_LAST(sema->scope_frames));
 }
 
 void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt) {
   assert(lou_vec_len(sema->scope_frames) > 0);
   lou_sema_scope_frame_push_instr(*LOU_VEC_LAST(sema->scope_frames), stmt);
 }
+

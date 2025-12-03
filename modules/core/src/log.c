@@ -23,7 +23,6 @@ inline void lou_log_puts_va(FILE *stream, const char *fmt, va_list list) {
       fputc(fmt[i], stream);
     }
   }
-  fputc('\n', stream);
 }
 
 inline void lou_log_fmt_va(lou_log_level_t level, const char *fmt, va_list list) {
@@ -38,6 +37,7 @@ inline void lou_log_fmt_va(lou_log_level_t level, const char *fmt, va_list list)
 
   fprintf(info->output, "\033[1;%dm" "%s: " "\033[0m", info->color, info->name);
   lou_log_puts_va(info->output, fmt, list);
+  fputc('\n', info->output);
 }
 
 void lou_log_fmt(lou_log_level_t level, const char *fmt, ...) {

@@ -17,8 +17,8 @@ static inline lou_sema_scope_t *lou_sema_scope_new(lou_mempool_t *mempool) {
   return scope;
 }
 
-void lou_sema_scope_add(lou_sema_scope_frame_t *frame) {
-  *LOU_VEC_PUSH(&frame->scopes) = lou_sema_scope_new(frame->mempool);
+void lou_sema_scope_add(lou_mempool_t *mempool, lou_sema_scope_frame_t *frame) {
+  *LOU_VEC_PUSH(&frame->scopes) = lou_sema_scope_new(mempool);
 }
 
 void lou_sema_scope_frame_push_instr(lou_sema_scope_frame_t *frame, lou_hir_stmt_t *stmt) {

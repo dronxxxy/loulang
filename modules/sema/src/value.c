@@ -3,13 +3,14 @@
 #include "lou/core/assertions.h"
 #include "lou/core/log.h"
 #include "sema.h"
+#include <endian.h>
 #include <stdio.h>
 
 void lou_sema_value_print(FILE *stream, lou_sema_value_t *value) {
   switch (value->kind) {
     case LOU_SEMA_VALUE_RUNTIME:
       switch (value->comptime.kind) {
-        case LOU_SEMA_VALUE_RUNTIME_DECL: lou_log_puts(stream, "declaration #T", value->runtime.decl->type); return;
+        case LOU_SEMA_VALUE_RUNTIME_DECL: lou_log_puts(stream, "declaration #T", value->runtime.decl.type); return;
         case LOU_SEMA_VALUE_RUNTIME_CONSTANT: lou_log_puts(stream, "constant #T", value->runtime.constant->type); return;
       }
       break;
@@ -44,11 +45,11 @@ lou_sema_const_t *lou_sema_value_is_const(lou_sema_value_t *value) {
   return value->runtime.constant;
 }
 
-lou_sema_decl_t *lou_sema_value_is_decl(lou_sema_value_t *value) {
+lou_sema_type_t *lou_sema_value_is_decl(lou_sema_value_t *value) {
   if (value->kind != LOU_SEMA_VALUE_RUNTIME || value->runtime.kind != LOU_SEMA_VALUE_RUNTIME_DECL) {
     return NULL;
   }
-  return value->runtime.decl;
+  return value->runtime.decl.type;
 }
 
 lou_slice_t *lou_sema_value_is_const_string(lou_sema_value_t *value) {
@@ -102,10 +103,23 @@ lou_sema_value_t *lou_sema_value_new_constant(lou_mempool_t *mempool, lou_sema_c
   });
 }
 
-lou_sema_value_t *lou_sema_value_new_decl(lou_mempool_t *mempool, lou_sema_decl_t *decl) {
+lou_sema_value_t *lou_sema_value_new_global_decl(lou_mempool_t *mempool, lou_sema_type_t *type) {
   return lou_sema_value_new_runtime(mempool, (lou_sema_value_runtime_t) {
     .kind = LOU_SEMA_VALUE_RUNTIME_DECL,
-    .decl = decl,
+    .decl = {
+      .kind = LOU_SEMA_VALUE_DECL_GLOBAL,
+      .type = type,
+    },
   });
 }
 
+lou_sema_type_t *lou_sema_value_is_runtime(lou_sema_value_t *value) {
+  if (value->kind != LOU_SEMA_VALUE_RUNTIME) {
+    return NULL;
+  }
+  switch (value->runtime.kind) {
+    case LOU_SEMA_VALUE_RUNTIME_CONSTANT: return value->runtime.constant->type;
+    case LOU_SEMA_VALUE_RUNTIME_DECL: return value->runtime.decl.type;
+  }
+  UNREACHABLE();
+}

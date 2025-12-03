@@ -56,6 +56,18 @@ void *lou_vec_last(void *vec) {
   return lou_vec_at(vec, lou_vec_len(vec) - 1);
 }
 
+bool lou_vec_eq(const void *a, const void *b, lou_veq_func_t eq) {
+  if (lou_vec_len(a) != lou_vec_len(b)) {
+    return false;
+  }
+  for (size_t i = 0; i < lou_vec_len(a); i++) {
+    if (!eq(lou_vec_at((void*)a, i), lou_vec_at((void*)b, i))) {
+      return false;
+    }
+  }
+  return false;
+}
+
 void *lou_vec_push(void **vec) {
   lou_vec_header_t *header = lou_vec_header(*vec);
   void *old = vec;

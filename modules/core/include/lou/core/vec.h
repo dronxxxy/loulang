@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 
 void *lou_vec_new_with_capacity(size_t size, size_t capacity);
@@ -14,6 +15,9 @@ void lou_vec_unshift(void **vec);
 size_t lou_vec_len(const void *vec);
 void *lou_vec_at(void *vec, size_t id);
 void *lou_vec_last(void *vec);
+
+typedef bool (*lou_veq_func_t)(const void *a, const void *b);
+bool lou_vec_eq(const void *a, const void *b, lou_veq_func_t eq);
 
 void lou_vec_link(void *vec, void **link);
 void lou_vec_unlink(void *vec);
