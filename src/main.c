@@ -13,9 +13,9 @@
 #include "lou/llvm/module.h"
 #include <string.h>
 
-void call_putchar(lou_mempool_t *mempool, lou_hir_stmt_t ***stmts, lou_hir_decl_t *put_char, char c) {
+void call_putchar(lou_mempool_t *mempool, lou_hir_code_t *code, lou_hir_decl_t *put_char, char c) {
   lou_hir_type_t *type_u8 = lou_hir_type_new_integer(mempool, LOU_HIR_INT_8, false);
-  *LOU_VEC_PUSH(stmts) = lou_hir_stmt_new_call(mempool, (lou_hir_stmt_call_t) {
+  lou_hir_code_append_stmt(code, lou_hir_stmt_new_call(mempool, (lou_hir_stmt_call_t) {
     .output = NULL,
     .callable = lou_hir_value_new_decl(mempool, put_char),
     .args = ({
@@ -23,8 +23,7 @@ void call_putchar(lou_mempool_t *mempool, lou_hir_stmt_t ***stmts, lou_hir_decl_
       *LOU_VEC_PUSH(&args) = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_u8, c));
       args;
     }),
-  });
-
+  }));
 }
 
 lou_hir_t *build_hir(lou_mempool_t *mempool) {
@@ -49,15 +48,11 @@ lou_hir_t *build_hir(lou_mempool_t *mempool) {
 
   lou_hir_func_t *main_func = lou_hir_func_new(mempool);
   lou_hir_func_set_global(main_func, lou_slice_from_cstr("main"));
-  lou_hir_func_init(main_func, lou_hir_code_new(mempool, ({
-    lou_hir_stmt_t **stmts = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_stmt_t*);
-    const char *message = "hello, world!\n";
-    for (size_t i = 0; i < strlen(message); i++) {
-      call_putchar(mempool, &stmts, put_char, message[i]);
-    }
-    *LOU_VEC_PUSH(&stmts) = lou_hir_stmt_new_ret(mempool, lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, 0)));
-    stmts;
-  })));
+  const char *message = "hello, world!\n";
+  for (size_t i = 0; i < strlen(message); i++) {
+    call_putchar(mempool, main_func->code, put_char, message[i]);
+  }
+  lou_hir_code_append_stmt(main_func->code, lou_hir_stmt_new_ret(mempool, lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, 0))));
   lou_hir_decl_init(main, lou_hir_const_new_func(mempool,
       lou_hir_type_new_func(mempool, LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*), type_i32),
       main_func

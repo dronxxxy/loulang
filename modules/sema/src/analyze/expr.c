@@ -4,6 +4,7 @@
 #include "lou/core/assertions.h"
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
+#include "lou/hir/code.h"
 #include "lou/hir/func.h"
 #include "scope.h"
 #include "sema.h"
@@ -59,14 +60,10 @@ lou_sema_value_t *lou_sema_analyze_func_expr(lou_sema_t *sema, lou_ast_expr_t *e
   }
 
   // TODO: push func args
-  lou_sema_push_scope_frame(sema, lou_sema_scope_frame_new(sema->mempool, type->func.returns));
-  lou_sema_scope_t *scope = lou_sema_analyze_body(sema, expr->func.body);
-  lou_sema_pop_scope_frame(sema);
-
-  if (!scope) return NULL;
-  lou_hir_code_t *code = lou_sema_scope_get_code(sema->mempool, scope);
   lou_hir_func_t *func = lou_hir_func_new(sema->mempool);
-  lou_hir_func_init(func, code);
+  lou_sema_push_scope_frame(sema, lou_sema_scope_frame_new(sema->mempool, type->func.returns));
+  lou_sema_analyze_body(sema, expr->func.body);
+  lou_sema_pop_scope_frame(sema);
 
   return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_func(sema->mempool, type, func));
 }
@@ -148,7 +145,7 @@ lou_sema_value_t *lou_sema_analyze_runtime_expr(lou_sema_t *sema, lou_ast_expr_t
 }
 
 lou_sema_type_t *lou_sema_analyze_type(lou_sema_t *sema, lou_ast_expr_t *expr) {
-  lou_sema_value_t *value = NOT_NULL(lou_sema_analyze_expr(sema, expr, lou_sema_expr_ctx_new(NULL)));
+  lou_sema_value_t *value = NOT_NULL(lou_sema_analyze_expr(sema, expr, lou_sema_expr_ctx_new(sema->mempool, NULL)));
   lou_sema_type_t *type = lou_sema_value_is_type(value);
   if (!type) {
     lou_sema_err(sema, expr->slice, "expected type got #v", value);
@@ -160,3 +157,12 @@ lou_sema_expr_ctx_t lou_sema_expr_ctx_nested(lou_sema_expr_ctx_t base, lou_sema_
   base.expectation = type;
   return base;
 }
+
+lou_sema_expr_ctx_t lou_sema_expr_ctx_new(lou_mempool_t *mempool, lou_sema_type_t *expectation) {
+  return (lou_sema_expr_ctx_t) {
+    .expectation = expectation,
+    .code = lou_hir_code_new(mempool),
+  };
+}
+
+lou_sema_expr_ctx_t lou_sema_expr_ctx_nested(lou_sema_expr_ctx_t base, lou_sema_type_t *type);

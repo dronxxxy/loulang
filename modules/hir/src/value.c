@@ -1,5 +1,6 @@
 #include "lou/hir/value.h"
 #include "lou/core/assertions.h"
+#include "lou/hir/code.h"
 #include "lou/hir/decl.h"
 #include "lou/hir/func.h"
 

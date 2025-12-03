@@ -39,7 +39,7 @@ bool lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
         lou_sema_err(sema, node->decl.type->slice, "meta declaration should not have a type");
         type = NULL;
       }
-      lou_sema_value_t *value = lou_sema_analyze_expr(sema, node->decl.initializer, lou_sema_expr_ctx_new(type));
+      lou_sema_value_t *value = lou_sema_analyze_expr(sema, node->decl.initializer, lou_sema_expr_ctx_new(sema->mempool, type));
       lou_sema_init_decl(node->decl.sema, value);
       if (!value) {
         return NULL;
