@@ -16,14 +16,20 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-static inline lou_sema_value_t *lou_sema_add_hir_decl(lou_sema_t *sema, lou_sema_decl_kind_t kind, lou_sema_value_t *value) {
+static inline lou_sema_value_t *lou_sema_add_hir_decl(lou_sema_t *sema, lou_slice_t slice, lou_sema_decl_kind_t kind, lou_sema_value_t *value) {
   if (kind == LOU_SEMA_DECL_META) {
     return value;
   }
   lou_sema_type_t *type = lou_sema_value_is_runtime(value);
-  assert(type);
+  if (!type) {
+    lou_sema_err(sema, slice, "trying to assign #v to runtime declaration. Use `meta` declaration for storing compile-time values", value);
+    return NULL;
+  }
   lou_sema_const_t *constant = lou_sema_value_is_const(value);
-  assert(constant);
+  if (!type) {
+    lou_sema_err(sema, slice, "non-constant initializers are not allowed in global scope, #v was passed", value);
+    return NULL;
+  }
   if (lou_vec_len(sema->scope_frames) > 0) {
     NOT_IMPLEMENTED;
   }
@@ -51,9 +57,9 @@ static inline lou_sema_value_t *lou_sema_add_hir_decl(lou_sema_t *sema, lou_sema
   UNREACHABLE();
 }
 
-void lou_sema_init_decl(lou_sema_t *sema, lou_sema_decl_t *decl, lou_sema_value_t *value) {
+void lou_sema_init_decl(lou_sema_t *sema, lou_slice_t slice, lou_sema_decl_t *decl, lou_sema_value_t *value) {
   decl->prefetch_node = NULL;
-  decl->value = lou_sema_add_hir_decl(sema, decl->kind, value);
+  decl->value = lou_sema_add_hir_decl(sema, slice, decl->kind, value);
 }
 
 
@@ -129,10 +135,7 @@ lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plug
 }
 
 lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema) {
-  return lou_sema_type_new_integer(sema->mempool, (lou_sema_type_int_t) {
-    .size = LOU_SEMA_INT_32,
-    .is_signed = true,
-  });
+  return lou_sema_type_new_integer(sema->mempool, LOU_SEMA_INT_32, true);
 }
 
 lou_hir_local_t *lou_sema_add_final(lou_sema_t *sema, lou_sema_type_t *type) {

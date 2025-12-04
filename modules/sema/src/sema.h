@@ -44,7 +44,7 @@ typedef struct lou_sema_t {
   lou_sema_scope_frame_t **scope_frames;
 } lou_sema_t;
 
-void lou_sema_init_decl(lou_sema_t *sema, lou_sema_decl_t *decl, lou_sema_value_t *value);
+void lou_sema_init_decl(lou_sema_t *sema, lou_slice_t slice, lou_sema_decl_t *decl, lou_sema_value_t *value);
 
 lou_sema_decl_t *lou_sema_add_decl(
   lou_sema_t *sema,

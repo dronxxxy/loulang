@@ -42,7 +42,7 @@ bool lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
         type = NULL;
       }
       lou_sema_value_t *value = lou_sema_analyze_expr(sema, node->decl.initializer, lou_sema_expr_ctx_new(sema->mempool, type, true));
-      lou_sema_init_decl(sema, node->decl.sema, value);
+      lou_sema_init_decl(sema, node->decl.initializer->slice, node->decl.sema, value);
       if (!value) {
         return NULL;
       }
