@@ -41,6 +41,7 @@ typedef enum {
   LOU_AST_EXPR_STRING,
   LOU_AST_EXPR_CALL,
   LOU_AST_EXPR_ARRAY,
+  LOU_AST_EXPR_CHAR,
 } lou_ast_expr_kind_t;
 
 typedef struct lou_ast_expr_t {
@@ -50,6 +51,7 @@ typedef struct lou_ast_expr_t {
   union {
     lou_slice_t ident;
     lou_slice_t string;
+    char character;
     lou_ast_expr_func_t func;
     uint64_t integer;
     lou_ast_expr_call_t call;
@@ -64,6 +66,7 @@ lou_ast_expr_t *lou_ast_expr_new_get_ident(lou_mempool_t *mempool, lou_ast_expr_
 lou_ast_expr_t *lou_ast_expr_new_array(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_array_t array);
 lou_ast_expr_t *lou_ast_expr_new_call(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_call_t call);
 lou_ast_expr_t *lou_ast_expr_new_integer(lou_mempool_t *mempool, lou_slice_t slice, uint64_t integer);
+lou_ast_expr_t *lou_ast_expr_new_char(lou_mempool_t *mempool, lou_slice_t slice, char character);
 lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t slice, lou_slice_t string);
 lou_ast_expr_t *lou_ast_expr_new_func(
   lou_mempool_t *mempool,

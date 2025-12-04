@@ -177,6 +177,13 @@ lou_sema_value_t *lou_sema_analyze_call_expr(lou_sema_t *sema, lou_ast_expr_t *e
 lou_sema_value_t *lou_sema_analyze_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
   switch (expr->kind) {
     case LOU_AST_EXPR_IDENT: return lou_sema_resolve(sema, expr->ident);
+    case LOU_AST_EXPR_CHAR:
+      return lou_sema_value_new_constant(sema->mempool,
+        lou_sema_const_new_integer(sema->mempool,
+          lou_sema_type_new_integer(sema->mempool, LOU_SEMA_INT_8, false),
+          expr->integer
+        )
+      );
     case LOU_AST_EXPR_CALL: return lou_sema_analyze_call_expr(sema, expr, ctx);
     case LOU_AST_EXPR_INTEGER: return lou_sema_analyze_int_expr(sema, expr, ctx);
     case LOU_AST_EXPR_STRING: return lou_sema_analyze_string_expr(sema, expr, ctx);

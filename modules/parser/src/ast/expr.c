@@ -48,6 +48,14 @@ lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t slic
   return expr;
 }
 
+lou_ast_expr_t *lou_ast_expr_new_char(lou_mempool_t *mempool, lou_slice_t slice, char character) {
+  lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
+  expr->kind = LOU_AST_EXPR_CHAR;
+  expr->slice = slice;
+  expr->character = character;
+  return expr;
+}
+
 lou_ast_expr_t *lou_ast_expr_new_func(
   lou_mempool_t *mempool,
   lou_slice_t slice,

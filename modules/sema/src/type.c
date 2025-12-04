@@ -61,10 +61,11 @@ lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool, lou_sema_type
   return type;
 }
 
-lou_sema_type_t *lou_sema_type_new_integer(lou_mempool_t *mempool, lou_sema_type_int_t integer) {
+lou_sema_type_t *lou_sema_type_new_integer(lou_mempool_t *mempool, lou_sema_int_size_t size, bool is_signed) {
   lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);
   type->kind = LOU_SEMA_TYPE_INTEGER;
-  type->integer = integer;
+  type->integer.size = size;
+  type->integer.is_signed = is_signed;
   return type;
 }
 

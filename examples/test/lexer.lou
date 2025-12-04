@@ -3,11 +3,23 @@
 
 # TODO: fix constant externs
 final putChar = @externFun("putchar", @procFun(u8))
+meta Int32 = i32
 
-const main = @global("main", fun () -> i32 {
-  putChar(104) # h
-  putChar(105) # i
-  putChar(10) # \n
+const main = @global("main", fun () -> Int32 {
+  putChar('h')
+  putChar('e')
+  putChar('l')
+  putChar('l')
+  putChar('o')
+  putChar(',')
+  putChar(' ')
+  putChar('w')
+  putChar('o')
+  putChar('r')
+  putChar('l')
+  putChar('d')
+  putChar('!')
+  putChar('\n')
   return 0
 })
 

@@ -30,6 +30,7 @@ typedef enum {
 
   // Complex
   LOU_TOKEN_INTEGER,
+  LOU_TOKEN_CHAR,
   LOU_TOKEN_STRING,
 
   // Internal
@@ -43,6 +44,7 @@ typedef struct {
 
   union {
     uint64_t integer;
+    char character;
     lou_slice_t string;
   };
 } lou_token_t;
@@ -52,6 +54,15 @@ static inline lou_token_t lou_token_new_simple(lou_slice_t slice, size_t line, l
     .slice = slice,
     .line = line,
     .kind = kind,
+  };
+}
+
+static inline lou_token_t lou_token_new_char(lou_slice_t slice, size_t line, char character) {
+  return (lou_token_t) {
+    .slice = slice,
+    .line = line,
+    .kind = LOU_TOKEN_CHAR,
+    .character = character,
   };
 }
 

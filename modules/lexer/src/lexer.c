@@ -5,6 +5,7 @@
 #include "lou/core/mempool.h"
 #include "lou/core/pos_print.h"
 #include "lou/core/slice.h"
+#include "lou/core/vec.h"
 #include "lou/lexer/token.h"
 #include <stdio.h>
 #include <string.h>
@@ -92,7 +93,7 @@ static inline void lou_lexer_begin(lou_lexer_t *lexer) {
   lexer->start_line = lexer->line;
 }
 
-static inline void lexer_skip(lou_lexer_t *lexer, bool (*filter)(char c)) {
+static inline void lou_lexer_skip(lou_lexer_t *lexer, bool (*filter)(char c)) {
   for (char c = lou_lexer_peek(lexer); filter(c) && c != EOI; c = lou_lexer_peek(lexer)) {
     lou_lexer_take(lexer);
   }
@@ -111,7 +112,7 @@ static inline void lou_lexer_skip_non_token(lou_lexer_t *lexer) {
   size_t pos;
   do {
     pos = lexer->pos;
-    lexer_skip(lexer, char_is_whitespace);
+    lou_lexer_skip(lexer, char_is_whitespace);
     lou_lexer_begin(lexer);
     if (lou_lexer_take_if(lexer, '#')) {
       if (lou_lexer_take_if(lexer, '`')) {
@@ -122,7 +123,7 @@ static inline void lou_lexer_skip_non_token(lou_lexer_t *lexer) {
           }
         }
       }
-      lexer_skip(lexer, char_is_not_nl);
+      lou_lexer_skip(lexer, char_is_not_nl);
     }
   } while (pos != lexer->pos);
 }
@@ -157,6 +158,25 @@ static lou_lexer_keyword_t lou_lexer_keywords[] = {
   { .name = "if", .kind = LOU_TOKEN_IF },
 };
 
+static inline char lou_lexer_take_escaped(lou_lexer_t *lexer, char end) {
+  char c = lou_lexer_take(lexer);
+  if (c == '\\') {
+    c = lou_lexer_take(lexer);
+    switch (c) {
+      case '\\': return '\\';
+      case 'n': return '\n';
+      case 'r': return '\r';
+      case 't': return '\t';
+      case '0': return '\0';
+      default:
+        if (c == end) return c;
+        lou_lexer_error(lexer, lou_slice_new(&lexer->content.ptr[lexer->pos - 2], 2), "unknown escape sequence");
+        return c;
+    }
+  }
+  return c;
+}
+
 static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
   lou_lexer_begin(lexer);
   char c = lou_lexer_take(lexer);
@@ -171,14 +191,26 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '=': return lou_lexer_new_simple(lexer, LOU_TOKEN_ASSIGN);
     case ',': return lou_lexer_new_simple(lexer, LOU_TOKEN_COMMA);
     case '.': return lou_lexer_new_simple(lexer, LOU_TOKEN_DOT);
+    case '\'': {
+      char c = lou_lexer_take_escaped(lexer, '\'');
+      if (lou_lexer_take(lexer) != '\'') {
+        lou_lexer_skip(lexer, char_is_not_char_end);
+        lou_lexer_take(lexer);
+        lou_lexer_error(lexer, lou_lexer_slice(lexer), "expected one character or escape sequence");
+      }
+      return lou_token_new_char(lou_lexer_slice(lexer), lexer->start_line, c);
+    }
     case '"': {
-      lexer_skip(lexer, char_is_not_string_end);
+      char *buf = LOU_MEMPOOL_VEC_NEW(lexer->mempool, char);
+      while (lou_lexer_peek(lexer) != '"') {
+        if (lou_lexer_peek(lexer) == EOI) {
+          lou_lexer_error(lexer, lou_lexer_slice(lexer), "unexpected end of input");
+          break;
+        }
+        *LOU_VEC_PUSH(&buf) = lou_lexer_take_escaped(lexer, '"');
+      }
       lou_lexer_take(lexer);
-      // TODO: better strings lexing
-      lou_slice_t string = lou_lexer_slice(lexer);
-      string.ptr++;
-      string.length -= 2;
-      return lou_token_new_string(lou_lexer_slice(lexer), lexer->start_line, string);
+      return lou_token_new_string(lou_lexer_slice(lexer), lexer->start_line, lou_slice_new(buf, lou_vec_len(buf)));
     }
     case EOI: return lou_lexer_new_simple(lexer, LOU_TOKEN_EOI);
     case '-':
@@ -189,7 +221,7 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
 
     default: {
       if (char_is_ident_start(c)) {
-        lexer_skip(lexer, char_is_ident);
+        lou_lexer_skip(lexer, char_is_ident);
         lou_slice_t slice = lou_lexer_slice(lexer);
         for (size_t i = 0; i < sizeof(lou_lexer_keywords) / sizeof(lou_lexer_keyword_t); i++) {
           lou_lexer_keyword_t *keyword = &lou_lexer_keywords[i];
@@ -200,7 +232,7 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
         return lou_lexer_new_simple(lexer, LOU_TOKEN_IDENT);
       }
       if (char_is_digit(c)) {
-        lexer_skip(lexer, char_is_digit);
+        lou_lexer_skip(lexer, char_is_digit);
         lou_slice_t slice = lou_lexer_slice(lexer);
         uint64_t result = 0;
         for (size_t i = 0; i < slice.length; i++) {

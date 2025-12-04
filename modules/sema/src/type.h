@@ -50,7 +50,7 @@ typedef struct lou_sema_type_t {
 lou_sema_type_t *lou_sema_type_new_string(lou_mempool_t *mempool);
 lou_sema_type_t *lou_sema_type_new_function(lou_mempool_t *mempool, lou_sema_type_func_arg_t *args, lou_sema_type_t *returns);
 lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool, lou_sema_type_t *to);
-lou_sema_type_t *lou_sema_type_new_integer(lou_mempool_t *mempool, lou_sema_type_int_t integer);
+lou_sema_type_t *lou_sema_type_new_integer(lou_mempool_t *mempool, lou_sema_int_size_t size, bool is_signed);
 
 bool lou_sema_types_eq(const lou_sema_type_t *a, const lou_sema_type_t *b);
 

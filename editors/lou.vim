@@ -15,14 +15,18 @@ syn region louMultiLineComment start='#`' end='`#' contains=louMultiLineComment
 syn match louIdent "[a-zA-Z_][a-zA-Z0-9_]*"
 syn match louPlugin "@[a-zA-Z0-9_]*"
 syn match louInteger "\d\+"
-syn region louString start='\"' end='\"' contains=louSpecialChar
-syn match louEscapeChar "\\[nrt0"]" containedIn=louString
+syn region louString start='"' end='"' contains=louSpecialChar
+syn region louChar start='\'' end='\'' contains=louSpecialChar
+syn match louEscapeChar "\\[nrt0]" containedIn=louString containedIn=louChar
+syn match louEscapeChar "\\\"" containedIn=louString
+syn match louEscapeChar "\\'" containedIn=louChar
 
 hi def link louKeywords Keyword
 hi def link louPlugin PreProc
 hi def link louMultiLineComment Comment
 hi def link louOneLineComment Comment
 hi def link louString Constant
+hi def link louChar Constant
 hi def link louEscapeChar SpecialChar
 hi def link louInteger Constant
 hi def link louBoolean Constant

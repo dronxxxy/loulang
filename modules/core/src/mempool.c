@@ -27,7 +27,7 @@ void *lou_mempool_alloc(lou_mempool_t *mempool, size_t size, size_t alignment) {
 
 char *lou_mempool_slice_to_cstr(lou_mempool_t *mempool, lou_slice_t slice) {
   char *result = lou_mempool_alloc(mempool, slice.length + 1, 1);
-  memcpy(result, slice.ptr, slice.length + 1);
+  memcpy(result, slice.ptr, slice.length);
   result[slice.length] = '\0';
   return result;
 }
