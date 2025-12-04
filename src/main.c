@@ -15,15 +15,11 @@
 
 void call_putchar(lou_mempool_t *mempool, lou_hir_code_t *code, lou_hir_decl_t *put_char, char c) {
   lou_hir_type_t *type_u8 = lou_hir_type_new_integer(mempool, LOU_HIR_INT_8, false);
-  lou_hir_code_append_stmt(code, lou_hir_stmt_new_call(mempool, (lou_hir_stmt_call_t) {
-    .output = NULL,
-    .callable = lou_hir_value_new_decl(mempool, put_char),
-    .args = ({
-      lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_value_t*);
-      *LOU_VEC_PUSH(&args) = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_u8, c));
-      args;
-    }),
-  }));
+  lou_hir_code_append_stmt(code, lou_hir_stmt_new_call(mempool, NULL, lou_hir_value_new_decl(mempool, put_char), ({
+    lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_value_t*);
+    *LOU_VEC_PUSH(&args) = lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_u8, c));
+    args;
+  })));
 }
 
 lou_hir_t *build_hir(lou_mempool_t *mempool) {
@@ -48,33 +44,34 @@ lou_hir_t *build_hir(lou_mempool_t *mempool) {
 
   lou_hir_func_t *main_func = lou_hir_func_new(mempool);
   lou_hir_func_set_global(main_func, lou_slice_from_cstr("main"));
+
+  lou_hir_code_t *main_code = lou_hir_code_new(mempool);
   const char *message = "hello, world!\n";
   for (size_t i = 0; i < strlen(message); i++) {
-    call_putchar(mempool, main_func->code, put_char, message[i]);
+    call_putchar(mempool, main_code, put_char, message[i]);
   }
-  lou_hir_code_append_stmt(main_func->code, lou_hir_stmt_new_ret(mempool, lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, 0))));
+  lou_hir_code_append_stmt(main_code, lou_hir_stmt_new_ret(mempool, lou_hir_value_new_const(mempool, lou_hir_const_new_integer(mempool, type_i32, 0))));
   lou_hir_decl_init(main, lou_hir_const_new_func(mempool,
       lou_hir_type_new_func(mempool, LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*), type_i32),
       main_func
     )
   );
+  lou_hir_func_init(main_func, main_code);
   return hir;
 }
 
 int main(int argc, char** argv) {
   log_init();
 
-  lou_mempool_t *mempool = lou_mempool_new();
-  lou_llvm_module_t *llvm = lou_llvm_module_new(build_hir(mempool));
-  lou_llvm_module_emit(llvm);
-  lou_llvm_module_dump(llvm, "build/out");
-  lou_llvm_module_free(llvm);
-  lou_mempool_free(mempool);
 
   lou_sema_t *sema = lou_sema_new(lou_slice_from_cstr("./examples/test/lexer.lou"));
   if (!sema) return 1;
   lou_sema_read(sema);
   lou_sema_analyze(sema);
+  lou_llvm_module_t *llvm = lou_llvm_module_new(lou_sema_hir(sema));
+  lou_llvm_module_emit(llvm);
+  lou_llvm_module_dump(llvm, "build/out");
+  lou_llvm_module_free(llvm);
 
   int status = lou_sema_failed(sema) ? 1 : 0;
   lou_sema_free(sema);

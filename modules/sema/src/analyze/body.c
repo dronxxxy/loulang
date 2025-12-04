@@ -15,7 +15,7 @@ static inline void lou_sema_analyze_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt)
   switch (stmt->kind) {
     case LOU_AST_STMT_RETURN: {
       lou_sema_value_t *value = stmt->ret.value ?
-        lou_sema_analyze_runtime_expr(sema, stmt->ret.value, lou_sema_expr_ctx_new(sema->mempool, lou_sema_func_returns(sema))) :
+        lou_sema_analyze_runtime_expr(sema, stmt->ret.value, lou_sema_expr_ctx_new(sema->mempool, lou_sema_func_returns(sema), true)) :
         NULL;
       lou_sema_type_t *returns = lou_sema_func_returns(sema);
       lou_sema_type_t *type = value ? lou_sema_value_is_runtime(value) : NULL;
@@ -27,7 +27,7 @@ static inline void lou_sema_analyze_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt)
       return;
     }
     case LOU_AST_STMT_EXPR:
-      lou_sema_analyze_expr(sema, stmt->expr, lou_sema_expr_ctx_new(sema->mempool, NULL));
+      lou_sema_analyze_expr(sema, stmt->expr, lou_sema_expr_ctx_new(sema->mempool, NULL, false));
       return;
     case LOU_AST_STMT_NODE:
     case LOU_AST_STMT_IF: NOT_IMPLEMENTED;
@@ -35,12 +35,12 @@ static inline void lou_sema_analyze_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt)
   UNREACHABLE();
 }
 
-void lou_sema_analyze_body(lou_sema_t *sema, lou_ast_body_t *body) {
+lou_sema_scope_t *lou_sema_analyze_body(lou_sema_t *sema, lou_ast_body_t *body) {
   lou_sema_push_scope(sema);
   for (size_t i = 0; i < lou_vec_len(body->stmts); i++) {
     lou_sema_analyze_stmt(sema, body->stmts[i]);
     // TODO: control flow check;
   }
-  lou_sema_pop_scope(sema);
+  return lou_sema_pop_scope(sema);
 }
 

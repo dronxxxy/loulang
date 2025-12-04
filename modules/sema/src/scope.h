@@ -20,4 +20,5 @@ typedef struct lou_sema_scope_frame_t {
 lou_sema_scope_frame_t *lou_sema_scope_frame_new(lou_mempool_t *mempool, lou_sema_type_t *returns);
 void lou_sema_scope_frame_push_instr(lou_sema_scope_frame_t *frame, lou_hir_stmt_t *stmt);
 void lou_sema_scope_add(lou_mempool_t *mempool, lou_sema_scope_frame_t *frame);
+lou_hir_local_t *lou_sema_scope_add_local(lou_mempool_t *mempool, lou_sema_scope_frame_t *frame, lou_hir_mutability_t mutability, lou_hir_type_t *type);
 lou_sema_scope_t *lou_sema_scope_pop(lou_sema_scope_frame_t *frame);

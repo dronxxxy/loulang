@@ -1,10 +1,13 @@
 # @fun is built-in plugin
 # meta @fun = @import("@meta/typings").@fun
 
-const putString = @externFun("puts", @procFun(@ptr(u8)))
+# TODO: fix constant externs
+final putChar = @externFun("putchar", @procFun(u8))
 
 const main = @global("main", fun () -> i32 {
-  putString("super\0")
+  putChar(104) # h
+  putChar(105) # i
+  putChar(10) # \n
   return 0
 })
 

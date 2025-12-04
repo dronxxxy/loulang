@@ -14,6 +14,7 @@
 
 static inline void lou_sema_add_type(lou_sema_t *sema, lou_slice_t name, lou_sema_type_t *type) {
   lou_sema_init_decl(
+    sema,
     lou_sema_add_decl(sema, false, name, LOU_SEMA_DECL_META, NULL),
     lou_sema_value_new_type(sema->mempool, type)
   );
@@ -28,6 +29,7 @@ static inline void lou_sema_add_int(lou_sema_t *sema, const char *name, lou_sema
 
 static inline void lou_sema_add_plugin(lou_sema_t *sema, const char *name, lou_sema_plugin_t *plugin) {
   lou_sema_init_decl(
+    sema,
     lou_sema_add_decl(sema, false, lou_slice_from_cstr(name), LOU_SEMA_DECL_META, NULL),
     lou_sema_value_new_plugin(sema->mempool, plugin)
   );

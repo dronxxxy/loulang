@@ -9,10 +9,12 @@ lou_hir_stmt_t *lou_hir_stmt_new_arg(lou_mempool_t *mempool, size_t num, lou_hir
   return stmt;
 }
 
-lou_hir_stmt_t *lou_hir_stmt_new_call(lou_mempool_t *mempool, lou_hir_stmt_call_t call)  {
+lou_hir_stmt_t *lou_hir_stmt_new_call(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *callable, lou_hir_value_t **args) {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_CALL;
-  stmt->call = call;
+  stmt->call.output = output;
+  stmt->call.callable = callable;
+  stmt->call.args = args;
   return stmt;
 }
 

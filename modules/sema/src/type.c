@@ -20,11 +20,11 @@ void lou_sema_type_print(FILE *stream, lou_sema_type_t *type) {
       }
       break;
     case LOU_SEMA_TYPE_FUNCTION:
-      fprintf(stream, "@fun([");
+      fprintf(stream, "@fun((");
       for (size_t i = 0; i < lou_vec_len(type->func.args); i++) {
         lou_log_puts(stream, i == 0 ? "#T" : ", #T", type->func.args[i]);
       }
-      fprintf(stream, "]");
+      fprintf(stream, ")");
       if (type->func.returns) {
         lou_log_puts(stream, ", #T", type->func.returns);
       }

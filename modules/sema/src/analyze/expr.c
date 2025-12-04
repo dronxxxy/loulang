@@ -6,6 +6,7 @@
 #include "lou/core/vec.h"
 #include "lou/hir/code.h"
 #include "lou/hir/func.h"
+#include "lou/hir/hir.h"
 #include "scope.h"
 #include "sema.h"
 #include "type.h"
@@ -62,7 +63,7 @@ lou_sema_value_t *lou_sema_analyze_func_expr(lou_sema_t *sema, lou_ast_expr_t *e
   // TODO: push func args
   lou_hir_func_t *func = lou_hir_func_new(sema->mempool);
   lou_sema_push_scope_frame(sema, lou_sema_scope_frame_new(sema->mempool, type->func.returns));
-  lou_sema_analyze_body(sema, expr->func.body);
+  lou_hir_func_init(func, lou_sema_analyze_body(sema, expr->func.body)->code);
   lou_sema_pop_scope_frame(sema);
 
   return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_func(sema->mempool, type, func));
@@ -97,28 +98,78 @@ lou_sema_value_t *lou_sema_analyze_int_expr(lou_sema_t *sema, lou_ast_expr_t *ex
   return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_integer(sema->mempool, type, expr->integer));
 }
 
-lou_sema_value_t *lou_sema_analyze_call_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
-  bool valid = true;
-  lou_sema_value_t *callable = VALID(lou_sema_analyze_expr(sema, expr->call.inner, lou_sema_expr_ctx_nested(ctx, NULL)));
-  lou_sema_value_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_value_t*);
-  lou_sema_plugin_t *plugin = valid ? lou_sema_value_is_plugin(callable) : NULL;
-  for (size_t i = 0; i < lou_vec_len(expr->call.args); i++) {
-    // TODO: expectation of function arg types if function
-    lou_sema_type_t *expectation = NULL;
-    // TODO: rich plugin arg type resolving
-    if (plugin && i < lou_vec_len(plugin->args)) expectation = plugin->args[i] ? plugin->args[i] : ctx.expectation;
-    *LOU_VEC_PUSH(&args) = VALID(lou_sema_analyze_expr(sema, expr->call.args[i], lou_sema_expr_ctx_nested(ctx, expectation)));
-  }
-  if (!valid) {
+lou_sema_value_t *lou_sema_analyze_call_func_expr(lou_sema_t *sema, lou_slice_t slice, lou_sema_value_t *value, lou_ast_expr_t **ast_args, lou_sema_expr_ctx_t ctx) {
+  lou_sema_type_t *func_type = lou_sema_value_is_runtime(value);
+  assert(func_type);
+  if (lou_vec_len(ast_args) != lou_vec_len(func_type->func.args)) {
+    lou_sema_err(sema, slice, "expected #l arguments but #l were passed", lou_vec_len(ast_args), lou_vec_len(func_type->func.args));
     return NULL;
   }
-  if (plugin) {
-    lou_slice_t *arg_slices = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_slice_t);
-    for (size_t i = 0; i < lou_vec_len(expr->call.args); i++) {
-      *LOU_VEC_PUSH(&arg_slices) = expr->call.args[i]->slice;
+  bool valid = true;
+  lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_hir_value_t*);
+  for (size_t i = 0; i < lou_vec_len(ast_args); i++) {
+    lou_sema_type_t *expectation = func_type->func.args[i].type;
+    lou_sema_value_t *value = VALID(lou_sema_analyze_expr(sema, ast_args[i], lou_sema_expr_ctx_nested(ctx, expectation)));
+    lou_sema_type_t *type = lou_sema_value_is_runtime(value);
+    if (!type) {
+      lou_sema_err(sema, ast_args[i]->slice, "expected runtime value to be passed in function call but #v was passed", value);
+      valid = false;
+      continue;
     }
-    return lou_sema_call_plugin(sema, plugin, expr->call.inner->slice, arg_slices, args);
+    if (!lou_sema_types_eq(expectation, type)) {
+      lou_sema_err(sema, ast_args[i]->slice, "expected argument of type #T but #T was passed", expectation, type);
+      valid = false;
+    }
+    if (value) {
+      *LOU_VEC_PUSH(&args) = lou_sema_emit_value(sema->mempool, value);
+    }
   }
+  if (!valid) return NULL;
+  lou_hir_local_t *output = func_type->func.returns ? lou_sema_add_final(sema, func_type->func.returns) : NULL;
+  if (func_type->func.returns) {
+    if (ctx.valuable) {
+      lou_sema_err(sema, slice, "trying to extract procedure value");
+    }
+    return NULL;
+  }
+  // TODO: optional emitting 
+  lou_sema_push_stmt(sema, lou_hir_stmt_new_call(sema->mempool, output, lou_sema_emit_value(sema->mempool, value), args));
+  return lou_sema_value_new_local_decl(sema->mempool, func_type->func.returns, output);
+}
+
+lou_sema_value_t *lou_sema_analyze_call_plugin_expr(lou_sema_t *sema, lou_slice_t slice, lou_sema_plugin_t *plugin, lou_ast_expr_t **ast_args, lou_sema_expr_ctx_t ctx) {
+  bool valid = true;
+  if (lou_vec_len(ast_args) != lou_vec_len(plugin->args)) {
+    lou_sema_err(sema, slice, "expected #l arguments but #l were passed", lou_vec_len(ast_args), lou_vec_len(plugin->args));
+    return NULL;
+  }
+  lou_sema_value_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_value_t*);
+  for (size_t i = 0; i < lou_vec_len(ast_args); i++) {
+    lou_sema_type_t *expectation = NULL;
+    expectation = plugin->args[i] ? plugin->args[i] : ctx.expectation;
+    *LOU_VEC_PUSH(&args) = VALID(lou_sema_analyze_expr(sema, ast_args[i], lou_sema_expr_ctx_nested(ctx, expectation)));
+  }
+  if (!valid) return NULL;
+  lou_slice_t *arg_slices = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_slice_t);
+  for (size_t i = 0; i < lou_vec_len(args); i++) {
+    *LOU_VEC_PUSH(&arg_slices) = ast_args[i]->slice;
+  }
+  return lou_sema_call_plugin(sema, plugin, slice, arg_slices, args);
+}
+
+lou_sema_value_t *lou_sema_analyze_call_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
+  lou_sema_value_t *callable = NOT_NULL(lou_sema_analyze_expr(sema, expr->call.inner, lou_sema_expr_ctx_nested(ctx, NULL)));
+
+  lou_sema_plugin_t *plugin = lou_sema_value_is_plugin(callable);
+  if (plugin) {
+    return lou_sema_analyze_call_plugin_expr(sema, expr->call.inner->slice, plugin, expr->call.args, ctx);
+  }
+
+  lou_sema_type_t *func_type = lou_sema_value_is_runtime(callable);
+  if (func_type) {
+    return lou_sema_analyze_call_func_expr(sema, expr->call.inner->slice, callable, expr->call.args, ctx);
+  }
+
   lou_sema_err(sema, expr->slice, "#v is not callable", callable);
   return NULL;
 }
@@ -145,7 +196,7 @@ lou_sema_value_t *lou_sema_analyze_runtime_expr(lou_sema_t *sema, lou_ast_expr_t
 }
 
 lou_sema_type_t *lou_sema_analyze_type(lou_sema_t *sema, lou_ast_expr_t *expr) {
-  lou_sema_value_t *value = NOT_NULL(lou_sema_analyze_expr(sema, expr, lou_sema_expr_ctx_new(sema->mempool, NULL)));
+  lou_sema_value_t *value = NOT_NULL(lou_sema_analyze_expr(sema, expr, lou_sema_expr_ctx_new(sema->mempool, NULL, false)));
   lou_sema_type_t *type = lou_sema_value_is_type(value);
   if (!type) {
     lou_sema_err(sema, expr->slice, "expected type got #v", value);
@@ -155,14 +206,13 @@ lou_sema_type_t *lou_sema_analyze_type(lou_sema_t *sema, lou_ast_expr_t *expr) {
 
 lou_sema_expr_ctx_t lou_sema_expr_ctx_nested(lou_sema_expr_ctx_t base, lou_sema_type_t *type) {
   base.expectation = type;
+  base.valuable = true;
   return base;
 }
 
-lou_sema_expr_ctx_t lou_sema_expr_ctx_new(lou_mempool_t *mempool, lou_sema_type_t *expectation) {
+lou_sema_expr_ctx_t lou_sema_expr_ctx_new(lou_mempool_t *mempool, lou_sema_type_t *expectation, bool valuable) {
   return (lou_sema_expr_ctx_t) {
     .expectation = expectation,
-    .code = lou_hir_code_new(mempool),
+    .valuable = valuable,
   };
 }
-
-lou_sema_expr_ctx_t lou_sema_expr_ctx_nested(lou_sema_expr_ctx_t base, lou_sema_type_t *type);

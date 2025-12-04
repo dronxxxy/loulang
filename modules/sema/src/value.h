@@ -2,6 +2,8 @@
 
 #include "const.h"
 #include "lou/core/mempool.h"
+#include "lou/hir/code.h"
+#include "lou/hir/hir.h"
 #include "type.h"
 #include <stdio.h>
 #include <stdbool.h>
@@ -42,6 +44,11 @@ typedef struct {
     struct {
       lou_sema_value_decl_kind_t kind;
       lou_sema_type_t *type;
+
+      union {
+        lou_hir_local_t *local;
+        lou_hir_decl_t *global;
+      };
     } decl;
   };
 } lou_sema_value_runtime_t;
@@ -63,7 +70,8 @@ typedef struct lou_sema_value_t {
 lou_sema_value_t *lou_sema_value_new_plugin(lou_mempool_t *mempool, lou_sema_plugin_t *plugin);
 lou_sema_value_t *lou_sema_value_new_type(lou_mempool_t *mempool, lou_sema_type_t *type);
 lou_sema_value_t *lou_sema_value_new_constant(lou_mempool_t *mempool, lou_sema_const_t *constant);
-lou_sema_value_t *lou_sema_value_new_global_decl(lou_mempool_t *mempool, lou_sema_type_t *type);
+lou_sema_value_t *lou_sema_value_new_local_decl(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_local_t *local);
+lou_sema_value_t *lou_sema_value_new_global_decl(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_decl_t *global);
 
 lou_sema_plugin_t *lou_sema_value_is_plugin(lou_sema_value_t *value);
 lou_sema_type_t *lou_sema_value_is_type(lou_sema_value_t *value);

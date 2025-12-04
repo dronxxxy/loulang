@@ -2,6 +2,7 @@
 
 #include "lou/core/mempool.h"
 #include "lou/hir/code.h"
+#include "lou/hir/hir.h"
 #include "lou/parser/ast/node.h"
 #include "lou/parser/parser.h"
 #include "scope.h"
@@ -37,12 +38,13 @@ typedef struct lou_sema_t {
   lou_ast_node_t **nodes;
   bool failed;
   
+  lou_hir_t *hir;
   lou_ast_node_t **node_stack;
   lou_sema_decl_t **global_decls;
   lou_sema_scope_frame_t **scope_frames;
 } lou_sema_t;
 
-void lou_sema_init_decl(lou_sema_decl_t *decl, lou_sema_value_t *value);
+void lou_sema_init_decl(lou_sema_t *sema, lou_sema_decl_t *decl, lou_sema_value_t *value);
 
 lou_sema_decl_t *lou_sema_add_decl(
   lou_sema_t *sema,
@@ -62,6 +64,7 @@ void lou_sema_push_scope_frame(lou_sema_t *sema, lou_sema_scope_frame_t *frame);
 lou_sema_scope_frame_t *lou_sema_pop_scope_frame(lou_sema_t *sema);
 void lou_sema_push_scope(lou_sema_t *sema);
 lou_sema_scope_t *lou_sema_pop_scope(lou_sema_t *sema);
+lou_hir_local_t *lou_sema_add_final(lou_sema_t *sema, lou_sema_type_t *type);
 lou_sema_type_t *lou_sema_func_returns(lou_sema_t *sema);
 
 lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema);

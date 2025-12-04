@@ -13,6 +13,10 @@ void lou_hir_func_set_global(lou_hir_func_t *func, lou_slice_t name) {
 lou_hir_func_t *lou_hir_func_new(lou_mempool_t *mempool) {
   lou_hir_func_t *func = LOU_MEMPOOL_ALLOC(mempool, lou_hir_func_t);
   func->name = (lou_opt_slice_t) { false };
-  func->code = lou_hir_code_new(mempool);
+  func->code = NULL;
   return func;
+}
+
+void lou_hir_func_init(lou_hir_func_t *func, lou_hir_code_t *code) {
+  func->code = code;
 }

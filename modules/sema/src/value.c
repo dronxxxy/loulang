@@ -2,6 +2,7 @@
 #include "const.h"
 #include "lou/core/assertions.h"
 #include "lou/core/log.h"
+#include "lou/hir/code.h"
 #include "sema.h"
 #include <endian.h>
 #include <stdio.h>
@@ -103,12 +104,24 @@ lou_sema_value_t *lou_sema_value_new_constant(lou_mempool_t *mempool, lou_sema_c
   });
 }
 
-lou_sema_value_t *lou_sema_value_new_global_decl(lou_mempool_t *mempool, lou_sema_type_t *type) {
+lou_sema_value_t *lou_sema_value_new_local_decl(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_local_t *local) {
+  return lou_sema_value_new_runtime(mempool, (lou_sema_value_runtime_t) {
+    .kind = LOU_SEMA_VALUE_RUNTIME_DECL,
+    .decl = {
+      .kind = LOU_SEMA_VALUE_DECL_LOCAL,
+      .type = type,
+      .local = local,
+    },
+  });
+}
+
+lou_sema_value_t *lou_sema_value_new_global_decl(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_decl_t *global) {
   return lou_sema_value_new_runtime(mempool, (lou_sema_value_runtime_t) {
     .kind = LOU_SEMA_VALUE_RUNTIME_DECL,
     .decl = {
       .kind = LOU_SEMA_VALUE_DECL_GLOBAL,
       .type = type,
+      .global = global,
     },
   });
 }

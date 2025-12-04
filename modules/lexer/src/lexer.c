@@ -171,10 +171,15 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '=': return lou_lexer_new_simple(lexer, LOU_TOKEN_ASSIGN);
     case ',': return lou_lexer_new_simple(lexer, LOU_TOKEN_COMMA);
     case '.': return lou_lexer_new_simple(lexer, LOU_TOKEN_DOT);
-    case '"':
+    case '"': {
       lexer_skip(lexer, char_is_not_string_end);
       lou_lexer_take(lexer);
-      return lou_token_new_string(lou_lexer_slice(lexer), lexer->start_line, lou_lexer_slice(lexer));
+      // TODO: better strings lexing
+      lou_slice_t string = lou_lexer_slice(lexer);
+      string.ptr++;
+      string.length -= 2;
+      return lou_token_new_string(lou_lexer_slice(lexer), lexer->start_line, string);
+    }
     case EOI: return lou_lexer_new_simple(lexer, LOU_TOKEN_EOI);
     case '-':
       if (lou_lexer_take_if(lexer, '>')) {

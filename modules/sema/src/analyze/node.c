@@ -2,6 +2,8 @@
 #include "analyze/expr.h"
 #include "lou/core/assertions.h"
 #include "lou/core/vec.h"
+#include "lou/hir/decl.h"
+#include "lou/hir/hir.h"
 #include "lou/parser/ast/decl.h"
 #include "sema.h"
 
@@ -39,8 +41,8 @@ bool lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
         lou_sema_err(sema, node->decl.type->slice, "meta declaration should not have a type");
         type = NULL;
       }
-      lou_sema_value_t *value = lou_sema_analyze_expr(sema, node->decl.initializer, lou_sema_expr_ctx_new(sema->mempool, type));
-      lou_sema_init_decl(node->decl.sema, value);
+      lou_sema_value_t *value = lou_sema_analyze_expr(sema, node->decl.initializer, lou_sema_expr_ctx_new(sema->mempool, type, true));
+      lou_sema_init_decl(sema, node->decl.sema, value);
       if (!value) {
         return NULL;
       }

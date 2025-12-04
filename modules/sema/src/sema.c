@@ -1,9 +1,12 @@
 #include "sema.h"
 #include "analyze/node.h"
+#include "analyze/value.h"
 #include "lou/core/assertions.h"
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
 #include "lou/core/vec.h"
+#include "lou/hir/decl.h"
+#include "lou/hir/hir.h"
 #include "lou/parser/ast/decl.h"
 #include "plugin.h"
 #include "scope.h"
@@ -13,10 +16,46 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-void lou_sema_init_decl(lou_sema_decl_t *decl, lou_sema_value_t *value) {
-  decl->prefetch_node = NULL;
-  decl->value = value;
+static inline lou_sema_value_t *lou_sema_add_hir_decl(lou_sema_t *sema, lou_sema_decl_kind_t kind, lou_sema_value_t *value) {
+  if (kind == LOU_SEMA_DECL_META) {
+    return value;
+  }
+  lou_sema_type_t *type = lou_sema_value_is_runtime(value);
+  assert(type);
+  lou_sema_const_t *constant = lou_sema_value_is_const(value);
+  assert(constant);
+  if (lou_vec_len(sema->scope_frames) > 0) {
+    NOT_IMPLEMENTED;
+  }
+  switch (kind) {
+    case LOU_SEMA_DECL_META: UNREACHABLE();
+    case LOU_SEMA_DECL_CONSTANT: {
+      lou_hir_decl_t *decl = lou_hir_decl_new(sema->mempool, LOU_HIR_IMMUTABLE, lou_sema_emit_type(sema->mempool, type));
+      lou_hir_decl_add(sema->hir, decl);
+      lou_hir_decl_init(decl, lou_sema_emit_const(sema->mempool, constant));
+      return value;
+    }
+    case LOU_SEMA_DECL_FINAL: {
+      lou_hir_decl_t *decl = lou_hir_decl_new(sema->mempool, LOU_HIR_IMMUTABLE, lou_sema_emit_type(sema->mempool, type));
+      lou_hir_decl_add(sema->hir, decl);
+      lou_hir_decl_init(decl, lou_sema_emit_const(sema->mempool, constant));
+      return lou_sema_value_new_global_decl(sema->mempool, type, decl);
+    }
+    case LOU_SEMA_DECL_VARIABLE: {
+      lou_hir_decl_t *decl = lou_hir_decl_new(sema->mempool, LOU_HIR_MUTABLE, lou_sema_emit_type(sema->mempool, type));
+      lou_hir_decl_add(sema->hir, decl);
+      lou_hir_decl_init(decl, lou_sema_emit_const(sema->mempool, constant));
+      return lou_sema_value_new_global_decl(sema->mempool, type, decl);
+    }
+  }
+  UNREACHABLE();
 }
+
+void lou_sema_init_decl(lou_sema_t *sema, lou_sema_decl_t *decl, lou_sema_value_t *value) {
+  decl->prefetch_node = NULL;
+  decl->value = lou_sema_add_hir_decl(sema, decl->kind, value);
+}
+
 
 lou_sema_decl_t *lou_sema_add_decl(
   lou_sema_t *sema,
@@ -96,6 +135,12 @@ lou_sema_type_t *lou_sema_default_integer_type(lou_sema_t *sema) {
   });
 }
 
+lou_hir_local_t *lou_sema_add_final(lou_sema_t *sema, lou_sema_type_t *type) {
+  assert(lou_vec_len(sema->scope_frames));
+  lou_sema_scope_frame_t *frame = *LOU_VEC_LAST(sema->scope_frames);
+  return lou_sema_scope_add_local(sema->mempool, frame, LOU_HIR_IMMUTABLE, lou_sema_emit_type(sema->mempool, type));
+}
+
 void lou_sema_push_scope_frame(lou_sema_t *sema, lou_sema_scope_frame_t *frame) {
   *LOU_VEC_PUSH(&sema->scope_frames) = frame;
 }
@@ -125,4 +170,8 @@ void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt) {
 lou_sema_type_t *lou_sema_func_returns(lou_sema_t *sema) {
   assert(lou_vec_len(sema->scope_frames) > 0);
   return (*LOU_VEC_LAST(sema->scope_frames))->returns;
+}
+
+lou_hir_t *lou_sema_hir(const lou_sema_t *sema) {
+  return sema->hir;
 }

@@ -1,6 +1,7 @@
 #include "analyze/node.h"
 #include "builtin/builtins.h"
 #include "lou/core/vec.h"
+#include "lou/hir/hir.h"
 #include "lou/sema/sema.h"
 #include "lou/core/mempool.h"
 #include "lou/parser/parser.h"
@@ -19,6 +20,7 @@ lou_sema_t *lou_sema_new(lou_slice_t path) {
   sema->node_stack = LOU_MEMPOOL_VEC_NEW(mempool, lou_ast_node_t*);
   sema->global_decls = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_decl_t*);
   sema->scope_frames = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_scope_frame_t*);
+  sema->hir = lou_hir_new(mempool);
   sema->failed = false;
   return sema;
 }
