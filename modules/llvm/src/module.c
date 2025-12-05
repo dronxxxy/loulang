@@ -70,10 +70,20 @@ void lou_llvm_module_emit(lou_llvm_module_t *llvm) {
   }
   for (size_t i = 0; i < lou_vec_len(llvm->hir->externs); i++) {
     lou_hir_extern_t *external = llvm->hir->externs[i];
+    bool skip = false;
+    for (size_t j = 0; j < i; j++) {
+      lou_hir_extern_t *prev_external = llvm->hir->externs[j];
+      if (lou_slice_eq(external->name, prev_external->name)) {
+        external->codegen = prev_external->codegen;
+        skip = true;
+        break;
+      }
+    }
+    if (skip) continue;
     external->codegen = lou_llvm_extern_decl(llvm, external->name, external->type);
   }
 
-  for (size_t i = 0; i < lou_vec_len(llvm->hir->externs); i++) {
+  for (size_t i = 0; i < lou_vec_len(llvm->hir->functions); i++) {
     lou_llvm_emit_function(llvm, llvm->hir->functions[i]);
   }
 }
