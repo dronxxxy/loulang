@@ -1,25 +1,7 @@
-# @fun is built-in plugin
-# meta @fun = @import("@meta/typings").@fun
+final putCString = @externFun("puts", @procFun(@ptr(u8)))
 
-# TODO: fix constant externs
-final putChar = @externFun("putchar", @procFun(u8))
-meta Int32 = i32
-
-const main = @global("main", fun () -> Int32 {
-  putChar('h')
-  putChar('e')
-  putChar('l')
-  putChar('l')
-  putChar('o')
-  putChar(',')
-  putChar(' ')
-  putChar('w')
-  putChar('o')
-  putChar('r')
-  putChar('l')
-  putChar('d')
-  putChar('!')
-  putChar('\n')
+const main = @global("main", fun () -> i32 {
+  putCString(c"hello, world!")
   return 0
 })
 

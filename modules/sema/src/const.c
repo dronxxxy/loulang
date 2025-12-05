@@ -20,11 +20,18 @@ lou_sema_const_t *lou_sema_const_new_integer(lou_mempool_t *mempool, lou_sema_ty
   return constant;
 }
 
-lou_sema_const_t *lou_sema_const_new_string(lou_mempool_t *mempool, lou_sema_type_t *type, lou_slice_t string) {
-  assert(type->kind == LOU_SEMA_TYPE_STRING);
+lou_sema_const_t *lou_sema_const_new_cstring(lou_mempool_t *mempool, lou_slice_t string) {
+  lou_sema_const_t *constant = LOU_MEMPOOL_ALLOC(mempool, lou_sema_const_t);
+  constant->kind = LOU_SEMA_CONST_CSTRING;
+  constant->type = lou_sema_type_new_pointer(mempool, lou_sema_type_new_integer(mempool, LOU_SEMA_INT_8, false));
+  constant->string = string;
+  return constant;
+}
+
+lou_sema_const_t *lou_sema_const_new_string(lou_mempool_t *mempool, lou_slice_t string) {
   lou_sema_const_t *constant = LOU_MEMPOOL_ALLOC(mempool, lou_sema_const_t);
   constant->kind = LOU_SEMA_CONST_STRING;
-  constant->type = type;
+  constant->type = lou_sema_type_new_string(mempool);
   constant->string = string;
   return constant;
 }

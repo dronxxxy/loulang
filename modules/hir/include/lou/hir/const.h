@@ -9,6 +9,7 @@ typedef struct lou_hir_extern_t lou_hir_extern_t;
 
 typedef enum {
   LOU_HIR_CONST_INTEGER,
+  LOU_HIR_CONST_STRING,
   LOU_HIR_CONST_FUNCTION,
   LOU_HIR_CONST_EXTERNAL,
 } lou_hir_const_kind_t;
@@ -22,11 +23,17 @@ typedef struct lou_hir_const_t {
       uint64_t value;
     } integer;
 
+    struct {
+      lou_slice_t content;
+      bool null_terminated;
+    } string;
+
     lou_hir_extern_t *external;
     lou_hir_func_t *func;
   };
 } lou_hir_const_t;
 
 lou_hir_const_t *lou_hir_const_new_integer(lou_mempool_t *mempool, lou_hir_type_t *type, uint64_t value);
+lou_hir_const_t *lou_hir_const_new_string(lou_mempool_t *mempool, lou_slice_t content, bool null_terminated);
 lou_hir_const_t *lou_hir_const_new_func(lou_mempool_t *mempool, lou_hir_func_t *func);
 lou_hir_const_t *lou_hir_const_new_extern(lou_mempool_t *mempool, lou_hir_extern_t *external);

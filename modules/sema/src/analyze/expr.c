@@ -90,7 +90,13 @@ lou_sema_value_t *lou_sema_analyze_array_expr(lou_sema_t *sema, lou_ast_expr_t *
 }
 
 lou_sema_value_t *lou_sema_analyze_string_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
-  return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_string(sema->mempool, lou_sema_type_new_string(sema->mempool), expr->string));
+  switch (expr->string.kind) {
+    case LOU_TOKEN_STRING_NORMAL:
+      return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_string(sema->mempool, expr->string.content));
+    case LOU_TOKEN_STRING_C:
+      return lou_sema_value_new_constant(sema->mempool, lou_sema_const_new_cstring(sema->mempool, expr->string.content));
+  }
+  UNREACHABLE();
 }
 
 lou_sema_value_t *lou_sema_analyze_int_expr(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {

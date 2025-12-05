@@ -15,8 +15,9 @@ syn region louMultiLineComment start='#`' end='`#' contains=louMultiLineComment
 syn match louIdent "[a-zA-Z_][a-zA-Z0-9_]*"
 syn match louPlugin "@[a-zA-Z0-9_]*"
 syn match louInteger "\d\+"
-syn region louString start='"' end='"' contains=louSpecialChar
-syn region louChar start='\'' end='\'' contains=louSpecialChar
+syn region louString start='c"' end='"'
+syn region louString start='"' end='"'
+syn region louChar start='\'' end='\''
 syn match louEscapeChar "\\[nrt0]" containedIn=louString containedIn=louChar
 syn match louEscapeChar "\\\"" containedIn=louString
 syn match louEscapeChar "\\'" containedIn=louChar

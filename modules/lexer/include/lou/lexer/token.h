@@ -37,6 +37,11 @@ typedef enum {
   LOU_TOKEN_EOI, LOU_TOKEN_FAILED,
 } lou_token_kind_t;
 
+typedef enum {
+  LOU_TOKEN_STRING_NORMAL,
+  LOU_TOKEN_STRING_C,
+} lou_token_string_kind_t;
+
 typedef struct {
   lou_token_kind_t kind;
   size_t line;
@@ -45,7 +50,10 @@ typedef struct {
   union {
     uint64_t integer;
     char character;
-    lou_slice_t string;
+    struct {
+      lou_slice_t content;
+      lou_token_string_kind_t kind;
+    } string;
   };
 } lou_token_t;
 
@@ -66,12 +74,15 @@ static inline lou_token_t lou_token_new_char(lou_slice_t slice, size_t line, cha
   };
 }
 
-static inline lou_token_t lou_token_new_string(lou_slice_t slice, size_t line, lou_slice_t string) {
+static inline lou_token_t lou_token_new_string(lou_slice_t slice, size_t line, lou_slice_t string, lou_token_string_kind_t kind) {
   return (lou_token_t) {
     .slice = slice,
     .line = line,
     .kind = LOU_TOKEN_STRING,
-    .string = string,
+    .string = {
+      .kind = kind,
+      .content = string,
+    }
   };
 }
 

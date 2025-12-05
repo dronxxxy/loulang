@@ -2,6 +2,7 @@
 
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
+#include "lou/lexer/token.h"
 #include "lou/parser/ast/body.h"
 #include <stdint.h>
 
@@ -50,7 +51,10 @@ typedef struct lou_ast_expr_t {
 
   union {
     lou_slice_t ident;
-    lou_slice_t string;
+    struct {
+      lou_slice_t content;
+      lou_token_string_kind_t kind;
+    } string;
     char character;
     lou_ast_expr_func_t func;
     uint64_t integer;
@@ -67,7 +71,7 @@ lou_ast_expr_t *lou_ast_expr_new_array(lou_mempool_t *mempool, lou_slice_t slice
 lou_ast_expr_t *lou_ast_expr_new_call(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_call_t call);
 lou_ast_expr_t *lou_ast_expr_new_integer(lou_mempool_t *mempool, lou_slice_t slice, uint64_t integer);
 lou_ast_expr_t *lou_ast_expr_new_char(lou_mempool_t *mempool, lou_slice_t slice, char character);
-lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t slice, lou_slice_t string);
+lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t slice, lou_slice_t string, lou_token_string_kind_t kind);
 lou_ast_expr_t *lou_ast_expr_new_func(
   lou_mempool_t *mempool,
   lou_slice_t slice,

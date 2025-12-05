@@ -23,6 +23,15 @@ LLVMValueRef lou_llvm_emit_const(lou_llvm_module_t *llvm, const lou_hir_const_t 
       return lou_llvm_function_decl(llvm, constant->func->name, constant->type);
     case LOU_HIR_CONST_EXTERNAL:
       return constant->external->codegen;
+    case LOU_HIR_CONST_STRING: {
+      LLVMValueRef string = LLVMAddGlobal(llvm->module, LLVMPointerTypeInContext(llvm->context, 0), "");
+      LLVMSetInitializer(string, LLVMConstStringInContext(llvm->context,
+        constant->string.content.ptr,
+        constant->string.content.length,
+        constant->string.null_terminated
+      ));
+      return string;
+    }
   }
   UNREACHABLE();
 }

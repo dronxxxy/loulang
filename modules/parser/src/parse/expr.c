@@ -78,7 +78,7 @@ lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
     case LOU_TOKEN_FUN: expr = lou_parser_parse_func_expr(parser, token); break;
     case LOU_TOKEN_INTEGER: expr = lou_ast_expr_new_integer(parser->mempool, token.slice, token.integer); break;
     case LOU_TOKEN_CHAR: expr = lou_ast_expr_new_char(parser->mempool, token.slice, token.character); break;
-    case LOU_TOKEN_STRING: expr = lou_ast_expr_new_string(parser->mempool, token.slice, token.string); break;
+    case LOU_TOKEN_STRING: expr = lou_ast_expr_new_string(parser->mempool, token.slice, token.string.content, token.string.kind); break;
     case LOU_TOKEN_OPENING_SQUARE_BRACE: {
       lou_ast_expr_t **values = LOU_MEMPOOL_VEC_NEW(parser->mempool, lou_ast_expr_t*);
 

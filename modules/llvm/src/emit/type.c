@@ -20,7 +20,7 @@ LLVMTypeRef lou_llvm_emit_type(lou_llvm_module_t *llvm, lou_hir_type_t *type) {
           return LLVMInt64TypeInContext(llvm->context);
       }
       UNREACHABLE();
-    case LOU_HIR_TYPE_FUNC:
+    case LOU_HIR_TYPE_POINTER: case LOU_HIR_TYPE_FUNC:
       return LLVMPointerTypeInContext(llvm->context, 0);
   }
   UNREACHABLE();

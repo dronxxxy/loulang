@@ -177,6 +177,19 @@ static inline char lou_lexer_take_escaped(lou_lexer_t *lexer, char end) {
   return c;
 }
 
+static inline lou_token_t lou_lexer_try_string(lou_lexer_t *lexer, lou_token_string_kind_t kind) {
+  char *buf = LOU_MEMPOOL_VEC_NEW(lexer->mempool, char);
+  while (lou_lexer_peek(lexer) != '"') {
+    if (lou_lexer_peek(lexer) == EOI) {
+      lou_lexer_error(lexer, lou_lexer_slice(lexer), "unexpected end of input");
+      break;
+    }
+    *LOU_VEC_PUSH(&buf) = lou_lexer_take_escaped(lexer, '"');
+  }
+  lou_lexer_take(lexer);
+  return lou_token_new_string(lou_lexer_slice(lexer), lexer->start_line, lou_slice_new(buf, lou_vec_len(buf)), kind);
+}
+
 static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
   lou_lexer_begin(lexer);
   char c = lou_lexer_take(lexer);
@@ -200,18 +213,7 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
       }
       return lou_token_new_char(lou_lexer_slice(lexer), lexer->start_line, c);
     }
-    case '"': {
-      char *buf = LOU_MEMPOOL_VEC_NEW(lexer->mempool, char);
-      while (lou_lexer_peek(lexer) != '"') {
-        if (lou_lexer_peek(lexer) == EOI) {
-          lou_lexer_error(lexer, lou_lexer_slice(lexer), "unexpected end of input");
-          break;
-        }
-        *LOU_VEC_PUSH(&buf) = lou_lexer_take_escaped(lexer, '"');
-      }
-      lou_lexer_take(lexer);
-      return lou_token_new_string(lou_lexer_slice(lexer), lexer->start_line, lou_slice_new(buf, lou_vec_len(buf)));
-    }
+    case '"': return lou_lexer_try_string(lexer, LOU_TOKEN_STRING_NORMAL);
     case EOI: return lou_lexer_new_simple(lexer, LOU_TOKEN_EOI);
     case '-':
       if (lou_lexer_take_if(lexer, '>')) {
@@ -220,6 +222,9 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
       return lou_lexer_new_simple(lexer, LOU_TOKEN_MINUS);
 
     default: {
+      if (c == 'c' && lou_lexer_take_if(lexer, '\"')) {
+        return lou_lexer_try_string(lexer, LOU_TOKEN_STRING_C);
+      }
       if (char_is_ident_start(c)) {
         lou_lexer_skip(lexer, char_is_ident);
         lou_slice_t slice = lou_lexer_slice(lexer);

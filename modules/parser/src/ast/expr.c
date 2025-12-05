@@ -40,11 +40,12 @@ lou_ast_expr_t *lou_ast_expr_new_integer(lou_mempool_t *mempool, lou_slice_t sli
   return expr;
 }
 
-lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t slice, lou_slice_t string) {
+lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t slice, lou_slice_t string, lou_token_string_kind_t kind) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_STRING;
   expr->slice = slice;
-  expr->string = string;
+  expr->string.content = string;
+  expr->string.kind = kind;
   return expr;
 }
 

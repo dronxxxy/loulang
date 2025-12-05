@@ -29,7 +29,7 @@ lou_hir_type_t *lou_sema_emit_type(lou_mempool_t *mempool, lou_sema_type_t *type
       lou_hir_type_t *returns = type->func.returns ? lou_sema_emit_type(mempool, type->func.returns) : NULL;
       return lou_hir_type_new_func(mempool, args, returns);
     }
-    case LOU_SEMA_TYPE_POINTER: NOT_IMPLEMENTED; // return lou_hir_type_new_pointer(mempool, lou_sema_emit_type(mempool, type->pointer_to));
+    case LOU_SEMA_TYPE_POINTER: return lou_hir_type_new_pointer(mempool, lou_sema_emit_type(mempool, type->pointer_to));
     case LOU_SEMA_TYPE_STRING: NOT_IMPLEMENTED;
   }
   UNREACHABLE();
@@ -39,6 +39,7 @@ lou_hir_const_t *lou_sema_emit_const(lou_mempool_t *mempool, lou_sema_const_t *c
   switch (constant->kind) {
     case LOU_SEMA_CONST_INTEGER: return lou_hir_const_new_integer(mempool, lou_sema_emit_type(mempool, constant->type), constant->integer);
     case LOU_SEMA_CONST_STRING: NOT_IMPLEMENTED;
+    case LOU_SEMA_CONST_CSTRING: return lou_hir_const_new_string(mempool, constant->string, true);
     case LOU_SEMA_CONST_FUNCTION: return lou_hir_const_new_func(mempool, constant->func);
     case LOU_SEMA_CONST_EXTERN: return lou_hir_const_new_extern(mempool, constant->external);
   }
