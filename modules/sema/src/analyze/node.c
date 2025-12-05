@@ -2,7 +2,6 @@
 #include "analyze/expr.h"
 #include "lou/core/assertions.h"
 #include "lou/core/vec.h"
-#include "lou/hir/hir.h"
 #include "lou/parser/ast/decl.h"
 #include "sema.h"
 
@@ -25,14 +24,7 @@ void lou_sema_prefetch_node(lou_sema_t *sema, lou_ast_node_t *node) {
   UNREACHABLE();
 }
 
-bool lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
-  for (size_t i = 0; i < lou_vec_len(sema->node_stack); i++) {
-    if (sema->node_stack[i] == node) {
-      lou_sema_err(sema, lou_sema_node_slice(node), "circular reference found!");
-      return false;
-    }
-  }
-  *LOU_VEC_PUSH(&sema->node_stack) = node;
+static inline bool lou_sema_just_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
   switch (node->kind) {
     case LOU_AST_NODE_DECL: {
       lou_sema_type_t *type = node->decl.type ? lou_sema_analyze_type(sema, node->decl.type) : NULL;
@@ -59,6 +51,19 @@ bool lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
     }
   }
   return true;
+}
+
+bool lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
+  for (size_t i = 0; i < lou_vec_len(sema->node_stack); i++) {
+    if (sema->node_stack[i] == node) {
+      lou_sema_err(sema, lou_sema_node_slice(node), "circular reference found!");
+      return false;
+    }
+  }
+  *LOU_VEC_PUSH(&sema->node_stack) = node;
+  bool result = lou_sema_just_analyze_node(sema, node);
+  LOU_VEC_POP(&sema->node_stack);
+  return result;
 }
 
 lou_slice_t lou_sema_node_slice(lou_ast_node_t *node) {

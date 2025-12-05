@@ -1,7 +1,10 @@
-final putCString = @externFun("puts", @procFun(@ptr(u8)))
+final putCString = @externFun("puts", putCStringType)
+meta putCStringType = @procFun(@ptr(u8))
 
-const main = @global("main", fun () -> i32 {
+const main: MainType = @global("main", fun () -> i32 {
   putCString(c"hello, world!")
   return 0
 })
 
+meta MainType = @retFun(I32)
+meta I32 = i32 
