@@ -3,7 +3,6 @@
 #include "emit/type.h"
 #include "lou/core/assertions.h"
 #include "lou/hir/const.h"
-#include "lou/hir/decl.h"
 #include "lou/hir/func.h"
 #include "lou/hir/value.h"
 #include "module.h"
@@ -41,12 +40,7 @@ LLVMValueRef lou_llvm_emit_value(lou_llvm_module_t *llvm, lou_hir_value_t *value
         value->local->codegen,
         value->local->mutability
       );
-    case LOU_HIR_VALUE_DECL:
-      return llvm_extract_from_mutablity(llvm,
-        value->decl->type,
-        value->decl->codegen,
-        value->decl->mutability
-      );
+    case LOU_HIR_VALUE_FUNCTION: return value->func->codegen;
   }
   UNREACHABLE();
 }

@@ -115,17 +115,6 @@ lou_sema_value_t *lou_sema_value_new_local_decl(lou_mempool_t *mempool, lou_sema
   });
 }
 
-lou_sema_value_t *lou_sema_value_new_global_decl(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_decl_t *global) {
-  return lou_sema_value_new_runtime(mempool, (lou_sema_value_runtime_t) {
-    .kind = LOU_SEMA_VALUE_RUNTIME_DECL,
-    .decl = {
-      .kind = LOU_SEMA_VALUE_DECL_GLOBAL,
-      .type = type,
-      .global = global,
-    },
-  });
-}
-
 lou_sema_type_t *lou_sema_value_is_runtime(lou_sema_value_t *value) {
   if (value->kind != LOU_SEMA_VALUE_RUNTIME) {
     return NULL;

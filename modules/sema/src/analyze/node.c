@@ -2,7 +2,6 @@
 #include "analyze/expr.h"
 #include "lou/core/assertions.h"
 #include "lou/core/vec.h"
-#include "lou/hir/decl.h"
 #include "lou/hir/hir.h"
 #include "lou/parser/ast/decl.h"
 #include "sema.h"

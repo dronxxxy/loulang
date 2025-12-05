@@ -32,7 +32,6 @@ typedef enum {
 } lou_sema_value_runtime_kind_t;
 
 typedef enum {
-  LOU_SEMA_VALUE_DECL_GLOBAL,
   LOU_SEMA_VALUE_DECL_LOCAL,
 } lou_sema_value_decl_kind_t;
 
@@ -47,7 +46,6 @@ typedef struct {
 
       union {
         lou_hir_local_t *local;
-        lou_hir_decl_t *global;
       };
     } decl;
   };
@@ -71,7 +69,6 @@ lou_sema_value_t *lou_sema_value_new_plugin(lou_mempool_t *mempool, lou_sema_plu
 lou_sema_value_t *lou_sema_value_new_type(lou_mempool_t *mempool, lou_sema_type_t *type);
 lou_sema_value_t *lou_sema_value_new_constant(lou_mempool_t *mempool, lou_sema_const_t *constant);
 lou_sema_value_t *lou_sema_value_new_local_decl(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_local_t *local);
-lou_sema_value_t *lou_sema_value_new_global_decl(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_decl_t *global);
 
 lou_sema_plugin_t *lou_sema_value_is_plugin(lou_sema_value_t *value);
 lou_sema_type_t *lou_sema_value_is_type(lou_sema_value_t *value);

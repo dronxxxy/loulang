@@ -1,11 +1,14 @@
 #include "lou/llvm/module.h"
-#include "emit/decl.h"
 #include <assert.h>
+#include "emit/code.h"
 #include "lou/core/log.h"
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
+#include "lou/hir/extern.h"
+#include "lou/hir/func.h"
 #include "lou/hir/hir.h"
 #include "module.h"
+#include "utils.h"
 #include <llvm-c/Target.h>
 #include <llvm-c/TargetMachine.h>
 #include <llvm-c/Core.h>
@@ -53,13 +56,25 @@ lou_llvm_module_t *lou_llvm_module_new(lou_hir_t *hir) {
   return llvm;
 }
 
+static inline void lou_llvm_emit_function(lou_llvm_module_t *llvm, lou_hir_func_t *func) {
+  assert(!llvm->function);
+  llvm->function = func->codegen;
+  lou_llvm_emit_code(llvm, func->code);
+  llvm->function = NULL;
+}
+
 void lou_llvm_module_emit(lou_llvm_module_t *llvm) {
-  lou_hir_decl_t **decls = lou_hir_get_decls(llvm->hir);
-  for (size_t i = 0; i < lou_vec_len(decls); i++) {
-    decls[i]->codegen = lou_llvm_init_decl(llvm, decls[i]);
+  for (size_t i = 0; i < lou_vec_len(llvm->hir->functions); i++) {
+    lou_hir_func_t *func = llvm->hir->functions[i];
+    func->codegen = lou_llvm_function_decl(llvm, func->name, func->type);
   }
-  for (size_t i = 0; i < lou_vec_len(decls); i++) {
-    lou_llvm_emit_decl(llvm, decls[i]);
+  for (size_t i = 0; i < lou_vec_len(llvm->hir->externs); i++) {
+    lou_hir_extern_t *external = llvm->hir->externs[i];
+    external->codegen = lou_llvm_extern_decl(llvm, external->name, external->type);
+  }
+
+  for (size_t i = 0; i < lou_vec_len(llvm->hir->externs); i++) {
+    lou_llvm_emit_function(llvm, llvm->hir->functions[i]);
   }
 }
 

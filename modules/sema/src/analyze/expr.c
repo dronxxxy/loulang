@@ -61,7 +61,7 @@ lou_sema_value_t *lou_sema_analyze_func_expr(lou_sema_t *sema, lou_ast_expr_t *e
   }
 
   // TODO: push func args
-  lou_hir_func_t *func = lou_hir_func_new(sema->mempool);
+  lou_hir_func_t *func = lou_hir_func_add(sema->hir, lou_sema_emit_type(sema->mempool, type));
   lou_sema_push_scope_frame(sema, lou_sema_scope_frame_new(sema->mempool, type->func.returns));
   lou_hir_func_init(func, lou_sema_analyze_body(sema, expr->func.body)->code);
   lou_sema_pop_scope_frame(sema);

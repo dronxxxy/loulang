@@ -5,7 +5,6 @@
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
 #include "lou/core/vec.h"
-#include "lou/hir/decl.h"
 #include "lou/hir/hir.h"
 #include "lou/parser/ast/decl.h"
 #include "plugin.h"
@@ -17,41 +16,24 @@
 #include <stdio.h>
 
 static inline lou_sema_value_t *lou_sema_add_hir_decl(lou_sema_t *sema, lou_slice_t slice, lou_sema_decl_kind_t kind, lou_sema_value_t *value) {
-  if (kind == LOU_SEMA_DECL_META) {
-    return value;
-  }
-  lou_sema_type_t *type = lou_sema_value_is_runtime(value);
-  if (!type) {
-    lou_sema_err(sema, slice, "trying to assign #v to runtime declaration. Use `meta` declaration for storing compile-time values", value);
-    return NULL;
-  }
-  lou_sema_const_t *constant = lou_sema_value_is_const(value);
-  if (!type) {
-    lou_sema_err(sema, slice, "non-constant initializers are not allowed in global scope, #v was passed", value);
-    return NULL;
-  }
-  if (lou_vec_len(sema->scope_frames) > 0) {
-    NOT_IMPLEMENTED;
-  }
   switch (kind) {
-    case LOU_SEMA_DECL_META: UNREACHABLE();
-    case LOU_SEMA_DECL_CONSTANT: {
-      lou_hir_decl_t *decl = lou_hir_decl_new(sema->mempool, LOU_HIR_IMMUTABLE, lou_sema_emit_type(sema->mempool, type));
-      lou_hir_decl_add(sema->hir, decl);
-      lou_hir_decl_init(decl, lou_sema_emit_const(sema->mempool, constant));
+    case LOU_SEMA_DECL_META:
+    case LOU_SEMA_DECL_CONSTANT:
+    case LOU_SEMA_DECL_FINAL:
       return value;
-    }
-    case LOU_SEMA_DECL_FINAL: {
-      lou_hir_decl_t *decl = lou_hir_decl_new(sema->mempool, LOU_HIR_IMMUTABLE, lou_sema_emit_type(sema->mempool, type));
-      lou_hir_decl_add(sema->hir, decl);
-      lou_hir_decl_init(decl, lou_sema_emit_const(sema->mempool, constant));
-      return lou_sema_value_new_global_decl(sema->mempool, type, decl);
-    }
     case LOU_SEMA_DECL_VARIABLE: {
-      lou_hir_decl_t *decl = lou_hir_decl_new(sema->mempool, LOU_HIR_MUTABLE, lou_sema_emit_type(sema->mempool, type));
-      lou_hir_decl_add(sema->hir, decl);
-      lou_hir_decl_init(decl, lou_sema_emit_const(sema->mempool, constant));
-      return lou_sema_value_new_global_decl(sema->mempool, type, decl);
+      lou_sema_type_t *type = lou_sema_value_is_runtime(value);
+      if (!type) {
+        lou_sema_err(sema, slice, "trying to assign #v to runtime declaration. Use `meta` declaration for storing compile-time values", value);
+        return NULL;
+      }
+      lou_sema_const_t *constant = lou_sema_value_is_const(value);
+      if (!type) {
+        lou_sema_err(sema, slice, "non-constant initializers are not allowed in global scope, #v was passed", value);
+        return NULL;
+      }
+      (void)constant;
+      NOT_IMPLEMENTED;
     }
   }
   UNREACHABLE();
@@ -61,7 +43,6 @@ void lou_sema_init_decl(lou_sema_t *sema, lou_slice_t slice, lou_sema_decl_t *de
   decl->prefetch_node = NULL;
   decl->value = lou_sema_add_hir_decl(sema, slice, decl->kind, value);
 }
-
 
 lou_sema_decl_t *lou_sema_add_decl(
   lou_sema_t *sema,

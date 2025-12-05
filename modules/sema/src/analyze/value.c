@@ -39,8 +39,8 @@ lou_hir_const_t *lou_sema_emit_const(lou_mempool_t *mempool, lou_sema_const_t *c
   switch (constant->kind) {
     case LOU_SEMA_CONST_INTEGER: return lou_hir_const_new_integer(mempool, lou_sema_emit_type(mempool, constant->type), constant->integer);
     case LOU_SEMA_CONST_STRING: NOT_IMPLEMENTED;
-    case LOU_SEMA_CONST_FUNCTION: return lou_hir_const_new_func(mempool, lou_sema_emit_type(mempool, constant->type), constant->func);
-    case LOU_SEMA_CONST_EXTERN: return lou_hir_const_new_extern(mempool, lou_sema_emit_type(mempool, constant->type), constant->external_name);
+    case LOU_SEMA_CONST_FUNCTION: return lou_hir_const_new_func(mempool, constant->func);
+    case LOU_SEMA_CONST_EXTERN: return lou_hir_const_new_extern(mempool, constant->external);
   }
   UNREACHABLE();
 }
@@ -51,7 +51,6 @@ lou_hir_value_t *lou_sema_emit_value(lou_mempool_t *mempool, lou_sema_value_t *v
     case LOU_SEMA_VALUE_RUNTIME_CONSTANT: return lou_hir_value_new_const(mempool, lou_sema_emit_const(mempool, value->runtime.constant));
     case LOU_SEMA_VALUE_RUNTIME_DECL:
       switch (value->runtime.decl.kind) {
-        case LOU_SEMA_VALUE_DECL_GLOBAL: return lou_hir_value_new_decl(mempool, value->runtime.decl.global);
         case LOU_SEMA_VALUE_DECL_LOCAL: return lou_hir_value_new_local(mempool, value->runtime.decl.local);
       }
       break;

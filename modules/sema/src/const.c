@@ -29,12 +29,12 @@ lou_sema_const_t *lou_sema_const_new_string(lou_mempool_t *mempool, lou_sema_typ
   return constant;
 }
 
-lou_sema_const_t *lou_sema_const_new_extern(lou_mempool_t *mempool, lou_sema_type_t *type, lou_slice_t name) {
+lou_sema_const_t *lou_sema_const_new_extern(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_extern_t *external) {
   assert(type->kind == LOU_SEMA_TYPE_POINTER || type->kind == LOU_SEMA_TYPE_FUNCTION);
   lou_sema_const_t *constant = LOU_MEMPOOL_ALLOC(mempool, lou_sema_const_t);
   constant->kind = LOU_SEMA_CONST_EXTERN;
   constant->type = type;
-  constant->external_name = name;
+  constant->external = external;
   return constant;
 }
 
