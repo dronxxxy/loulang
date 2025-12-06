@@ -10,7 +10,7 @@
 typedef enum {
   LOU_SEMA_DECL_STAGE_DECLARED,
   LOU_SEMA_DECL_STAGE_SKELETON,
-  LOU_SEMA_DECL_STAGE_COMPLETED,
+  LOU_SEMA_DECL_STAGE_COMPLETE,
 
   LOU_SEMA_DECL_STAGE_KILLED,
 } lou_sema_decl_stage_t;
@@ -68,6 +68,7 @@ lou_sema_decl_t *lou_sema_add_decl(lou_sema_t *sema, lou_sema_visibility_t visib
 void lou_sema_outline_decl(lou_sema_decl_t *decl, lou_sema_value_t *value);
 void lou_sema_finalize_decl(lou_sema_decl_t *decl);
 void lou_sema_kill_decl(lou_sema_decl_t *decl);
+void lou_sema_add_internal_decl(lou_sema_t *sema, const char *name, lou_sema_value_t *value);
 
 lou_sema_value_t *lou_sema_resolve_skeleton(lou_sema_t *sema, lou_slice_t name);
 lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);

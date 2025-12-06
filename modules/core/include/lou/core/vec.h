@@ -17,6 +17,7 @@ void *lou_vec_at(void *vec, size_t id);
 void *lou_vec_last(void *vec);
 
 typedef bool (*lou_veq_func_t)(const void *a, const void *b);
+bool lou_vec_eq_ptr(const void *a, const void *b, lou_veq_func_t eq);
 bool lou_vec_eq(const void *a, const void *b, lou_veq_func_t eq);
 
 void lou_vec_link(void *vec, void **link);

@@ -61,6 +61,18 @@ bool lou_vec_eq(const void *a, const void *b, lou_veq_func_t eq) {
     return false;
   }
   for (size_t i = 0; i < lou_vec_len(a); i++) {
+    if (!eq(*(void**)lou_vec_at((void*)a, i), *(void**)lou_vec_at((void*)b, i))) {
+      return false;
+    }
+  }
+  return false;
+}
+
+bool lou_vec_eq_ptr(const void *a, const void *b, lou_veq_func_t eq) {
+  if (lou_vec_len(a) != lou_vec_len(b)) {
+    return false;
+  }
+  for (size_t i = 0; i < lou_vec_len(a); i++) {
     if (!eq(lou_vec_at((void*)a, i), lou_vec_at((void*)b, i))) {
       return false;
     }

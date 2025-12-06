@@ -1,5 +1,6 @@
 #include "lou/sema/sema.h"
 #include "ast/node.h"
+#include "builtins/setup.h"
 #include "impl.h"
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
@@ -35,6 +36,7 @@ lou_hir_t *lou_sema_hir(const lou_sema_t *sema) {
 }
 
 void lou_sema_read(lou_sema_t *sema) {
+  lou_sema_builtin_setup(sema);
   assert(!sema->nodes);
   sema->nodes = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_node_record_t);
 

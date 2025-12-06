@@ -39,3 +39,7 @@ lou_sema_type_t *lou_sema_value_is_type(lou_sema_value_t *value) {
   return value->comptime.type;
 }
 
+lou_sema_plugin_t *lou_sema_value_is_plugin(lou_sema_value_t *value) {
+  if (value->kind != LOU_SEMA_VALUE_COMPTIME || value->comptime.kind != LOU_SEMA_VALUE_COMPTIME_PLUGIN) return NULL;
+  return value->comptime.plugin;
+}

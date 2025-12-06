@@ -51,11 +51,26 @@ void lou_sema_outline_decl(lou_sema_decl_t *decl, lou_sema_value_t *value) {
 
 void lou_sema_finalize_decl(lou_sema_decl_t *decl) {
   assert(decl->value);
-  decl->stage = LOU_SEMA_DECL_STAGE_COMPLETED;
+  decl->stage = LOU_SEMA_DECL_STAGE_COMPLETE;
 }
 
 void lou_sema_kill_decl(lou_sema_decl_t *decl) {
   decl->stage = LOU_SEMA_DECL_STAGE_KILLED;
+}
+
+void lou_sema_add_internal_decl(lou_sema_t *sema, const char *name, lou_sema_value_t *value) {
+  assert(lou_sema_is_global_scope(sema));
+
+  lou_sema_decl_t *decl = LOU_MEMPOOL_ALLOC(sema->mempool, lou_sema_decl_t);
+  decl->name = lou_slice_from_cstr(name);
+  decl->stage = LOU_SEMA_DECL_STAGE_COMPLETE;
+  decl->node = NULL;
+  decl->value = value;
+
+  *LOU_VEC_PUSH(&sema->global_decls) = (lou_sema_global_decl_t) {
+    .decl = decl,
+    .visibility = LOU_SEMA_INTERNAL,
+  };
 }
 
 lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema) {
@@ -100,7 +115,7 @@ lou_sema_value_t *lou_sema_resolve_skeleton(lou_sema_t *sema, lou_slice_t name) 
 lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
   lou_sema_decl_t *decl = NOT_NULL(lou_sema_resolve_decl(sema, name));
   if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return NULL;
-  if (decl->stage < LOU_SEMA_DECL_STAGE_COMPLETED) {
+  if (decl->stage < LOU_SEMA_DECL_STAGE_COMPLETE) {
     if (decl->stage < LOU_SEMA_DECL_STAGE_SKELETON) {
       lou_sema_outline_node(sema, decl->node, decl);
       if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return NULL;
@@ -108,7 +123,7 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
     lou_sema_outline_node(sema, decl->node, decl);
     if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return NULL;
   }
-  assert(decl->stage == LOU_SEMA_DECL_STAGE_COMPLETED);
+  assert(decl->stage == LOU_SEMA_DECL_STAGE_COMPLETE);
   assert(decl->value);
   return decl->value;
 }

@@ -15,7 +15,7 @@ typedef struct {
 typedef lou_sema_value_t *(*lou_sema_plugin_outline_t)(lou_sema_plugin_ctx ctx, lou_sema_expr_ctx_t expr_ctx);
 typedef lou_sema_value_t *(*lou_sema_plugin_finalize_t)(lou_sema_plugin_ctx ctx, lou_sema_value_t *value);
 
-typedef struct {
+typedef struct lou_sema_plugin_t {
   lou_sema_plugin_outline_t outline;
   lou_sema_plugin_finalize_t finalize;
 } lou_sema_plugin_t;
