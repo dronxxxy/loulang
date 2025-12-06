@@ -75,7 +75,7 @@ static inline void lou_sema_outline_emittable_decl(lou_sema_t *sema, lou_ast_nod
   }
 }
 
-void lou_sema_outline_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
+static inline void lou_sema_outline_node_internal(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
   switch (node->kind) {
     case LOU_AST_NODE_DECL: {
       switch (node->decl.kind) {
@@ -87,6 +87,12 @@ void lou_sema_outline_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl
     }
   }
   UNREACHABLE();
+}
+
+void lou_sema_outline_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
+  lou_sema_push_analysing_node(sema, node);
+  lou_sema_outline_node_internal(sema, node, decl);
+  lou_sema_pop_analysing_node(sema);
 }
 
 static inline void lou_sema_finalize_immutable_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
@@ -101,7 +107,7 @@ static inline void lou_sema_finalize_emittable_decl(lou_sema_t *sema, lou_ast_no
   NOT_IMPLEMENTED;
 }
 
-void lou_sema_finalize_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
+static inline void lou_sema_finalize_node_internal(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
   switch (node->kind) {
     case LOU_AST_NODE_DECL: {
       switch (node->decl.kind) {
@@ -112,4 +118,10 @@ void lou_sema_finalize_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_dec
     }
   }
   UNREACHABLE();
+}
+
+void lou_sema_finalize_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
+  lou_sema_push_analysing_node(sema, node);
+  lou_sema_finalize_node_internal(sema, node, decl);
+  lou_sema_pop_analysing_node(sema);
 }

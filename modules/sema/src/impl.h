@@ -50,6 +50,7 @@ typedef struct {
 typedef struct lou_sema_t {
   lou_mempool_t *mempool;
 
+  lou_ast_node_t **node_stack;
   lou_sema_node_record_t *nodes;
   lou_sema_global_decl_t *global_decls;
   lou_sema_scope_stack_t *scope_stacks;
@@ -72,5 +73,8 @@ void lou_sema_add_internal_decl(lou_sema_t *sema, const char *name, lou_sema_val
 
 lou_sema_value_t *lou_sema_resolve_skeleton(lou_sema_t *sema, lou_slice_t name);
 lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);
+
+void lou_sema_push_analysing_node(lou_sema_t *sema, lou_ast_node_t *node);
+void lou_sema_pop_analysing_node(lou_sema_t *sema);
 
 lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema);

@@ -7,7 +7,7 @@ static inline lou_sema_value_t *lou_sema_builtin_global_outline(lou_sema_plugin_
   return NULL;
 }
 
-static inline lou_sema_value_t *lou_sema_builtin_global_finalize(lou_sema_plugin_ctx ctx, lou_sema_value_t *value) {
+static inline bool lou_sema_builtin_global_finalize(lou_sema_plugin_ctx ctx, lou_sema_value_t *value) {
   NOT_IMPLEMENTED;
 }
 

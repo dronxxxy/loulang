@@ -78,7 +78,7 @@ lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema) {
   return lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_32, true);
 }
 
-static inline lou_sema_decl_t *lou_sema_resolve_decl(lou_sema_t *sema, lou_slice_t name) {
+static inline lou_sema_decl_t *lou_sema_just_resolve_decl(lou_sema_t *sema, lou_slice_t name) {
   for (ssize_t i = lou_vec_len(sema->scope_stacks) - 1; i >= 0; i--) {
     lou_sema_scope_stack_t *scope_stack = &sema->scope_stacks[i];
     for (ssize_t j = lou_vec_len(scope_stack->scopes) - 1; j >= 0; j--) {
@@ -98,6 +98,17 @@ static inline lou_sema_decl_t *lou_sema_resolve_decl(lou_sema_t *sema, lou_slice
   }
   lou_sema_err(sema, name, "declaration `#S` was not found", name);
   return NULL;
+}
+
+static inline lou_sema_decl_t *lou_sema_resolve_decl(lou_sema_t *sema, lou_slice_t name) {
+  lou_sema_decl_t *decl = lou_sema_just_resolve_decl(sema, name);
+  for (size_t i = 0; i < lou_vec_len(sema->node_stack); i++) {
+    if (sema->node_stack[i] == decl->node) {
+      lou_sema_err(sema, name, "cycle dependency detected");
+      return NULL;
+    }
+  }
+  return decl;
 }
 
 lou_sema_value_t *lou_sema_resolve_skeleton(lou_sema_t *sema, lou_slice_t name) {
@@ -126,4 +137,12 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
   assert(decl->stage == LOU_SEMA_DECL_STAGE_COMPLETE);
   assert(decl->value);
   return decl->value;
+}
+
+void lou_sema_push_analysing_node(lou_sema_t *sema, lou_ast_node_t *node) {
+  *LOU_VEC_PUSH(&sema->node_stack) = node;
+}
+
+void lou_sema_pop_analysing_node(lou_sema_t *sema) {
+  LOU_VEC_POP(&sema->node_stack);
 }

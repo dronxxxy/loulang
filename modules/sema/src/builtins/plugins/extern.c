@@ -7,7 +7,7 @@ static inline lou_sema_value_t *lou_sema_builtin_extern_fun_outline(lou_sema_plu
   return NULL;
 }
 
-static inline lou_sema_value_t *lou_sema_builtin_extern_fun_finalize(lou_sema_plugin_ctx ctx, lou_sema_value_t *value) {
+static inline bool lou_sema_builtin_extern_fun_finalize(lou_sema_plugin_ctx ctx, lou_sema_value_t *value) {
   NOT_IMPLEMENTED;
 }
 

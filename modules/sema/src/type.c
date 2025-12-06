@@ -21,6 +21,7 @@ lou_sema_type_t *lou_sema_type_new_int(lou_mempool_t *mempool, lou_sema_int_size
 }
 
 void lou_sema_type_init_func(lou_sema_type_t *type, lou_sema_type_t **args, lou_sema_type_t *returns) {
+  assert(type->kind == LOU_SEMA_TYPE_FUNCTION);
   type->complete = true;
   type->func.args = args;
   type->func.returns = returns;
