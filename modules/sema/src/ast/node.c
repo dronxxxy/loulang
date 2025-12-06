@@ -25,7 +25,7 @@ static inline void lou_sema_outline_meta_decl(lou_sema_t *sema, lou_ast_node_t *
 }
 
 static inline void lou_sema_outline_const_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
-  lou_sema_type_t *type = node->decl.type ? lou_sema_expr_analyze_type(sema, node->decl.type) : NULL;
+  lou_sema_type_t *type = node->decl.type ? lou_sema_expr_analyze_type(sema, node->decl.type, lou_sema_expr_ctx_new_comptime()) : NULL;
   if (!node->decl.initializer) {
     lou_sema_err(sema, node->decl.name, "constant declaration must be initialized");
     lou_sema_kill_decl(decl);
@@ -51,7 +51,7 @@ static inline void lou_sema_outline_emittable_decl(lou_sema_t *sema, lou_ast_nod
   lou_sema_type_t *type = NULL;
 
   if (node->decl.type) {
-    type = lou_sema_expr_analyze_type(sema, node->decl.type);
+    type = lou_sema_expr_analyze_type(sema, node->decl.type, lou_sema_expr_ctx_new_comptime());
     if (!type) {
       lou_sema_kill_decl(decl);
       return;
