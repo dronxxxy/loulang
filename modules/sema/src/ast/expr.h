@@ -7,7 +7,7 @@
 #include "expr_ctx.h"
 
 lou_sema_value_t *lou_sema_expr_outline(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx);
-bool lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_value_t *value);
+bool lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr);
 
 lou_sema_value_t *lou_sema_expr_outline_runtime(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx);
 

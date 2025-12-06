@@ -41,7 +41,7 @@ lou_sema_value_t *lou_sema_expr_outline(lou_sema_t *sema, lou_ast_expr_t *expr, 
   return expr->sema_value = lou_sema_expr_outline_internal(sema, expr, ctx);
 }
 
-bool lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_value_t *value) {
+bool lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr) {
   switch (expr->kind) {
     case LOU_AST_EXPR_CHAR: case LOU_AST_EXPR_INTEGER: return true;
     case LOU_AST_EXPR_IDENT: return lou_sema_resolve(sema, expr->ident) != NULL;
@@ -49,7 +49,7 @@ bool lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_val
       lou_sema_value_t *callable = expr->call.inner->sema_value;
 
       lou_sema_plugin_t *plugin = lou_sema_value_is_plugin(callable);
-      if (plugin) return plugin->finalize(lou_sema_plugin_ctx_new(sema, expr->call.inner->slice, expr->call.args), value);
+      if (plugin) return plugin->finalize(lou_sema_plugin_ctx_new(sema, expr->call.inner->slice, expr->call.args), expr->sema_value);
 
       UNREACHABLE();
     }
@@ -72,7 +72,7 @@ lou_sema_value_t *lou_sema_expr_outline_runtime(lou_sema_t *sema, lou_ast_expr_t
 
 lou_sema_value_t *lou_sema_expr_analyze(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
   lou_sema_value_t *value = NOT_NULL(lou_sema_expr_outline(sema, expr, ctx));
-  if (!lou_sema_expr_finalize(sema, expr, value)) return NULL;
+  if (!lou_sema_expr_finalize(sema, expr)) return NULL;
   return value;
 }
 

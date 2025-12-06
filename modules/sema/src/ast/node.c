@@ -90,7 +90,7 @@ void lou_sema_outline_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl
 }
 
 static inline void lou_sema_finalize_immutable_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
-  if (lou_sema_expr_finalize(sema, node->decl.initializer, decl->value)) {
+  if (lou_sema_expr_finalize(sema, node->decl.initializer)) {
     lou_sema_finalize_decl(decl);
   } else {
     lou_sema_kill_decl(decl);
