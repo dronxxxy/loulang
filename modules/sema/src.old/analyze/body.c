@@ -6,7 +6,7 @@
 #include "lou/hir/code.h"
 #include "lou/parser/ast/stmt.h"
 #include "scope.h"
-#include "sema.h"
+#include "impl.h"
 #include "type.h"
 #include "value.h"
 #include <assert.h>
@@ -15,7 +15,7 @@ static inline void lou_sema_analyze_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt)
   switch (stmt->kind) {
     case LOU_AST_STMT_RETURN: {
       lou_sema_value_t *value = stmt->ret.value ?
-        lou_sema_analyze_runtime_expr(sema, stmt->ret.value, lou_sema_expr_ctx_new(sema->mempool, lou_sema_func_returns(sema), true)) :
+        lou_sema_analyze_runtime_expr(sema, stmt->ret.value, lou_sema_expr_ctx_new(sema->mempool, lou_sema_func_returns(sema), true, false)) :
         NULL;
       lou_sema_type_t *returns = lou_sema_func_returns(sema);
       lou_sema_type_t *type = value ? lou_sema_value_is_runtime(value) : NULL;
@@ -27,7 +27,7 @@ static inline void lou_sema_analyze_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt)
       return;
     }
     case LOU_AST_STMT_EXPR:
-      lou_sema_analyze_expr(sema, stmt->expr, lou_sema_expr_ctx_new(sema->mempool, NULL, false));
+      lou_sema_analyze_expr(sema, stmt->expr, lou_sema_expr_ctx_new(sema->mempool, NULL, false, true));
       return;
     case LOU_AST_STMT_NODE:
     case LOU_AST_STMT_IF: NOT_IMPLEMENTED;

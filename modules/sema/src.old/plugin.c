@@ -1,6 +1,6 @@
 #include "plugin.h"
 #include "lou/core/vec.h"
-#include "sema.h"
+#include "impl.h"
 
 lou_sema_plugin_t *lou_sema_plugin_new(lou_mempool_t *mempool, lou_sema_plugin_func_t func, lou_sema_type_t **args) {
   lou_sema_plugin_t *plugin = LOU_MEMPOOL_ALLOC(mempool, lou_sema_plugin_t);

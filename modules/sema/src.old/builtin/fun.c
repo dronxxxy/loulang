@@ -2,7 +2,7 @@
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
 #include "plugin.h"
-#include "sema.h"
+#include "impl.h"
 #include "type.h"
 #include "value.h"
 

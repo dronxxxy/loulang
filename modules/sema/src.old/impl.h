@@ -1,5 +1,6 @@
 #pragma once
 
+#include "analyze/expr.h"
 #include "lou/core/mempool.h"
 #include "lou/hir/code.h"
 #include "lou/hir/hir.h"
@@ -32,6 +33,12 @@ typedef struct lou_sema_decl_t {
   lou_sema_scope_frame_t *scope_frame;
 } lou_sema_decl_t;
 
+typedef struct {
+  lou_ast_node_t *node;
+  lou_ast_expr_t *initializer;
+  lou_sema_value_t *prefetched_value;
+} lou_sema_analysing_node_t;
+
 typedef struct lou_sema_t {
   lou_parser_t *parser;
   lou_mempool_t *mempool;
@@ -39,12 +46,18 @@ typedef struct lou_sema_t {
   bool failed;
   
   lou_hir_t *hir;
-  lou_ast_node_t **node_stack;
+  lou_sema_analysing_node_t *node_stack;
   lou_sema_decl_t **global_decls;
   lou_sema_scope_frame_t **scope_frames;
 } lou_sema_t;
 
 void lou_sema_init_decl(lou_sema_t *sema, lou_slice_t slice, lou_sema_decl_t *decl, lou_sema_value_t *value);
+
+bool lou_sema_is_initializer_expr(const lou_sema_t *sema, const lou_ast_expr_t *expr);
+bool lou_sema_is_analysing_node(const lou_sema_t *sema, const lou_ast_node_t *node);
+void lou_sema_push_analysing_node(lou_sema_t *sema, lou_ast_node_t *node, lou_ast_expr_t *initializer);
+void lou_sema_prefetch_current_node(lou_sema_t *sema, lou_sema_value_t *value);
+void lou_sema_pop_analysing_node(lou_sema_t *sema);
 
 lou_sema_decl_t *lou_sema_add_decl(
   lou_sema_t *sema,
@@ -55,8 +68,16 @@ lou_sema_decl_t *lou_sema_add_decl(
 );
 
 void lou_sema_err(lou_sema_t *sema, lou_slice_t slice, const char *fmt, ...);
-lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);
-lou_sema_value_t *lou_sema_call_plugin(lou_sema_t *sema, lou_sema_plugin_t *plugin, lou_slice_t slice, lou_slice_t *arg_slices, lou_sema_value_t **args);
+lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name, bool weak);
+lou_sema_value_t *lou_sema_call_plugin(
+  lou_sema_t *sema,
+  lou_sema_plugin_t *plugin,
+  lou_slice_t slice,
+  lou_slice_t *arg_slices,
+  lou_sema_value_t **args,
+  lou_ast_expr_t *expr,
+  lou_sema_expr_ctx_t ctx
+);
 
 lou_sema_value_t *lou_sema_decl_ensure_initialized(lou_sema_t *sema, lou_sema_decl_t *decl);
 

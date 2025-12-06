@@ -1,7 +1,7 @@
 #include "global.h"
 #include "const.h"
 #include "plugin.h"
-#include "sema.h"
+#include "impl.h"
 #include "value.h"
 
 lou_sema_value_t *lou_global_builtin(lou_sema_plugin_call_ctx_t *ctx) {

@@ -5,7 +5,7 @@
 #include "lou/sema/sema.h"
 #include "lou/core/mempool.h"
 #include "lou/parser/parser.h"
-#include "sema.h"
+#include "impl.h"
 
 lou_sema_t *lou_sema_new(lou_slice_t path) {
   lou_parser_t *parser = lou_parser_new(path);
@@ -17,7 +17,7 @@ lou_sema_t *lou_sema_new(lou_slice_t path) {
   sema->parser = parser;
   sema->mempool = mempool;
   sema->nodes = LOU_MEMPOOL_VEC_NEW(mempool, lou_ast_node_t*);
-  sema->node_stack = LOU_MEMPOOL_VEC_NEW(mempool, lou_ast_node_t*);
+  sema->node_stack = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_analysing_node_t);
   sema->global_decls = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_decl_t*);
   sema->scope_frames = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_scope_frame_t*);
   sema->hir = lou_hir_new(mempool);

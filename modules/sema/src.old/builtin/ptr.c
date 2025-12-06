@@ -1,6 +1,6 @@
 #include "const.h"
 #include "plugin.h"
-#include "sema.h"
+#include "impl.h"
 #include "type.h"
 #include "value.h"
 

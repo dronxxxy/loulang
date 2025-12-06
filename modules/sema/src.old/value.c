@@ -3,8 +3,7 @@
 #include "lou/core/assertions.h"
 #include "lou/core/log.h"
 #include "lou/hir/code.h"
-#include "sema.h"
-#include <endian.h>
+#include "impl.h"
 #include <stdio.h>
 
 void lou_sema_value_print(FILE *stream, lou_sema_value_t *value) {
