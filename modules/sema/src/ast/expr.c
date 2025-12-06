@@ -1,14 +1,45 @@
 #include "expr.h"
 #include "impl.h"
 #include "lou/core/assertions.h"
+#include "type.h"
 #include "value.h"
 
 lou_sema_value_t *lou_sema_expr_outline(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
-  NOT_IMPLEMENTED;
+  switch (expr->kind) {
+    case LOU_AST_EXPR_CHAR: {
+      lou_sema_type_t *u8 = lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_8, false);
+      lou_sema_const_t *constant = lou_sema_const_new_int(sema->mempool, u8, expr->character);
+      return lou_sema_value_new_const(sema->mempool, constant);
+    }
+    case LOU_AST_EXPR_INTEGER: {
+      lou_sema_type_t *type = ctx.expectation && ctx.expectation->kind == LOU_SEMA_TYPE_INTEGER ?
+        ctx.expectation : lou_sema_type_default_int(sema);
+      lou_sema_const_t *constant = lou_sema_const_new_int(sema->mempool, type, expr->integer);
+      return lou_sema_value_new_const(sema->mempool, constant);
+    }
+    case LOU_AST_EXPR_IDENT: return lou_sema_resolve_skeleton(sema, expr->ident);
+    case LOU_AST_EXPR_CALL:
+    case LOU_AST_EXPR_STRING:
+    case LOU_AST_EXPR_FUNC:
+    case LOU_AST_EXPR_GET_IDENT:
+    case LOU_AST_EXPR_ARRAY:
+      NOT_IMPLEMENTED;
+  }
+  UNREACHABLE();
 }
 
 bool lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_value_t *value) {
-  NOT_IMPLEMENTED;
+  switch (expr->kind) {
+    case LOU_AST_EXPR_CHAR: case LOU_AST_EXPR_INTEGER: return true;
+    case LOU_AST_EXPR_IDENT: return lou_sema_resolve(sema, expr->ident) != NULL;
+    case LOU_AST_EXPR_GET_IDENT:
+    case LOU_AST_EXPR_FUNC:
+    case LOU_AST_EXPR_STRING:
+    case LOU_AST_EXPR_CALL:
+    case LOU_AST_EXPR_ARRAY:
+      NOT_IMPLEMENTED;
+  }
+  UNREACHABLE();
 }
 
 lou_sema_value_t *lou_sema_expr_outline_runtime(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {

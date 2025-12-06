@@ -50,7 +50,7 @@ void lou_sema_read(lou_sema_t *sema) {
 void lou_sema_analyze(lou_sema_t *sema) {
   assert(sema->nodes);
   for (size_t i = 0; i < lou_vec_len(sema->nodes); i++) {
-    // TODO: add currentNodeId for global search
+    // TODO(1): add currentNodeId for global search
     //       - declaration search begins at [currentNodeId, 0]
     //       - if not found, search in [nodes.length, currentNodeId + 1]
     lou_sema_node_record_t *record = &sema->nodes[i];
