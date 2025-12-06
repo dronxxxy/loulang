@@ -18,6 +18,14 @@ lou_sema_value_t *lou_sema_value_new_type(lou_mempool_t *mempool, lou_sema_type_
   return value;
 }
 
+lou_sema_value_t *lou_sema_value_new_plugin(lou_mempool_t *mempool, lou_sema_plugin_t *plugin) {
+  lou_sema_value_t *value = LOU_MEMPOOL_ALLOC(mempool, lou_sema_value_t);
+  value->kind = LOU_SEMA_VALUE_COMPTIME;
+  value->comptime.kind = LOU_SEMA_VALUE_COMPTIME_PLUGIN;
+  value->comptime.plugin = plugin;
+  return value;
+}
+
 lou_sema_type_t *lou_sema_value_is_runtime(lou_sema_value_t *value) {
   if (value->kind != LOU_SEMA_VALUE_RUNTIME) return NULL;
   switch (value->runtime.kind) {

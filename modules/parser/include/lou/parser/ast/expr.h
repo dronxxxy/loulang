@@ -45,6 +45,9 @@ typedef enum {
   LOU_AST_EXPR_CHAR,
 } lou_ast_expr_kind_t;
 
+// this is bad, of course, but who cares?)
+typedef struct lou_sema_value_t lou_sema_value_t;
+
 typedef struct lou_ast_expr_t {
   lou_ast_expr_kind_t kind;
   lou_slice_t slice;
@@ -63,6 +66,8 @@ typedef struct lou_ast_expr_t {
     lou_ast_expr_get_ident_t get_ident;
     lou_ast_expr_array_t array;
   };
+
+  lou_sema_value_t *sema_value;
 } lou_ast_expr_t;
 
 lou_ast_expr_t *lou_ast_expr_new_ident(lou_mempool_t *mempool, lou_slice_t ident);

@@ -21,7 +21,12 @@ static inline void lou_sema_outline_meta_decl(lou_sema_t *sema, lou_ast_node_t *
     lou_sema_kill_decl(decl);
     return;
   }
-  lou_sema_outline_decl(decl, lou_sema_expr_outline(sema, node->decl.initializer, lou_sema_expr_ctx_new_comptime()));
+  lou_sema_value_t *value = lou_sema_expr_outline(sema, node->decl.initializer, lou_sema_expr_ctx_new_comptime());
+  if (value) {
+    lou_sema_outline_decl(decl, value);
+  } else {
+    lou_sema_kill_decl(decl);
+  }
 }
 
 static inline void lou_sema_outline_const_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
@@ -60,6 +65,10 @@ static inline void lou_sema_outline_emittable_decl(lou_sema_t *sema, lou_ast_nod
     NOT_IMPLEMENTED;
   } else {
     lou_sema_value_t *value = lou_sema_expr_outline_runtime(sema, node->decl.initializer, lou_sema_expr_ctx_new_runtime(type));
+    if (!value) {
+      lou_sema_kill_decl(decl);
+      return;
+    }
     (void)value;
     // TODO: link to emittable declaration
     NOT_IMPLEMENTED;
