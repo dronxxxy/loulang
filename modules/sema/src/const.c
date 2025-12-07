@@ -17,6 +17,14 @@ lou_sema_const_t *lou_sema_const_new_func(lou_mempool_t *mempool, lou_sema_type_
   return constant;
 }
 
+lou_sema_const_t *lou_sema_const_new_extern(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_extern_t *external) {
+  lou_sema_const_t *constant = LOU_MEMPOOL_ALLOC(mempool, lou_sema_const_t);
+  constant->kind = LOU_SEMA_CONST_EXTERN;
+  constant->type = type;
+  constant->external = external;
+  return constant;
+}
+
 lou_sema_const_t *lou_sema_const_new_string(lou_mempool_t *mempool, lou_slice_t content) {
   lou_sema_const_t *constant = LOU_MEMPOOL_ALLOC(mempool, lou_sema_const_t);
   constant->kind = LOU_SEMA_CONST_STRING;
