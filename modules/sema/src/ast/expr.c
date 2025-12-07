@@ -3,6 +3,7 @@
 #include "ast/expr_ctx.h"
 #include "impl.h"
 #include "lou/core/assertions.h"
+#include "lou/core/mempool.h"
 #include "lou/core/vec.h"
 #include "lou/hir/code.h"
 #include "lou/hir/func.h"
@@ -72,13 +73,38 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
       lou_sema_plugin_t *plugin = lou_sema_value_is_plugin(value);
       if (plugin) return plugin->outline(lou_sema_plugin_ctx_new(sema, expr->call.inner->slice, expr->call.args), ctx);
 
+      if (plugin) {
+        return plugin->outline(lou_sema_plugin_ctx_new(sema, expr->call.inner->slice, expr->call.args), ctx);
+      }
+      
+      lou_sema_type_t *runtime = lou_sema_value_is_runtime(value);
+        if (runtime && runtime->kind == LOU_SEMA_TYPE_FUNCTION) {
+        lou_hir_local_t *output = runtime->func.returns ? NOT_NULL(lou_sema_add_local_final(sema, runtime->func.returns)) : NULL;
+
+        if (lou_vec_len(runtime->func.args) != lou_vec_len(expr->call.args)) {
+          lou_sema_err(sema, expr->call.inner->slice, "funtions accepts #l argument#s but #l #s passed",
+            lou_vec_len(runtime->func.args), lou_vec_len(runtime->func.args) == 1 ? "" : "s",
+            lou_vec_len(expr->call.args), lou_vec_len(expr->call.args) == 1 ? "was" : "were");
+        }
+
+        lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_hir_value_t*);
+        for (size_t i = 0; i < lou_vec_len(expr->call.args); i++) {
+          *LOU_VEC_PUSH(&args) = lou_sema_value_as_hir(sema->mempool, NOT_NULL(lou_sema_expr_analyze_runtime(sema, expr->call.args[i],
+            lou_sema_expr_ctx_new_runtime(runtime->func.args[i]), false)));
+        }
+
+        lou_sema_push_stmt(sema, lou_hir_stmt_new_call(sema->mempool, output, lou_sema_value_as_hir(sema->mempool, value), args));
+        // TODO: prevent void assignment
+        return runtime->func.returns ? lou_sema_value_new_local(sema->mempool, runtime->func.returns, output) : NULL;
+      }
+
       lou_sema_err(sema, expr->call.inner->slice, "#V is not callable", value);
       return NULL;
     }
     case LOU_AST_EXPR_STRING:
       switch (expr->string.kind) {
         case LOU_TOKEN_STRING_NORMAL: return lou_sema_value_new_const(sema->mempool, lou_sema_const_new_string(sema->mempool, expr->string.content));
-        case LOU_TOKEN_STRING_C: NOT_IMPLEMENTED;
+        case LOU_TOKEN_STRING_C: return lou_sema_value_new_const(sema->mempool, lou_sema_const_new_cstring(sema->mempool, expr->string.content));
       }
       UNREACHABLE();
     case LOU_AST_EXPR_FUNC: {
@@ -118,7 +144,7 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
         return expr->sema_value;
       }
 
-      UNREACHABLE();
+      return NULL;
     }
     case LOU_AST_EXPR_STRING: return expr->sema_value;
     case LOU_AST_EXPR_FUNC: {

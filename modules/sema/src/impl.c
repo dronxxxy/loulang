@@ -81,6 +81,11 @@ lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema) {
   return lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_32, true);
 }
 
+lou_hir_local_t *lou_sema_add_local_final(lou_sema_t *sema, lou_sema_type_t *type) {
+  return lou_hir_code_local_add(sema->mempool, (*LOU_VEC_LAST(LOU_VEC_LAST(sema->scope_stacks)->scopes))->code, LOU_HIR_IMMUTABLE,
+    lou_sema_type_as_hir(sema->mempool, type));
+}
+
 void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt) {
   lou_hir_code_append_stmt((*LOU_VEC_LAST(LOU_VEC_LAST(sema->scope_stacks)->scopes))->code, stmt);
 }

@@ -72,8 +72,10 @@ void lou_sema_outline_decl(lou_sema_decl_t *decl, lou_sema_value_t *value);
 void lou_sema_finalize_decl(lou_sema_decl_t *decl);
 void lou_sema_kill_decl(lou_sema_decl_t *decl);
 void lou_sema_add_internal_decl(lou_sema_t *sema, const char *name, lou_sema_value_t *value);
-void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt);
 lou_sema_type_t *lou_sema_returns(lou_sema_t *sema);
+
+lou_hir_local_t *lou_sema_add_local_final(lou_sema_t *sema, lou_sema_type_t *type);
+void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt);
 
 lou_sema_value_t *lou_sema_resolve_skeleton(lou_sema_t *sema, lou_slice_t name);
 lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);

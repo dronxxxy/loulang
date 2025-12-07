@@ -4,6 +4,7 @@
 #include "impl.h"
 #include "lou/core/assertions.h"
 #include "lou/core/vec.h"
+#include "lou/hir/code.h"
 #include "lou/parser/ast/stmt.h"
 #include "type.h"
 #include "value.h"
@@ -19,7 +20,9 @@ static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
       lou_sema_type_t *type = lou_sema_value_is_runtime(value);
       if (!lou_sema_type_eq(returns, type)) {
         lou_sema_err(sema, stmt->slice, "function expected to return #T but got expression of type #T", returns, type);
+        return;
       }
+      lou_sema_push_stmt(sema, lou_hir_stmt_new_ret(sema->mempool, lou_sema_value_as_hir(sema->mempool, value)));
       return;
     }
     case LOU_AST_STMT_NODE:
