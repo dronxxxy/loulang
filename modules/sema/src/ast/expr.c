@@ -68,7 +68,7 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
     }
     case LOU_AST_EXPR_IDENT: return lou_sema_resolve_skeleton(sema, expr->ident);
     case LOU_AST_EXPR_CALL: {
-      lou_sema_value_t *value = NOT_NULL(lou_sema_expr_analyze(sema, expr->call.inner, ctx, false));
+      lou_sema_value_t *value = NOT_NULL(lou_sema_expr_analyze(sema, expr->call.inner, ctx, true));
 
       lou_sema_plugin_t *plugin = lou_sema_value_is_plugin(value);
       if (plugin) return plugin->outline(lou_sema_plugin_ctx_new(sema, expr->call.inner->slice, expr->call.args), ctx);

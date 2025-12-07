@@ -20,7 +20,7 @@ LLVMValueRef lou_llvm_emit_const(lou_llvm_module_t *llvm, const lou_hir_const_t 
         constant->type->integer.is_signed
       );
     case LOU_HIR_CONST_FUNCTION:
-      return lou_llvm_function_decl(llvm, constant->func->name, constant->type);
+      return constant->func->codegen;
     case LOU_HIR_CONST_EXTERNAL:
       return constant->external->codegen;
     case LOU_HIR_CONST_STRING: {

@@ -12,7 +12,7 @@
 static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
   switch (stmt->kind) {
     case LOU_AST_STMT_EXPR:
-      lou_sema_expr_analyze(sema, stmt->expr, lou_sema_expr_ctx_new_runtime(NULL), false);
+      lou_sema_expr_analyze(sema, stmt->expr, lou_sema_expr_ctx_new_runtime(NULL), true);
       return;
     case LOU_AST_STMT_RETURN: {
       lou_sema_type_t *returns = lou_sema_returns(sema);

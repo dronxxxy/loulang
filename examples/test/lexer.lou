@@ -5,6 +5,7 @@ meta testType = @retFun(testType)
 
 const main = @global("main", fun () -> i32 {
   putCString(c"hello, world!")
+  main()
   return 0
 })
 
