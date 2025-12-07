@@ -29,39 +29,58 @@ static inline void lou_sema_outline_meta_decl(lou_sema_t *sema, lou_ast_node_t *
   }
 }
 
-static inline void lou_sema_outline_const_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
-  lou_sema_type_t *type = node->decl.type ? lou_sema_expr_analyze_type(sema, node->decl.type, lou_sema_expr_ctx_new_comptime()) : NULL;
+static inline lou_sema_value_t *lou_sema_outline_immutable_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
+  lou_sema_type_t *type = node->decl.type ? lou_sema_expr_analyze_type(sema, node->decl.type, lou_sema_expr_ctx_new_comptime(), false) : NULL;
   if (!node->decl.initializer) {
-    lou_sema_err(sema, node->decl.name, "constant declaration must be initialized");
+    lou_sema_err(sema, node->decl.name, "constant and final declarations must be initialized");
     lou_sema_kill_decl(decl);
-    return;
+    return NULL;
   }
   lou_sema_value_t *value = lou_sema_expr_outline_runtime(sema, node->decl.initializer, lou_sema_expr_ctx_new_runtime(type));
   if (!value) {
     lou_sema_kill_decl(decl);
-    return;
+    return NULL;
   }
 
   lou_sema_type_t *value_type = lou_sema_value_is_runtime(value);
   if (type && !lou_sema_type_eq(type, value_type)) {
     lou_sema_err(sema, node->decl.initializer->slice, "expression of type #T was expected but it has type #T", type, value_type);
     lou_sema_kill_decl(decl);
+    return NULL;
+  }
+  return value;
+}
+
+static inline void lou_sema_outline_const_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
+  lou_sema_value_t *value = RET_ON_NULL(lou_sema_outline_immutable_decl(sema, node, decl));
+  if (!lou_sema_value_is_const(value)) {
+    lou_sema_err(sema, node->decl.initializer->slice, "constant expression initializer must be constant but it is #V", value);
+    lou_sema_kill_decl(decl);
     return;
   }
-
   lou_sema_outline_decl(decl, value);
 }
 
-static inline void lou_sema_outline_emittable_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
+static inline void lou_sema_outline_final_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
+  lou_sema_value_t *value = RET_ON_NULL(lou_sema_outline_immutable_decl(sema, node, decl));
+  if (lou_sema_is_global_scope(sema) && !lou_sema_value_is_const(value)) {
+    lou_sema_err(sema, node->decl.initializer->slice, "expressions in global scope must be constant but it is #V", value);
+    lou_sema_kill_decl(decl);
+    return;
+  }
+  lou_sema_outline_decl(decl, value);
+}
+
+static inline void lou_sema_outline_var_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
   lou_sema_type_t *type = NULL;
 
   if (node->decl.type) {
-    type = lou_sema_expr_analyze_type(sema, node->decl.type, lou_sema_expr_ctx_new_comptime());
+    type = lou_sema_expr_analyze_type(sema, node->decl.type, lou_sema_expr_ctx_new_comptime(), false);
     if (!type) {
       lou_sema_kill_decl(decl);
       return;
     }
-    // TODO: link to emittable declaration
+    // TODO: link to variable
     NOT_IMPLEMENTED;
   } else {
     lou_sema_value_t *value = lou_sema_expr_outline_runtime(sema, node->decl.initializer, lou_sema_expr_ctx_new_runtime(type));
@@ -70,8 +89,7 @@ static inline void lou_sema_outline_emittable_decl(lou_sema_t *sema, lou_ast_nod
       return;
     }
     (void)value;
-    // TODO: link to emittable declaration
-    NOT_IMPLEMENTED;
+    // TODO: link to variable
   }
 }
 
@@ -81,7 +99,8 @@ static inline void lou_sema_outline_node_internal(lou_sema_t *sema, lou_ast_node
       switch (node->decl.kind) {
         case LOU_AST_DECL_META: return lou_sema_outline_meta_decl(sema, node, decl);
         case LOU_AST_DECL_CONST: return lou_sema_outline_const_decl(sema, node, decl);
-        case LOU_AST_DECL_FINAL: case LOU_AST_DECL_VAR: return lou_sema_outline_emittable_decl(sema, node, decl);
+        case LOU_AST_DECL_FINAL: return lou_sema_outline_final_decl(sema, node, decl);
+        case LOU_AST_DECL_VAR: return lou_sema_outline_var_decl(sema, node, decl);
       }
       return;
     }
@@ -95,24 +114,15 @@ void lou_sema_outline_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl
   lou_sema_pop_analysing_node(sema);
 }
 
-static inline void lou_sema_finalize_immutable_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
-  if (lou_sema_expr_finalize(sema, node->decl.initializer)) {
-    lou_sema_finalize_decl(decl);
-  } else {
-    lou_sema_kill_decl(decl);
-  }
-}
-
-static inline void lou_sema_finalize_emittable_decl(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
-  NOT_IMPLEMENTED;
-}
-
 static inline void lou_sema_finalize_node_internal(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_decl_t *decl) {
   switch (node->kind) {
     case LOU_AST_NODE_DECL: {
-      switch (node->decl.kind) {
-        case LOU_AST_DECL_META: case LOU_AST_DECL_CONST: return lou_sema_finalize_immutable_decl(sema, node, decl);
-        case LOU_AST_DECL_FINAL: case LOU_AST_DECL_VAR: return lou_sema_finalize_emittable_decl(sema, node, decl);
+      if (node->decl.initializer) {
+        if (lou_sema_expr_finalize(sema, node->decl.initializer, false)) {
+          lou_sema_finalize_decl(decl);
+        } else {
+          lou_sema_kill_decl(decl);
+        }
       }
       return;
     }

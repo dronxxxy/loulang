@@ -45,11 +45,13 @@ lou_sema_decl_t *lou_sema_add_decl(lou_sema_t *sema, lou_sema_visibility_t visib
 }
 
 void lou_sema_outline_decl(lou_sema_decl_t *decl, lou_sema_value_t *value) {
+  if (decl->stage >= LOU_SEMA_DECL_STAGE_SKELETON) return;
   decl->stage = LOU_SEMA_DECL_STAGE_SKELETON;
   decl->value = value;
 }
 
 void lou_sema_finalize_decl(lou_sema_decl_t *decl) {
+  if (decl->stage >= LOU_SEMA_DECL_STAGE_COMPLETE) return;
   assert(decl->value);
   decl->stage = LOU_SEMA_DECL_STAGE_COMPLETE;
 }
@@ -78,7 +80,7 @@ lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema) {
   return lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_32, true);
 }
 
-static inline lou_sema_decl_t *lou_sema_just_resolve_decl(lou_sema_t *sema, lou_slice_t name) {
+static inline lou_sema_decl_t *lou_sema_resolve_decl(lou_sema_t *sema, lou_slice_t name) {
   for (ssize_t i = lou_vec_len(sema->scope_stacks) - 1; i >= 0; i--) {
     lou_sema_scope_stack_t *scope_stack = &sema->scope_stacks[i];
     for (ssize_t j = lou_vec_len(scope_stack->scopes) - 1; j >= 0; j--) {
@@ -100,21 +102,21 @@ static inline lou_sema_decl_t *lou_sema_just_resolve_decl(lou_sema_t *sema, lou_
   return NULL;
 }
 
-static inline lou_sema_decl_t *lou_sema_resolve_decl(lou_sema_t *sema, lou_slice_t name) {
-  lou_sema_decl_t *decl = lou_sema_just_resolve_decl(sema, name);
+static inline bool lou_sema_decl_check_cycle(lou_sema_t *sema, lou_slice_t name, lou_sema_decl_t *decl) {
   for (size_t i = 0; i < lou_vec_len(sema->node_stack); i++) {
     if (sema->node_stack[i] == decl->node) {
       lou_sema_err(sema, name, "cycle dependency detected");
-      return NULL;
+      return false;
     }
   }
-  return decl;
+  return true;
 }
 
 lou_sema_value_t *lou_sema_resolve_skeleton(lou_sema_t *sema, lou_slice_t name) {
   lou_sema_decl_t *decl = NOT_NULL(lou_sema_resolve_decl(sema, name));
   if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return NULL;
   if (decl->stage < LOU_SEMA_DECL_STAGE_SKELETON) {
+    NOT_NULL(lou_sema_decl_check_cycle(sema, name, decl));
     lou_sema_outline_node(sema, decl->node, decl);
     if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return NULL;
   }
@@ -128,10 +130,12 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name) {
   if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return NULL;
   if (decl->stage < LOU_SEMA_DECL_STAGE_COMPLETE) {
     if (decl->stage < LOU_SEMA_DECL_STAGE_SKELETON) {
+      NOT_NULL(lou_sema_decl_check_cycle(sema, name, decl));
       lou_sema_outline_node(sema, decl->node, decl);
       if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return NULL;
     }
-    lou_sema_outline_node(sema, decl->node, decl);
+    NOT_NULL(lou_sema_decl_check_cycle(sema, name, decl));
+    lou_sema_finalize_node(sema, decl->node, decl);
     if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return NULL;
   }
   assert(decl->stage == LOU_SEMA_DECL_STAGE_COMPLETE);

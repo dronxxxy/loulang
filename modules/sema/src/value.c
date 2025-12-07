@@ -34,6 +34,11 @@ lou_sema_type_t *lou_sema_value_is_runtime(lou_sema_value_t *value) {
   UNREACHABLE();
 }
 
+lou_sema_const_t *lou_sema_value_is_const(lou_sema_value_t *value) {
+  if (value->kind != LOU_SEMA_VALUE_RUNTIME || value->runtime.kind != LOU_SEMA_VALUE_RUNTIME_CONSTANT) return NULL;
+  return value->runtime.constant;
+}
+
 lou_sema_type_t *lou_sema_value_is_type(lou_sema_value_t *value) {
   if (value->kind != LOU_SEMA_VALUE_COMPTIME || value->comptime.kind != LOU_SEMA_VALUE_COMPTIME_TYPE) return NULL;
   return value->comptime.type;

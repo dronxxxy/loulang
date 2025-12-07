@@ -15,7 +15,7 @@ typedef enum {
   LOU_SEMA_DECL_STAGE_KILLED,
 } lou_sema_decl_stage_t;
 
-typedef struct {
+typedef struct lou_sema_decl_t {
   lou_sema_decl_stage_t stage;
   lou_slice_t name;
 

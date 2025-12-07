@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lou/hir/code.h"
 #include "plugin.h"
 #include "type.h"
 #include "const.h"
@@ -45,6 +46,7 @@ lou_sema_value_t *lou_sema_value_new_const(lou_mempool_t *mempool, lou_sema_cons
 lou_sema_value_t *lou_sema_value_new_plugin(lou_mempool_t *mempool, lou_sema_plugin_t *plugin);
 lou_sema_value_t *lou_sema_value_new_type(lou_mempool_t *mempool, lou_sema_type_t *type);
 
+lou_sema_const_t *lou_sema_value_is_const(lou_sema_value_t *value);
 lou_sema_type_t *lou_sema_value_is_runtime(lou_sema_value_t *value);
 lou_sema_type_t *lou_sema_value_is_type(lou_sema_value_t *value);
 lou_sema_plugin_t *lou_sema_value_is_plugin(lou_sema_value_t *value);

@@ -16,7 +16,7 @@ static inline bool lou_sema_builtin_ret_fun_finalize(lou_sema_plugin_ctx ctx, lo
   lou_sema_type_t *type = lou_sema_value_is_type(value);
   assert(type);
 
-  lou_sema_type_t *arg_type = NOT_NULL(lou_sema_expr_analyze_type(ctx.sema, ctx.args[0], lou_sema_expr_ctx_new_comptime()));
+  lou_sema_type_t *arg_type = NOT_NULL(lou_sema_expr_analyze_type(ctx.sema, ctx.args[0], lou_sema_expr_ctx_new_comptime(), true));
 
   lou_sema_type_init_func(type, LOU_MEMPOOL_VEC_NEW(ctx.sema->mempool, lou_sema_type_t*), arg_type);
   return true;
