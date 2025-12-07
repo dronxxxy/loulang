@@ -10,6 +10,10 @@ int main(int argc, char** argv) {
   if (!sema) return 1;
   lou_sema_read(sema);
   lou_sema_analyze(sema);
+  if (lou_sema_failed(sema)) {
+    lou_sema_free(sema);
+    return 1;
+  }
   lou_llvm_module_t *llvm = lou_llvm_module_new(lou_sema_hir(sema));
   lou_llvm_module_emit(llvm);
   lou_llvm_module_dump(llvm, "build/out");

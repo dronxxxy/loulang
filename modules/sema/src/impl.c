@@ -4,6 +4,7 @@
 #include "lou/core/mempool.h"
 #include "lou/core/slice.h"
 #include "lou/core/vec.h"
+#include "lou/hir/code.h"
 #include "lou/parser/parser.h"
 #include "type.h"
 #include <assert.h>
@@ -84,7 +85,7 @@ static inline lou_sema_decl_t *lou_sema_resolve_decl(lou_sema_t *sema, lou_slice
   for (ssize_t i = lou_vec_len(sema->scope_stacks) - 1; i >= 0; i--) {
     lou_sema_scope_stack_t *scope_stack = &sema->scope_stacks[i];
     for (ssize_t j = lou_vec_len(scope_stack->scopes) - 1; j >= 0; j--) {
-      lou_sema_scope_t *scope = &scope_stack->scopes[j];
+      lou_sema_scope_t *scope = scope_stack->scopes[j];
       for (ssize_t k = lou_vec_len(scope->decls) - 1; k >= 0; k--) {
         lou_sema_decl_t *decl = scope->decls[k];
         if (lou_slice_eq(decl->name, name)) return decl;
@@ -149,4 +150,29 @@ void lou_sema_push_analysing_node(lou_sema_t *sema, lou_ast_node_t *node) {
 
 void lou_sema_pop_analysing_node(lou_sema_t *sema) {
   LOU_VEC_POP(&sema->node_stack);
+}
+
+void lou_sema_push_scope_stack(lou_sema_t *sema, lou_sema_type_t *returns) {
+  *LOU_VEC_PUSH(&sema->scope_stacks) = (lou_sema_scope_stack_t) {
+    .scopes = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_scope_t*),
+    .returns = returns,
+  };
+}
+
+void lou_sema_pop_scope_stack(lou_sema_t *sema) {
+  LOU_VEC_POP(&sema->scope_stacks);
+}
+
+void lou_sema_push_scope(lou_sema_t *sema) {
+  lou_sema_scope_t *scope = LOU_MEMPOOL_ALLOC(sema->mempool, lou_sema_scope_t);
+  scope->decls = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_decl_t*);
+  scope->code = lou_hir_code_new(sema->mempool);
+  *LOU_VEC_PUSH(&LOU_VEC_LAST(sema->scope_stacks)->scopes) = scope;
+}
+
+lou_sema_scope_t *lou_sema_pop_scope(lou_sema_t *sema) {
+  lou_sema_scope_stack_t *stack = LOU_VEC_LAST(sema->scope_stacks);
+  lou_sema_scope_t *scope = *LOU_VEC_LAST(stack->scopes);
+  LOU_VEC_POP(stack->scopes);
+  return scope;
 }

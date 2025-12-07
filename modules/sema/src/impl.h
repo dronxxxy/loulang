@@ -36,10 +36,12 @@ typedef struct {
 
 typedef struct {
   lou_sema_decl_t **decls;
+  lou_hir_code_t *code;
 } lou_sema_scope_t;
 
 typedef struct {
-  lou_sema_scope_t *scopes;
+  lou_sema_scope_t **scopes;
+  lou_sema_type_t *returns;
 } lou_sema_scope_stack_t;
 
 typedef struct {
@@ -76,5 +78,11 @@ lou_sema_value_t *lou_sema_resolve(lou_sema_t *sema, lou_slice_t name);
 
 void lou_sema_push_analysing_node(lou_sema_t *sema, lou_ast_node_t *node);
 void lou_sema_pop_analysing_node(lou_sema_t *sema);
+
+void lou_sema_push_scope_stack(lou_sema_t *sema, lou_sema_type_t *returns);
+void lou_sema_pop_scope_stack(lou_sema_t *sema);
+
+void lou_sema_push_scope(lou_sema_t *sema);
+lou_sema_scope_t *lou_sema_pop_scope(lou_sema_t *sema);
 
 lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema);
