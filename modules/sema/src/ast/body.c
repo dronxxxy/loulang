@@ -1,12 +1,27 @@
 #include "body.h"
+#include "ast/expr.h"
+#include "ast/expr_ctx.h"
+#include "impl.h"
 #include "lou/core/assertions.h"
 #include "lou/core/vec.h"
 #include "lou/parser/ast/stmt.h"
+#include "type.h"
+#include "value.h"
 
 static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
   switch (stmt->kind) {
-    case LOU_AST_STMT_RETURN:
     case LOU_AST_STMT_EXPR:
+      lou_sema_expr_analyze(sema, stmt->expr, lou_sema_expr_ctx_new_runtime(NULL), false);
+      return;
+    case LOU_AST_STMT_RETURN: {
+      lou_sema_type_t *returns = lou_sema_returns(sema);
+      lou_sema_value_t *value = lou_sema_expr_analyze_runtime(sema, stmt->ret.value, lou_sema_expr_ctx_new_runtime(NULL), false);
+      lou_sema_type_t *type = lou_sema_value_is_runtime(value);
+      if (!lou_sema_type_eq(returns, type)) {
+        lou_sema_err(sema, stmt->slice, "function expected to return #T but got expression of type #T", returns, type);
+      }
+      return;
+    }
     case LOU_AST_STMT_NODE:
     case LOU_AST_STMT_IF:
       NOT_IMPLEMENTED;

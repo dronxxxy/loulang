@@ -166,3 +166,9 @@ lou_sema_type_t *lou_sema_expr_analyze_type(lou_sema_t *sema, lou_ast_expr_t *ex
   lou_sema_expr_finalize(sema, expr, weak);
   return type;
 }
+
+lou_sema_value_t *lou_sema_expr_analyze_runtime(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx, bool weak) {
+  lou_sema_value_t *type = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr, ctx));
+  lou_sema_expr_finalize(sema, expr, weak);
+  return type;
+}

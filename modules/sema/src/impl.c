@@ -81,6 +81,14 @@ lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema) {
   return lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_32, true);
 }
 
+void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt) {
+  lou_hir_code_append_stmt((*LOU_VEC_LAST(LOU_VEC_LAST(sema->scope_stacks)->scopes))->code, stmt);
+}
+
+lou_sema_type_t *lou_sema_returns(lou_sema_t *sema) {
+  return LOU_VEC_LAST(sema->scope_stacks)->returns;
+}
+
 static inline lou_sema_decl_t *lou_sema_resolve_decl(lou_sema_t *sema, lou_slice_t name) {
   for (ssize_t i = lou_vec_len(sema->scope_stacks) - 1; i >= 0; i--) {
     lou_sema_scope_stack_t *scope_stack = &sema->scope_stacks[i];
