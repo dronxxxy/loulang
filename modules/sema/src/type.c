@@ -1,5 +1,6 @@
 #include "type.h"
 #include "lou/core/assertions.h"
+#include "lou/core/log.h"
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
 #include "lou/hir/type.h"
@@ -90,6 +91,45 @@ lou_hir_type_t *lou_sema_type_as_hir(lou_mempool_t *mempool, const lou_sema_type
       lou_hir_type_t *returns = type->func.returns ? lou_sema_type_as_hir(mempool, type->func.returns) : NULL;
       return lou_hir_type_new_func(mempool, args, returns);
     }
+  }
+  UNREACHABLE();
+}
+
+void lou_sema_type_log(FILE *stream, lou_sema_type_t *type) {
+  if (!type) {
+    lou_log_puts(stream, "(null)");
+    return;
+  }
+  if (!type->complete) {
+    lou_log_puts(stream, "(incomplete type)");
+    return;
+  }
+  switch (type->kind) {
+    case LOU_SEMA_TYPE_STRING: fprintf(stream, "string"); return;
+    case LOU_SEMA_TYPE_INTEGER:
+      fprintf(stream, type->integer.is_signed ? "i" : "u");
+      switch (type->integer.size) {
+        case LOU_SEMA_INT_8: fprintf(stream, "8"); break;
+        case LOU_SEMA_INT_16: fprintf(stream, "16"); break;
+        case LOU_SEMA_INT_32: fprintf(stream, "32"); break;
+        case LOU_SEMA_INT_64: fprintf(stream, "64"); break;
+      }
+      return;
+    case LOU_SEMA_TYPE_FUNCTION:
+      lou_log_puts(stream, "@fun((");
+      for (size_t i = 0; i < lou_vec_len(type->func.args); i++) {
+        lou_log_puts(stream, i == 0 ? "#T" : ", #T", type->func.args[i]);
+      }
+      lou_log_puts(stream, ")");
+      if (type->func.returns) {
+        lou_log_puts(stream, ", #T", type->func.returns);
+
+      }
+      lou_log_puts(stream, ")");
+      return;
+    case LOU_SEMA_TYPE_POINTER:
+      lou_log_puts(stream, "@ptr(#T)", type->pointer_to);
+      return;
   }
   UNREACHABLE();
 }

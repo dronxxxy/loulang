@@ -11,6 +11,7 @@
 #include "plugin.h"
 #include "type.h"
 #include "value.h"
+#include <assert.h>
 
 static inline lou_sema_type_t *lou_sema_infer_func_type(lou_sema_t *sema, lou_ast_expr_func_t *func, lou_sema_expr_ctx_t ctx) {
   lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
@@ -78,13 +79,14 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
       }
       
       lou_sema_type_t *runtime = lou_sema_value_is_runtime(value);
-        if (runtime && runtime->kind == LOU_SEMA_TYPE_FUNCTION) {
+      if (runtime && runtime->kind == LOU_SEMA_TYPE_FUNCTION) {
         lou_hir_local_t *output = runtime->func.returns ? NOT_NULL(lou_sema_add_local_final(sema, runtime->func.returns)) : NULL;
 
         if (lou_vec_len(runtime->func.args) != lou_vec_len(expr->call.args)) {
           lou_sema_err(sema, expr->call.inner->slice, "funtions accepts #l argument#s but #l #s passed",
             lou_vec_len(runtime->func.args), lou_vec_len(runtime->func.args) == 1 ? "" : "s",
             lou_vec_len(expr->call.args), lou_vec_len(expr->call.args) == 1 ? "was" : "were");
+          return NULL;
         }
 
         lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_hir_value_t*);
@@ -114,8 +116,8 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
       } else {
         NOT_NULL(lou_sema_check_func_inferring(sema, expr->slice, &expr->func, ctx));
       }
-      lou_sema_const_t *constant = lou_sema_const_new_func(sema->mempool, type,
-        lou_hir_func_add(sema->hir, lou_sema_type_as_hir(sema->mempool, type)));
+      lou_sema_const_t *constant = lou_sema_const_new_func(sema->mempool, type, lou_hir_func_add(sema->hir,
+        lou_sema_type_as_hir(sema->mempool, type)));
       return lou_sema_value_new_const(sema->mempool, constant);
     }
     case LOU_AST_EXPR_GET_IDENT:
@@ -140,11 +142,10 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
 
       lou_sema_plugin_t *plugin = lou_sema_value_is_plugin(callable);
       if (plugin) {
-        if (!plugin->finalize(lou_sema_plugin_ctx_new(sema, expr->call.inner->slice, expr->call.args), expr->sema_value)) return NULL;
-        return expr->sema_value;
+        NOT_NULL(plugin->finalize(lou_sema_plugin_ctx_new(sema, expr->call.inner->slice, expr->call.args), expr->sema_value));
       }
 
-      return NULL;
+      return expr->sema_value;
     }
     case LOU_AST_EXPR_STRING: return expr->sema_value;
     case LOU_AST_EXPR_FUNC: {
@@ -174,7 +175,8 @@ lou_sema_value_t *lou_sema_expr_outline_runtime(lou_sema_t *sema, lou_ast_expr_t
 
 lou_sema_value_t *lou_sema_expr_analyze(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx, bool weak) {
   lou_sema_value_t *value = NOT_NULL(lou_sema_expr_outline(sema, expr, ctx));
-  if (!lou_sema_expr_finalize(sema, expr, weak)) return NULL;
+  lou_sema_value_t *finalized = NOT_NULL(lou_sema_expr_finalize(sema, expr, weak));
+  assert(value == finalized);
   return value;
 }
 
@@ -189,12 +191,12 @@ lou_sema_type_t *lou_sema_expr_outline_type(lou_sema_t *sema, lou_ast_expr_t *ex
 
 lou_sema_type_t *lou_sema_expr_analyze_type(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx, bool weak) {
   lou_sema_type_t *type = NOT_NULL(lou_sema_expr_outline_type(sema, expr, ctx));
-  lou_sema_expr_finalize(sema, expr, weak);
+  NOT_NULL(lou_sema_expr_finalize(sema, expr, weak));
   return type;
 }
 
 lou_sema_value_t *lou_sema_expr_analyze_runtime(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx, bool weak) {
   lou_sema_value_t *type = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr, ctx));
-  lou_sema_expr_finalize(sema, expr, weak);
+  NOT_NULL(lou_sema_expr_finalize(sema, expr, weak));
   return type;
 }

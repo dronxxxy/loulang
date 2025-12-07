@@ -3,6 +3,7 @@
 #include "lou/core/mempool.h"
 #include "lou/hir/const.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 typedef enum {
   LOU_SEMA_INT_8, 
@@ -50,3 +51,5 @@ void lou_sema_type_init_pointer(lou_sema_type_t *type, lou_sema_type_t *to);
 bool lou_sema_type_eq(const lou_sema_type_t *a, const lou_sema_type_t *b);
 
 lou_hir_type_t *lou_sema_type_as_hir(lou_mempool_t *mempool, const lou_sema_type_t *type);
+
+void lou_sema_type_log(FILE *stream, lou_sema_type_t *type);

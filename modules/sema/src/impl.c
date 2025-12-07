@@ -8,6 +8,7 @@
 #include "lou/parser/parser.h"
 #include "type.h"
 #include <assert.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <sys/types.h>
 
@@ -186,6 +187,6 @@ void lou_sema_push_scope(lou_sema_t *sema) {
 lou_sema_scope_t *lou_sema_pop_scope(lou_sema_t *sema) {
   lou_sema_scope_stack_t *stack = LOU_VEC_LAST(sema->scope_stacks);
   lou_sema_scope_t *scope = *LOU_VEC_LAST(stack->scopes);
-  LOU_VEC_POP(stack->scopes);
+  LOU_VEC_POP(&stack->scopes);
   return scope;
 }

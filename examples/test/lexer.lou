@@ -4,8 +4,24 @@ final putCString = @externFun("puts", @procFun(@ptr(u8)))
 meta testType = @retFun(testType)
 
 const main = @global("main", fun () -> i32 {
-  putCString(c"hello, world!")
-  main()
-  return 0
+  return fun () -> i32 {
+    putCString(c"hello, world!")
+    return fun () -> i32 {
+      putCString(c"how")
+      return fun () -> i32 {
+        putCString(c"tf")
+        return fun () -> i32 {
+          putCString(c"are")
+          return fun () -> i32 {
+            putCString(c"you?")
+            return fun () -> i32 {
+              putCString(c"...")
+              return 0
+            }()
+          }()
+        }()
+      }()
+    }()
+  }()
 })
 

@@ -1,5 +1,6 @@
 #include "value.h"
 #include "lou/core/assertions.h"
+#include "lou/core/log.h"
 #include "lou/core/mempool.h"
 #include "lou/hir/value.h"
 
@@ -65,6 +66,24 @@ lou_hir_value_t *lou_sema_value_as_hir(lou_mempool_t *mempool, lou_sema_value_t 
   switch (value->runtime.kind) {
     case LOU_SEMA_VALUE_RUNTIME_CONSTANT: return lou_hir_value_new_const(mempool, lou_sema_const_as_hir(mempool, value->runtime.constant));
     case LOU_SEMA_VALUE_RUNTIME_LOCAL: return lou_hir_value_new_local(mempool, value->runtime.local.hir);
+  }
+  UNREACHABLE();
+}
+
+void lou_sema_value_log(FILE *stream, lou_sema_value_t *value) {
+  switch (value->kind) {
+    case LOU_SEMA_VALUE_RUNTIME:
+      switch (value->runtime.kind) {
+        case LOU_SEMA_VALUE_RUNTIME_CONSTANT: lou_log_puts(stream, "constant #C", value->runtime.constant); return;
+        case LOU_SEMA_VALUE_RUNTIME_LOCAL: lou_log_puts(stream, "local of type #T", value->runtime.local.type); return;
+      }
+      UNREACHABLE();
+    case LOU_SEMA_VALUE_COMPTIME:
+      switch (value->comptime.kind) {
+        case LOU_SEMA_VALUE_COMPTIME_PLUGIN: fprintf(stream, "plugin"); return;
+        case LOU_SEMA_VALUE_COMPTIME_TYPE: lou_log_puts(stream, "type #T", value->comptime.type); return;
+      }
+      UNREACHABLE();
   }
   UNREACHABLE();
 }

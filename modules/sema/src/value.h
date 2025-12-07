@@ -59,3 +59,5 @@ lou_sema_type_t *lou_sema_value_is_type(lou_sema_value_t *value);
 lou_sema_plugin_t *lou_sema_value_is_plugin(lou_sema_value_t *value);
 
 lou_hir_value_t *lou_sema_value_as_hir(lou_mempool_t *mempool, lou_sema_value_t *value);
+
+void lou_sema_value_log(FILE *stream, lou_sema_value_t *value);
