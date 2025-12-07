@@ -15,6 +15,7 @@ typedef enum {
   LOU_SEMA_TYPE_STRING, 
   LOU_SEMA_TYPE_INTEGER, 
   LOU_SEMA_TYPE_FUNCTION, 
+  LOU_SEMA_TYPE_POINTER, 
 } lou_sema_type_kind_t;
 
 typedef struct lou_sema_type_t lou_sema_type_t;
@@ -33,14 +34,18 @@ typedef struct lou_sema_type_t {
       lou_sema_type_t **args;
       lou_sema_type_t *returns;
     } func;
+
+    lou_sema_type_t *pointer_to;
   };
 } lou_sema_type_t;
 
 lou_sema_type_t *lou_sema_type_new_int(lou_mempool_t *mempool, lou_sema_int_size_t size, bool is_signed);
 lou_sema_type_t *lou_sema_type_new_func(lou_mempool_t *mempool);
+lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool);
 lou_sema_type_t *lou_sema_type_new_string(lou_mempool_t *mempool);
 
 void lou_sema_type_init_func(lou_sema_type_t *type, lou_sema_type_t **args, lou_sema_type_t *returns);
+void lou_sema_type_init_pointer(lou_sema_type_t *type, lou_sema_type_t *to);
 
 bool lou_sema_type_eq(const lou_sema_type_t *a, const lou_sema_type_t *b);
 

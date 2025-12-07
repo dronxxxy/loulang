@@ -12,6 +12,13 @@ lou_sema_type_t *lou_sema_type_new_func(lou_mempool_t *mempool) {
   return type;
 }
 
+lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool) {
+  lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);
+  type->complete = false;
+  type->kind = LOU_SEMA_TYPE_POINTER;
+  return type;
+}
+
 lou_sema_type_t *lou_sema_type_new_int(lou_mempool_t *mempool, lou_sema_int_size_t size, bool is_signed) {
   lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);
   type->complete = true;
@@ -35,6 +42,12 @@ void lou_sema_type_init_func(lou_sema_type_t *type, lou_sema_type_t **args, lou_
   type->func.returns = returns;
 }
 
+void lou_sema_type_init_pointer(lou_sema_type_t *type, lou_sema_type_t *to) {
+  assert(type->kind == LOU_SEMA_TYPE_POINTER);
+  type->complete = true;
+  type->pointer_to = to;
+}
+
 bool lou_sema_type_eq(const lou_sema_type_t *a, const lou_sema_type_t *b) {
   assert(!a || a->complete);
   assert(!b || b->complete);
@@ -42,6 +55,7 @@ bool lou_sema_type_eq(const lou_sema_type_t *a, const lou_sema_type_t *b) {
   if ((a == NULL) != (b == NULL)) return false;
   if (a->kind != b->kind) return false;
   switch (a->kind) {
+    case LOU_SEMA_TYPE_POINTER: return lou_sema_type_eq(a->pointer_to, b->pointer_to);
     case LOU_SEMA_TYPE_INTEGER: return a->integer.size == b->integer.size && a->integer.is_signed == b->integer.is_signed;
     case LOU_SEMA_TYPE_STRING: return true;
     case LOU_SEMA_TYPE_FUNCTION:
@@ -65,7 +79,8 @@ static inline lou_hir_int_size_t lou_sema_int_size_as_hir(lou_sema_int_size_t si
 lou_hir_type_t *lou_sema_type_as_hir(lou_mempool_t *mempool, const lou_sema_type_t *type) {
   assert(type->complete);
   switch (type->kind) {
-    case LOU_SEMA_TYPE_STRING: UNREACHABLE();
+    case LOU_SEMA_TYPE_STRING: NOT_IMPLEMENTED;
+    case LOU_SEMA_TYPE_POINTER: return lou_hir_type_new_pointer(mempool, lou_sema_type_as_hir(mempool, type->pointer_to));
     case LOU_SEMA_TYPE_INTEGER: return lou_hir_type_new_integer(mempool, lou_sema_int_size_as_hir(type->integer.size), type->integer.is_signed);
     case LOU_SEMA_TYPE_FUNCTION: {
       lou_hir_type_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*);

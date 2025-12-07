@@ -5,6 +5,7 @@
 #include "plugins/extern.h"
 #include "plugins/fun.h"
 #include "plugins/global.h"
+#include "plugins/ptr.h"
 
 void lou_sema_builtin_setup(lou_sema_t *sema) {
   lou_sema_add_internal_decl(sema, "u8", lou_sema_value_new_type(sema->mempool, lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_8, false)));
@@ -20,4 +21,5 @@ void lou_sema_builtin_setup(lou_sema_t *sema) {
   lou_sema_add_internal_decl(sema, "@retFun", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_ret_fun(sema->mempool)));
   lou_sema_add_internal_decl(sema, "@procFun", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_proc_fun(sema->mempool)));
   lou_sema_add_internal_decl(sema, "@global", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_global(sema->mempool)));
+  lou_sema_add_internal_decl(sema, "@ptr", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_ptr(sema->mempool)));
 }
