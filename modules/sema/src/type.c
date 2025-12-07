@@ -6,22 +6,28 @@
 #include "lou/hir/type.h"
 #include <assert.h>
 
-lou_sema_type_t *lou_sema_type_new_func(lou_mempool_t *mempool) {
+static inline lou_sema_type_t *lou_sema_type_new(lou_mempool_t *mempool) {
   lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);
+  type->converted_type = NULL;
+  return type;
+}
+
+lou_sema_type_t *lou_sema_type_new_func(lou_mempool_t *mempool) {
+  lou_sema_type_t *type = lou_sema_type_new(mempool);
   type->complete = false;
   type->kind = LOU_SEMA_TYPE_FUNCTION;
   return type;
 }
 
 lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool) {
-  lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);
+  lou_sema_type_t *type = lou_sema_type_new(mempool);
   type->complete = false;
   type->kind = LOU_SEMA_TYPE_POINTER;
   return type;
 }
 
 lou_sema_type_t *lou_sema_type_new_int(lou_mempool_t *mempool, lou_sema_int_size_t size, bool is_signed) {
-  lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);
+  lou_sema_type_t *type = lou_sema_type_new(mempool);
   type->complete = true;
   type->kind = LOU_SEMA_TYPE_INTEGER;
   type->integer.size = size;
@@ -30,7 +36,7 @@ lou_sema_type_t *lou_sema_type_new_int(lou_mempool_t *mempool, lou_sema_int_size
 }
 
 lou_sema_type_t *lou_sema_type_new_string(lou_mempool_t *mempool) {
-  lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);
+  lou_sema_type_t *type = lou_sema_type_new(mempool);
   type->complete = true;
   type->kind = LOU_SEMA_TYPE_STRING;
   return type;
@@ -77,19 +83,20 @@ static inline lou_hir_int_size_t lou_sema_int_size_as_hir(lou_sema_int_size_t si
   UNREACHABLE();
 }
 
-lou_hir_type_t *lou_sema_type_as_hir(lou_mempool_t *mempool, const lou_sema_type_t *type) {
+lou_hir_type_t *lou_sema_type_as_hir(lou_mempool_t *mempool, lou_sema_type_t *type) {
+  if (type->converted_type) return type->converted_type;
   assert(type->complete);
   switch (type->kind) {
     case LOU_SEMA_TYPE_STRING: NOT_IMPLEMENTED;
     case LOU_SEMA_TYPE_POINTER: return lou_hir_type_new_pointer(mempool, lou_sema_type_as_hir(mempool, type->pointer_to));
     case LOU_SEMA_TYPE_INTEGER: return lou_hir_type_new_integer(mempool, lou_sema_int_size_as_hir(type->integer.size), type->integer.is_signed);
     case LOU_SEMA_TYPE_FUNCTION: {
-      lou_hir_type_t **args = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*);
+      lou_hir_type_t *result = type->converted_type = lou_hir_type_new_func(mempool, LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*), NULL);
       for (size_t i = 0; i < lou_vec_len(type->func.args); i++) {
-        *LOU_VEC_PUSH(&args) = lou_sema_type_as_hir(mempool, type->func.args[i]);
+        *LOU_VEC_PUSH(&result->func.args) = lou_sema_type_as_hir(mempool, type->func.args[i]);
       }
-      lou_hir_type_t *returns = type->func.returns ? lou_sema_type_as_hir(mempool, type->func.returns) : NULL;
-      return lou_hir_type_new_func(mempool, args, returns);
+      result->func.returns = type->func.returns ? lou_sema_type_as_hir(mempool, type->func.returns) : NULL;
+      return result;
     }
   }
   UNREACHABLE();
