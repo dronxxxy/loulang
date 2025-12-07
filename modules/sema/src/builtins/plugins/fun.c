@@ -3,6 +3,7 @@
 #include "impl.h"
 #include "lou/core/assertions.h"
 #include "lou/core/mempool.h"
+#include "lou/core/vec.h"
 #include "plugin.h"
 #include "type.h"
 #include "value.h"
@@ -27,12 +28,20 @@ lou_sema_plugin_t *lou_sema_builtin_ret_fun(lou_mempool_t *mempool) {
 }
 
 static inline lou_sema_value_t *lou_sema_builtin_proc_fun_outline(lou_sema_plugin_ctx ctx, lou_sema_expr_ctx_t expr_ctx) {
-  lou_sema_err(ctx.sema, ctx.plugin_slice, "plugin is not implemented yet");
-  return NULL;
+  return lou_sema_value_new_type(ctx.sema->mempool, lou_sema_type_new_func(ctx.sema->mempool));
 }
 
 static inline bool lou_sema_builtin_proc_fun_finalize(lou_sema_plugin_ctx ctx, lou_sema_value_t *value) {
-  NOT_IMPLEMENTED;
+  lou_sema_type_t *type = lou_sema_value_is_type(value);
+  assert(type);
+
+  lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(ctx.sema->mempool, lou_sema_type_t*);
+  for (size_t i = 0; i < lou_vec_len(ctx.args); i++) {
+    *LOU_VEC_PUSH(&args) = NOT_NULL(lou_sema_expr_analyze_type(ctx.sema, ctx.args[0], lou_sema_expr_ctx_new_comptime(), true));
+  }
+
+  lou_sema_type_init_func(type, args, NULL);
+  return true;
 }
 
 lou_sema_plugin_t *lou_sema_builtin_proc_fun(lou_mempool_t *mempool) {
