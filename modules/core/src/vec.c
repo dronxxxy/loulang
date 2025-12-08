@@ -1,4 +1,5 @@
 #include "lou/core/vec.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -90,6 +91,20 @@ void *lou_vec_push(void **vec) {
     *header->link = *vec;
   }
   return lou_vec_at(*vec, lou_vec_len(*vec) - 1);
+}
+
+
+void lou_vec_append_raw(void **vec, const void *other, size_t count) {
+  lou_vec_reserve(vec, lou_vec_len(*vec) + count);
+  size_t size = lou_vec_header(*vec)->size;
+  for (size_t i = 0; i < count; i++) {
+    memcpy(lou_vec_push(vec), (char*)other + size * i, size);
+  }
+}
+
+void lou_vec_append(void **vec, const void *other) {
+  assert(lou_vec_header(*vec)->size == lou_vec_header(other)->size);
+  lou_vec_append_raw(vec, other, lou_vec_len(other));
 }
 
 void lou_vec_pop(void **vec) {

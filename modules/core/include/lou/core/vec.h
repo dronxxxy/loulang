@@ -9,6 +9,8 @@ void lou_vec_free(void *vec);
 
 void lou_vec_reserve(void **vec, size_t capacity);
 void *lou_vec_push(void **vec);
+void lou_vec_append_raw(void **vec, const void *other, size_t count);
+void lou_vec_append(void **vec, const void *other);
 void lou_vec_pop(void **vec);
 void lou_vec_unshift(void **vec);
 
@@ -27,6 +29,8 @@ void lou_vec_unlink(void *vec);
 #define LOU_VEC_NEW(TYPE) ((TYPE*)lou_vec_new(sizeof(TYPE)))
 #define LOU_VEC_RESERVE(VEC, CAPACITY) lou_vec_reserve((void**)(VEC), CAPACITY)
 #define LOU_VEC_PUSH(VEC) ((typeof(*(VEC)))lou_vec_push((void**)(VEC)))
+#define LOU_VEC_APPEND(VEC, WHAT) lou_vec_append((void**)(VEC), WHAT)
+#define LOU_VEC_APPEND_RAW(VEC, WHAT, COUNT) lou_vec_append_raw((void**)(VEC), WHAT, COUNT)
 #define LOU_VEC_POP(VEC) (lou_vec_pop((void**)(VEC)))
 #define LOU_VEC_LAST(VEC) ((typeof(VEC))lou_vec_last((void*)(VEC)))
 #define LOU_VEC_UNSHIFT(VEC) (lou_vec_unshift((void**)(VEC)))

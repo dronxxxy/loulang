@@ -39,8 +39,7 @@ lou_sema_decl_t *lou_sema_add_decl(lou_sema_t *sema, lou_sema_visibility_t visib
     if (visibility == LOU_SEMA_PUBLIC) {
       lou_sema_err(sema, name, "trying to specify declaration as public in local scope");
     }
-    // TODO: implement local scope declaring
-    NOT_IMPLEMENTED;
+    *LOU_VEC_PUSH(&(*LOU_VEC_LAST(LOU_VEC_LAST(sema->scope_stacks)->scopes))->decls) = decl;
   }
 
   return decl;

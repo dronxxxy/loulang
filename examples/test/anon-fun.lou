@@ -4,18 +4,21 @@ final putCStringUnused = @externFun("puts", testType)
 final putCString = @externFun("puts", @procFun(@ptr(u8)))
 
 const main = @global("main", fun () -> i32 {
+  const putCString1 = putCString
   return fun () -> i32 {
+    const putCString4 = putCString
     putCString(c"hello, world!")
     return fun () -> i32 {
       putCString(c"how")
       return fun () -> i32 {
         putCString(c"tf")
+        final putCString5 = putCString4
         return fun () -> i32 {
-          putCString(c"are")
+          putCString1(c"are")
           return fun () -> i32 {
-            putCString(c"you?")
+            putCString4(c"you?")
             return fun () -> i32 {
-              putCString(c"...")
+              putCString5(c"...")
               return 0
             }()
           }()

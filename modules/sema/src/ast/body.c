@@ -1,6 +1,7 @@
 #include "body.h"
 #include "ast/expr.h"
 #include "ast/expr_ctx.h"
+#include "ast/node.h"
 #include "impl.h"
 #include "lou/core/assertions.h"
 #include "lou/core/vec.h"
@@ -16,7 +17,7 @@ static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
       return;
     case LOU_AST_STMT_RETURN: {
       lou_sema_type_t *returns = lou_sema_returns(sema);
-      lou_sema_value_t *value = lou_sema_expr_analyze_runtime(sema, stmt->ret.value, lou_sema_expr_ctx_new_runtime(NULL), false);
+      lou_sema_value_t *value = RET_ON_NULL(lou_sema_expr_analyze_runtime(sema, stmt->ret.value, lou_sema_expr_ctx_new_runtime(NULL), false));
       lou_sema_type_t *type = lou_sema_value_is_runtime(value);
       if (!lou_sema_type_eq(returns, type)) {
         lou_sema_err(sema, stmt->slice, "function expected to return #T but got expression of type #T", returns, type);
@@ -25,7 +26,14 @@ static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
       lou_sema_push_stmt(sema, lou_hir_stmt_new_ret(sema->mempool, lou_sema_value_as_hir(sema->mempool, value)));
       return;
     }
-    case LOU_AST_STMT_NODE:
+    case LOU_AST_STMT_NODE: {
+      lou_sema_decl_t *decl = lou_sema_declare_node(sema, stmt->node);
+      if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return;
+      lou_sema_outline_node(sema, stmt->node, decl);
+      if (decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return;
+      lou_sema_finalize_node(sema, stmt->node, decl);
+      return;
+    }
     case LOU_AST_STMT_IF:
       NOT_IMPLEMENTED;
   }
