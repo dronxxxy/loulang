@@ -39,7 +39,7 @@ typedef struct {
   lou_hir_code_t *code;
 } lou_sema_scope_t;
 
-typedef struct {
+typedef struct lou_sema_scope_stack_t {
   lou_sema_scope_t **scopes;
   lou_sema_type_t *returns;
 } lou_sema_scope_stack_t;
@@ -55,7 +55,7 @@ typedef struct lou_sema_t {
   lou_ast_node_t **node_stack;
   lou_sema_node_record_t *nodes;
   lou_sema_global_decl_t *global_decls;
-  lou_sema_scope_stack_t *scope_stacks;
+  lou_sema_scope_stack_t **scope_stacks;
 
   lou_parser_t *parser;
   lou_hir_t *hir;
@@ -75,6 +75,7 @@ void lou_sema_add_internal_decl(lou_sema_t *sema, const char *name, lou_sema_val
 lou_sema_type_t *lou_sema_returns(lou_sema_t *sema);
 
 lou_hir_local_t *lou_sema_add_local_final(lou_sema_t *sema, lou_sema_type_t *type);
+lou_hir_local_t *lou_sema_add_local_var(lou_sema_t *sema, lou_sema_type_t *type);
 void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt);
 
 lou_sema_value_t *lou_sema_resolve_skeleton(lou_sema_t *sema, lou_slice_t name);
@@ -85,6 +86,7 @@ void lou_sema_pop_analysing_node(lou_sema_t *sema);
 
 void lou_sema_push_scope_stack(lou_sema_t *sema, lou_sema_type_t *returns);
 void lou_sema_pop_scope_stack(lou_sema_t *sema);
+lou_sema_scope_stack_t *lou_sema_current_scope_stack(lou_sema_t *sema);
 
 void lou_sema_push_scope(lou_sema_t *sema);
 lou_sema_scope_t *lou_sema_pop_scope(lou_sema_t *sema);
