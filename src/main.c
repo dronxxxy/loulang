@@ -35,5 +35,9 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  if (!lou_exec(OUTPUT, NULL, 0, &exec_status) || exec_status != 0) {
+    return 1;
+  }
+
   return exec_status;
 }
