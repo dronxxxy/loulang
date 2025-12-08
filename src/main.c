@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
   lou_sema_free(sema);
 
   char *const args[] = {
-    "-lc", "-lgcc",
+    "-lc",
     OBJ_OUTPUT,
     "-o", OUTPUT,
   };
