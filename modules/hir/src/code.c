@@ -32,11 +32,21 @@ lou_hir_stmt_t *lou_hir_stmt_new_code(lou_mempool_t *mempool, lou_hir_code_t *co
   return stmt;
 }
 
+lou_hir_stmt_t *lou_hir_stmt_new_store_var(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *value) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_STORE_VAR;
+  stmt->store_var.output = output;
+  stmt->store_var.value = value;
+  return stmt;
+}
+
 lou_hir_code_t *lou_hir_code_new(lou_mempool_t *mempool)  {
   lou_hir_code_t *code = LOU_MEMPOOL_ALLOC(mempool, lou_hir_code_t);
   code->stmts = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_stmt_t*);
+  code->locals = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_local_t*);
   return code;
 }
+
 
 void lou_hir_code_append_stmt(lou_hir_code_t *code, lou_hir_stmt_t *stmt) {
   *LOU_VEC_PUSH(&code->stmts) = stmt;
@@ -46,6 +56,6 @@ lou_hir_local_t *lou_hir_code_local_add(lou_mempool_t *mempool, lou_hir_code_t *
   lou_hir_local_t *local = LOU_MEMPOOL_ALLOC(mempool, lou_hir_local_t); 
   local->type = type;
   local->mutability = mutability;
-  // TODO: add to code in future
+  *LOU_VEC_PUSH(&code->locals) = local;
   return local;
 }

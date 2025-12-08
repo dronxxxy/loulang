@@ -11,14 +11,14 @@ const main = @global("main", fun () -> i32 {
     return fun () -> i32 {
       putCString(c"how")
       return fun () -> i32 {
-        putCString(c"tf")
         final putCString5 = putCString4
+        putCString5(c"tf")
         return fun () -> i32 {
-          putCString1(c"are")
+          putCString5(c"tf")
           return fun () -> i32 {
             putCString4(c"you?")
             return fun () -> i32 {
-              putCString5(c"...")
+              putCString(c"...")
               return 0
             }()
           }()

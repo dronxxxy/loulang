@@ -6,7 +6,6 @@
 #include "lou/hir/func.h"
 #include "lou/hir/type.h"
 #include "lou/llvm/module.h"
-#include "utils.h"
 #include <assert.h>
 #include <llvm-c/Core.h>
 

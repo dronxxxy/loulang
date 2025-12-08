@@ -97,7 +97,9 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
 
         lou_sema_push_stmt(sema, lou_hir_stmt_new_call(sema->mempool, output, lou_sema_value_as_hir(sema->mempool, value), args));
         // TODO: prevent void assignment
-        return runtime->func.returns ? lou_sema_value_new_local(sema->mempool, runtime->func.returns, output) : NULL;
+        return runtime->func.returns ?
+          lou_sema_value_new_local(sema->mempool, LOU_SEMA_IMMUTABLE, runtime->func.returns, output, lou_sema_current_scope_stack(sema)) :
+          NULL;
       }
 
       lou_sema_err(sema, expr->call.inner->slice, "#V is not callable", value);
@@ -134,9 +136,10 @@ lou_sema_value_t *lou_sema_expr_outline(lou_sema_t *sema, lou_ast_expr_t *expr, 
 lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr, bool weak) {
   switch (expr->kind) {
     case LOU_AST_EXPR_CHAR: case LOU_AST_EXPR_INTEGER: return expr->sema_value;
-    case LOU_AST_EXPR_IDENT:
+    case LOU_AST_EXPR_IDENT: {
       if (weak) return expr->sema_value;
       return lou_sema_resolve(sema, expr->ident);
+    }
     case LOU_AST_EXPR_CALL: {
       lou_sema_value_t *callable = expr->call.inner->sema_value;
 

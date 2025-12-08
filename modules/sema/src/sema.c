@@ -15,7 +15,7 @@ lou_sema_t *lou_sema_new(lou_slice_t path) {
   sema->mempool = mempool;
   sema->node_stack = LOU_MEMPOOL_VEC_NEW(mempool, lou_ast_node_t*);
   sema->global_decls = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_global_decl_t);
-  sema->scope_stacks = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_scope_stack_t);
+  sema->scope_stacks = LOU_MEMPOOL_VEC_NEW(mempool, lou_sema_scope_stack_t*);
   sema->nodes = NULL;
   sema->hir = lou_hir_new(mempool);
   sema->parser = parser;

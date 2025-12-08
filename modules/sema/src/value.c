@@ -28,12 +28,20 @@ lou_sema_value_t *lou_sema_value_new_plugin(lou_mempool_t *mempool, lou_sema_plu
   return value;
 }
 
-lou_sema_value_t *lou_sema_value_new_local(lou_mempool_t *mempool, lou_sema_type_t *type, lou_hir_local_t *local) {
+lou_sema_value_t *lou_sema_value_new_local(
+  lou_mempool_t *mempool,
+  lou_sema_mutability_t mutability,
+  lou_sema_type_t *type,
+  lou_hir_local_t *local,
+  lou_sema_scope_stack_t *scope_stack
+) {
   lou_sema_value_t *value = LOU_MEMPOOL_ALLOC(mempool, lou_sema_value_t);
   value->kind = LOU_SEMA_VALUE_RUNTIME;
   value->runtime.kind = LOU_SEMA_VALUE_RUNTIME_LOCAL;
+  value->runtime.local.mutability = mutability;
   value->runtime.local.type = type;
   value->runtime.local.hir = local;
+  value->runtime.local.scope_stack = scope_stack;
   return value;
 }
 
@@ -44,6 +52,11 @@ lou_sema_type_t *lou_sema_value_is_runtime(lou_sema_value_t *value) {
     case LOU_SEMA_VALUE_RUNTIME_LOCAL: return value->runtime.local.type;
   }
   UNREACHABLE();
+}
+
+lou_sema_value_local_t *lou_sema_value_is_local(lou_sema_value_t *value) {
+  if (value->kind != LOU_SEMA_VALUE_RUNTIME || value->runtime.kind != LOU_SEMA_VALUE_RUNTIME_LOCAL) return NULL;
+  return &value->runtime.local;
 }
 
 lou_sema_const_t *lou_sema_value_is_const(lou_sema_value_t *value) {

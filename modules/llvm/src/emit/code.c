@@ -7,6 +7,7 @@
 #include "lou/hir/value.h"
 #include "module.h"
 #include <alloca.h>
+#include <assert.h>
 #include <llvm-c/Core.h>
 #include <llvm-c/Types.h>
 
@@ -33,6 +34,10 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
     case LOU_HIR_STMT_CODE:
       lou_llvm_emit_code(llvm, stmt->code);
       return;
+    case LOU_HIR_STMT_STORE_VAR:
+      assert(stmt->store_var.output->mutability == LOU_HIR_MUTABLE);
+      LLVMBuildStore(llvm->builder, lou_llvm_emit_value(llvm, stmt->store_var.value), stmt->store_var.output->codegen);
+      break;
   }
   UNREACHABLE();
 }
@@ -40,6 +45,16 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
 LLVMBasicBlockRef lou_llvm_emit_code(lou_llvm_module_t *llvm, lou_hir_code_t *code) {
   LLVMBasicBlockRef block = LLVMAppendBasicBlock(llvm->function, "");
   LLVMPositionBuilderAtEnd(llvm->builder, block);
+  // TODO: fix stack leak in loops
+  for (size_t i = 0; i < lou_vec_len(code->locals); i++) {
+    lou_hir_local_t *local = code->locals[i];
+    switch (local->mutability) {
+      case LOU_HIR_MUTABLE:
+        local->codegen = LLVMBuildAlloca(llvm->builder, lou_llvm_emit_type(llvm, local->type), "");
+        break;
+      case LOU_HIR_IMMUTABLE: break;
+    }
+  }
   for (size_t i = 0; i < lou_vec_len(code->stmts); i++) {
     lou_llvm_emit_stmt(llvm, code->stmts[i]);
   }

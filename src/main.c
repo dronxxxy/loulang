@@ -1,5 +1,6 @@
 #include "log.h"
 #include "lou/core/exec.h"
+#include "lou/core/log.h"
 #include "lou/core/slice.h"
 #include "lou/sema/sema.h"
 #include "lou/llvm/module.h"
@@ -26,16 +27,17 @@ int main(int argc, char** argv) {
   lou_sema_free(sema);
 
   char *const args[] = {
-    "-lc",
     OBJ_OUTPUT,
     "-o", OUTPUT,
   };
   int exec_status;
   if (!lou_exec("/usr/bin/gcc", args, sizeof(args) / sizeof(args[0]), &exec_status) || exec_status != 0) {
+    lou_log_fmt(LOG_ERROR, "linking failed with the error");
     return 1;
   }
 
   if (!lou_exec(OUTPUT, NULL, 0, &exec_status) || exec_status != 0) {
+    lou_log_fmt(LOG_ERROR, "running failed with the error");
     return 1;
   }
 
