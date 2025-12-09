@@ -17,6 +17,7 @@ typedef enum {
   LOU_SEMA_TYPE_INTEGER, 
   LOU_SEMA_TYPE_FUNCTION, 
   LOU_SEMA_TYPE_POINTER, 
+  LOU_SEMA_TYPE_BOOL, 
 } lou_sema_type_kind_t;
 
 typedef struct lou_sema_type_t lou_sema_type_t;
@@ -46,6 +47,7 @@ lou_sema_type_t *lou_sema_type_new_int(lou_mempool_t *mempool, lou_sema_int_size
 lou_sema_type_t *lou_sema_type_new_func(lou_mempool_t *mempool);
 lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool);
 lou_sema_type_t *lou_sema_type_new_string(lou_mempool_t *mempool);
+lou_sema_type_t *lou_sema_type_new_bool(lou_mempool_t *mempool);
 
 void lou_sema_type_init_func(lou_sema_type_t *type, lou_sema_type_t **args, lou_sema_type_t *returns);
 void lou_sema_type_init_pointer(lou_sema_type_t *type, lou_sema_type_t *to);

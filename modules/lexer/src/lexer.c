@@ -209,7 +209,9 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '{': return lou_lexer_new_simple(lexer, LOU_TOKEN_OPENING_FIGURE_BRACE);
     case '}': return lou_lexer_new_simple(lexer, LOU_TOKEN_CLOSING_FIGURE_BRACE);
     case ':': return lou_lexer_new_simple(lexer, LOU_TOKEN_COLON);
-    case '=': return lou_lexer_new_simple(lexer, LOU_TOKEN_ASSIGN);
+    case '=':
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_EQUALS);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_ASSIGN);
     case ',': return lou_lexer_new_simple(lexer, LOU_TOKEN_COMMA);
     case '.': return lou_lexer_new_simple(lexer, LOU_TOKEN_DOT);
     case '+': return lou_lexer_new_simple(lexer, LOU_TOKEN_PLUS);
@@ -217,6 +219,15 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '/': return lou_lexer_new_simple(lexer, LOU_TOKEN_SLASH);
     case '%': return lou_lexer_new_simple(lexer, LOU_TOKEN_PERCENT);
     case ';': return lou_lexer_new_simple(lexer, LOU_TOKEN_SEMICOLON);
+    case '!':
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_NOT_EQUALS);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_EXCLAMATION);
+    case '>':
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_GREATER_OR_EQUALS);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_GREATER);
+    case '<':
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_LESS_OR_EQUALS);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_LESS);
     case '\'': {
       char c = lou_lexer_take_escaped(lexer, '\'');
       if (lou_lexer_take(lexer) != '\'') {
@@ -229,15 +240,11 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '"': return lou_lexer_try_string(lexer, LOU_TOKEN_STRING_NORMAL);
     case EOI: return lou_lexer_new_simple(lexer, LOU_TOKEN_EOI);
     case '-':
-      if (lou_lexer_take_if(lexer, '>')) {
-        return lou_lexer_new_simple(lexer, LOU_TOKEN_FUNCTION_RETURNS);
-      }
+      if (lou_lexer_take_if(lexer, '>')) return lou_lexer_new_simple(lexer, LOU_TOKEN_FUNCTION_RETURNS);
       return lou_lexer_new_simple(lexer, LOU_TOKEN_MINUS);
 
     default: {
-      if (c == 'c' && lou_lexer_take_if(lexer, '\"')) {
-        return lou_lexer_try_string(lexer, LOU_TOKEN_STRING_C);
-      }
+      if (c == 'c' && lou_lexer_take_if(lexer, '\"')) return lou_lexer_try_string(lexer, LOU_TOKEN_STRING_C);
       if (char_is_ident_start(c)) {
         lou_lexer_skip(lexer, char_is_ident);
         lou_slice_t slice = lou_lexer_slice(lexer);

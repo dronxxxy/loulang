@@ -26,6 +26,13 @@ lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool) {
   return type;
 }
 
+lou_sema_type_t *lou_sema_type_new_bool(lou_mempool_t *mempool) {
+  lou_sema_type_t *type = lou_sema_type_new(mempool);
+  type->complete = true;
+  type->kind = LOU_SEMA_TYPE_BOOL;
+  return type;
+}
+
 lou_sema_type_t *lou_sema_type_new_int(lou_mempool_t *mempool, lou_sema_int_size_t size, bool is_signed) {
   lou_sema_type_t *type = lou_sema_type_new(mempool);
   type->complete = true;
@@ -65,6 +72,7 @@ bool lou_sema_type_eq(const lou_sema_type_t *a, const lou_sema_type_t *b) {
     case LOU_SEMA_TYPE_POINTER: return lou_sema_type_eq(a->pointer_to, b->pointer_to);
     case LOU_SEMA_TYPE_INTEGER: return a->integer.size == b->integer.size && a->integer.is_signed == b->integer.is_signed;
     case LOU_SEMA_TYPE_STRING: return true;
+    case LOU_SEMA_TYPE_BOOL: return true;
     case LOU_SEMA_TYPE_FUNCTION:
       return ((a->func.returns == NULL) == (b->func.returns == NULL)) &&
         (a->func.returns == NULL || lou_sema_type_eq(a->func.returns, b->func.returns)) &&
@@ -98,6 +106,7 @@ lou_hir_type_t *lou_sema_type_as_hir(lou_mempool_t *mempool, lou_sema_type_t *ty
       result->func.returns = type->func.returns ? lou_sema_type_as_hir(mempool, type->func.returns) : NULL;
       return result;
     }
+    case LOU_SEMA_TYPE_BOOL: return lou_hir_type_new_bool(mempool);
   }
   UNREACHABLE();
 }
@@ -136,6 +145,9 @@ void lou_sema_type_log(FILE *stream, lou_sema_type_t *type) {
       return;
     case LOU_SEMA_TYPE_POINTER:
       lou_log_puts(stream, "@ptr(#T)", type->pointer_to);
+      return;
+    case LOU_SEMA_TYPE_BOOL:
+      lou_log_puts(stream, "bool");
       return;
   }
   UNREACHABLE();

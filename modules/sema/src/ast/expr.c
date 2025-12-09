@@ -186,11 +186,58 @@ static inline lou_sema_value_t *lou_sema_analyze_binop_arithm(
 ) {
   lou_hir_local_t *output = lou_sema_value_is_local(expr->sema_value)->hir;
   lou_sema_type_t *type = lou_sema_value_is_runtime(left);
-  if (type->kind != LOU_SEMA_TYPE_INTEGER) {
+  lou_hir_binop_arithm_of_t of; 
+  if (type->kind == LOU_SEMA_TYPE_INTEGER) {
+    of = LOU_HIR_BINOP_ARITHM_OF_INT;
+  } else {
     lou_sema_err(sema, expr->slice, "this binop can be applied to integers only");
     return NULL;
   }
-  lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_binop_arithm(sema->mempool, kind, output, lou_sema_value_as_hir(sema->mempool, left),
+  lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_binop_arithm(sema->mempool, kind, of, output, lou_sema_value_as_hir(sema->mempool, left),
+    lou_sema_value_as_hir(sema->mempool, right)));
+  return expr->sema_value;
+}
+
+static inline lou_sema_value_t *lou_sema_analyze_binop_order(
+  lou_sema_t *sema,
+  lou_hir_binop_order_t kind,
+  lou_sema_value_t *left,
+  lou_sema_value_t *right,
+  lou_ast_expr_t *expr
+) {
+  lou_hir_local_t *output = lou_sema_value_is_local(expr->sema_value)->hir;
+  lou_sema_type_t *type = lou_sema_value_is_runtime(left);
+  lou_hir_binop_order_of_t of;
+  if (type->kind == LOU_SEMA_TYPE_INTEGER) {
+    of = LOU_HIR_BINOP_ORDER_OF_INT;
+  } else {
+    lou_sema_err(sema, expr->slice, "this binop can be applied to integers only");
+    return NULL;
+  }
+  lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_binop_order(sema->mempool, kind, of, output, lou_sema_value_as_hir(sema->mempool, left),
+    lou_sema_value_as_hir(sema->mempool, right)));
+  return expr->sema_value;
+}
+
+static inline lou_sema_value_t *lou_sema_analyze_binop_eq(
+  lou_sema_t *sema,
+  lou_hir_binop_eq_t kind,
+  lou_sema_value_t *left,
+  lou_sema_value_t *right,
+  lou_ast_expr_t *expr
+) {
+  lou_hir_local_t *output = lou_sema_value_is_local(expr->sema_value)->hir;
+  lou_sema_type_t *type = lou_sema_value_is_runtime(left);
+  lou_hir_binop_eq_of_t of;
+  if (type->kind == LOU_SEMA_TYPE_INTEGER) {
+    of = LOU_HIR_BINOP_EQ_OF_INT;
+  } else if (type->kind == LOU_SEMA_TYPE_BOOL) {
+    of = LOU_HIR_BINOP_EQ_OF_BOOL;
+  } else {
+    lou_sema_err(sema, expr->slice, "this binop can be applied for type #T", type);
+    return NULL;
+  }
+  lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_binop_eq(sema->mempool, kind, of, output, lou_sema_value_as_hir(sema->mempool, left),
     lou_sema_value_as_hir(sema->mempool, right)));
   return expr->sema_value;
 }
@@ -247,6 +294,12 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
         case LOU_AST_BINOP_MULTIPLY: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_MULTIPLY, left, right, expr);
         case LOU_AST_BINOP_DIVIDE: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_DIVIDE, left, right, expr);
         case LOU_AST_BINOP_MOD: return lou_sema_analyze_binop_arithm_int(sema, LOU_HIR_BINOP_ARITHM_INT_MOD, left, right, expr);
+        case LOU_AST_BINOP_EQUALS: return lou_sema_analyze_binop_eq(sema, LOU_HIR_BINOP_EQUALS, left, right, expr);
+        case LOU_AST_BINOP_NOT_EQUALS: return lou_sema_analyze_binop_eq(sema, LOU_HIR_BINOP_NOT_EQUALS, left, right, expr);
+        case LOU_AST_BINOP_GREATER: return lou_sema_analyze_binop_order(sema, LOU_HIR_BINOP_ORDER_GREATER, left, right, expr);
+        case LOU_AST_BINOP_LESS: return lou_sema_analyze_binop_order(sema, LOU_HIR_BINOP_ORDER_LESS, left, right, expr);
+        case LOU_AST_BINOP_GREATER_OR_EQUALS: return lou_sema_analyze_binop_order(sema, LOU_HIR_BINOP_ORDER_GREATER_OR_EQUALS, left, right, expr);
+        case LOU_AST_BINOP_LESS_OR_EQUALS: return lou_sema_analyze_binop_order(sema, LOU_HIR_BINOP_ORDER_LESS_OR_EQUALS, left, right, expr);
       }
       UNREACHABLE();
     }

@@ -29,6 +29,10 @@ typedef enum {
 } lou_hir_binop_arithm_int_t;
 
 typedef enum {
+  LOU_HIR_BINOP_ARITHM_OF_INT,
+} lou_hir_binop_arithm_of_t;
+
+typedef enum {
   LOU_HIR_BINOP_ARITHM_ADD,
   LOU_HIR_BINOP_ARITHM_SUBTRACT,
   LOU_HIR_BINOP_ARITHM_MULTIPLY,
@@ -36,11 +40,20 @@ typedef enum {
 } lou_hir_binop_arithm_t;
 
 typedef enum {
+  LOU_HIR_BINOP_ORDER_OF_INT,
+} lou_hir_binop_order_of_t;
+
+typedef enum {
   LOU_HIR_BINOP_ORDER_GREATER,
   LOU_HIR_BINOP_ORDER_LESS,
   LOU_HIR_BINOP_ORDER_GREATER_OR_EQUALS,
   LOU_HIR_BINOP_ORDER_LESS_OR_EQUALS,
 } lou_hir_binop_order_t;
+
+typedef enum {
+  LOU_HIR_BINOP_EQ_OF_BOOL,
+  LOU_HIR_BINOP_EQ_OF_INT,
+} lou_hir_binop_eq_of_t;
 
 typedef enum {
   LOU_HIR_BINOP_EQUALS,
@@ -92,9 +105,21 @@ typedef struct {
 
       union {
         lou_hir_binop_arithm_int_t arithm_int;
-        lou_hir_binop_arithm_t arithm;
-        lou_hir_binop_eq_t eq;
-        lou_hir_binop_order_t order;
+
+        struct {
+          lou_hir_binop_arithm_t kind;
+          lou_hir_binop_arithm_of_t of;
+        } arithm;
+
+        struct {
+          lou_hir_binop_eq_t kind;
+          lou_hir_binop_eq_of_t of;
+        } eq;
+
+        struct {
+          lou_hir_binop_order_t kind;
+          lou_hir_binop_order_of_t of;
+        } order;
       };
     } binop;
   };
@@ -114,18 +139,21 @@ lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm_int(
 lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm(
   lou_mempool_t *mempool,
   lou_hir_binop_arithm_t kind,
+  lou_hir_binop_arithm_of_t of,
   lou_hir_local_t *output,
   lou_hir_value_t *left, lou_hir_value_t *right
 );
 lou_hir_stmt_t *lou_hir_stmt_new_binop_eq(
   lou_mempool_t *mempool,
   lou_hir_binop_eq_t kind,
+  lou_hir_binop_eq_of_t of,
   lou_hir_local_t *output,
   lou_hir_value_t *left, lou_hir_value_t *right
 );
 lou_hir_stmt_t *lou_hir_stmt_new_binop_order(
   lou_mempool_t *mempool,
   lou_hir_binop_order_t kind,
+  lou_hir_binop_order_of_t of,
   lou_hir_local_t *output,
   lou_hir_value_t *left, lou_hir_value_t *right
 );

@@ -59,6 +59,7 @@ lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm_int(
 lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm(
   lou_mempool_t *mempool,
   lou_hir_binop_arithm_t kind,
+  lou_hir_binop_arithm_of_t of,
   lou_hir_local_t *output,
   lou_hir_value_t *left, lou_hir_value_t *right
 ) {
@@ -68,13 +69,15 @@ lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm(
   stmt->binop.output = output;
   stmt->binop.left = left;
   stmt->binop.right = right;
-  stmt->binop.arithm = kind;
+  stmt->binop.arithm.kind = kind;
+  stmt->binop.arithm.of = of;
   return stmt;
 }
 
 lou_hir_stmt_t *lou_hir_stmt_new_binop_eq(
   lou_mempool_t *mempool,
   lou_hir_binop_eq_t kind,
+  lou_hir_binop_eq_of_t of,
   lou_hir_local_t *output,
   lou_hir_value_t *left, lou_hir_value_t *right
 ) {
@@ -84,13 +87,15 @@ lou_hir_stmt_t *lou_hir_stmt_new_binop_eq(
   stmt->binop.output = output;
   stmt->binop.left = left;
   stmt->binop.right = right;
-  stmt->binop.eq = kind;
+  stmt->binop.eq.kind = kind;
+  stmt->binop.eq.of = of;
   return stmt;
 }
 
 lou_hir_stmt_t *lou_hir_stmt_new_binop_order(
   lou_mempool_t *mempool,
   lou_hir_binop_order_t kind,
+  lou_hir_binop_order_of_t of,
   lou_hir_local_t *output,
   lou_hir_value_t *left, lou_hir_value_t *right
 ) {
@@ -100,7 +105,8 @@ lou_hir_stmt_t *lou_hir_stmt_new_binop_order(
   stmt->binop.output = output;
   stmt->binop.left = left;
   stmt->binop.right = right;
-  stmt->binop.order = kind;
+  stmt->binop.order.kind = kind;
+  stmt->binop.order.of = of;
   return stmt;
 }
 
