@@ -1,30 +1,20 @@
-meta testType = @retFun(testType)
-
-final putCStringUnused = @externFun("puts", testType)
 final putCString = @externFun("puts", @procFun(@ptr(u8)))
 
 @global("main", fun () -> i32 {
-  const putCString1 = putCString
+  const putCStringC = putCString
+  var putCStringV = putCString
+  #`
+    Anonymous funcions works like standard funtions declared in global 
+    scope, but they can access declarations of outer functions. It is 
+    worth noting that you cannot access locals of outer functions.
+
+                Anonymous functions != Closures (or Lambdas)
+  `#
   return fun () -> i32 {
-    const putCString4 = putCString
-    putCString(c"hello, world!")
-    return fun () -> i32 {
-      putCString(c"how")
-      return fun () -> i32 {
-        final putCString5 = putCString4
-        putCString5(c"tf")
-        return fun () -> i32 {
-          putCString5(c"tf")
-          return fun () -> i32 {
-            putCString4(c"you?")
-            return fun () -> i32 {
-              putCString(c"...")
-              return 0
-            }()
-          }()
-        }()
-      }()
-    }()
+    putCStringC(c"hello") # You can call putCStringC declared in outer function because it is a constant
+    putCString(c"world")  # Of course, you can also call global values
+                          # But you cannot call putCStringVar because it is lives in another stack frame
+    return 0
   }()
 })
 
