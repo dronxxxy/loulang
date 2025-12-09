@@ -91,8 +91,14 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
 
         lou_hir_value_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_hir_value_t*);
         for (size_t i = 0; i < lou_vec_len(expr->call.args); i++) {
-          *LOU_VEC_PUSH(&args) = lou_sema_value_as_hir(sema->mempool, NOT_NULL(lou_sema_expr_analyze_runtime(sema, expr->call.args[i],
-            lou_sema_expr_ctx_new_runtime(runtime->func.args[i]), false)));
+          lou_ast_expr_t *ast_arg = expr->call.args[i];
+          lou_sema_value_t *arg = NOT_NULL(lou_sema_expr_analyze_runtime(sema, ast_arg, lou_sema_expr_ctx_new_runtime(runtime->func.args[i]), false));
+          lou_sema_type_t *type = lou_sema_value_is_runtime(arg);
+          lou_sema_type_t *expected_type = runtime->func.args[i];
+          if (!lou_sema_type_eq(type, expected_type)) {
+            lou_sema_err(sema, ast_arg->slice, "value of type #T was expected #T was passed", expected_type, type);
+          }
+          *LOU_VEC_PUSH(&args) = lou_sema_value_as_hir(sema->mempool, arg);
         }
 
         lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_call(sema->mempool, output, lou_sema_value_as_hir(sema->mempool, value), args));
