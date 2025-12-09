@@ -25,7 +25,13 @@ static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
       return;
     }
     case LOU_AST_STMT_NODE: lou_sema_analyze_node(sema, stmt->node); return;
-    case LOU_AST_STMT_IF: NOT_IMPLEMENTED;
+    case LOU_AST_STMT_IF: {
+      lou_sema_type_t *boolean = lou_sema_type_new_bool(sema->mempool);
+      lou_sema_value_t *value = RET_ON_NULL(lou_sema_expr_analyze_runtime(sema, stmt->if_else.condition, lou_sema_expr_ctx_new_runtime(boolean), false));
+      lou_sema_scope_t *scope = lou_sema_emit_body(sema, stmt->if_else.body);
+      lou_sema_push_stmt(sema, stmt->slice, lou_hir_stmt_new_cond(sema->mempool, lou_sema_value_as_hir(sema->mempool, value), scope->code, NULL));
+      return;
+    }
   }
   UNREACHABLE();
 }

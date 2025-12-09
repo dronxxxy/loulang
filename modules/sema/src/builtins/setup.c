@@ -16,6 +16,7 @@ void lou_sema_builtin_setup(lou_sema_t *sema) {
   lou_sema_add_internal_decl(sema, "i32", lou_sema_value_new_type(sema->mempool, lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_32, true)));
   lou_sema_add_internal_decl(sema, "u64", lou_sema_value_new_type(sema->mempool, lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_64, false)));
   lou_sema_add_internal_decl(sema, "i64", lou_sema_value_new_type(sema->mempool, lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_64, true)));
+  lou_sema_add_internal_decl(sema, "bool", lou_sema_value_new_type(sema->mempool, lou_sema_type_new_bool(sema->mempool)));
 
   lou_sema_add_internal_decl(sema, "@externFun", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_extern_fun(sema->mempool)));
   lou_sema_add_internal_decl(sema, "@retFun", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_ret_fun(sema->mempool)));

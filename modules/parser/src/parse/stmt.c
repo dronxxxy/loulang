@@ -16,12 +16,8 @@ lou_ast_stmt_t *lou_parser_parse_stmt(lou_parser_t *parser) {
       lou_parser_take(parser);
       lou_ast_expr_t *expr = lou_parser_parse_expr(parser);
       lou_ast_body_t *body = lou_parser_parse_body(parser);
-      if (!expr || !body) {
-        return NULL;
-      }
-      return lou_ast_stmt_new_if(parser->mempool, lou_parser_slice(parser, token.slice), (lou_ast_stmt_if_t) {
-        .condition = expr,
-      });
+      if (!expr || !body) return NULL;
+      return lou_ast_stmt_new_if(parser->mempool, lou_parser_slice(parser, token.slice), expr, body);
     }
     case LOU_TOKEN_RETURN: {
       lou_parser_take(parser);
