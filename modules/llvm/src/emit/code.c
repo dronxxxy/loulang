@@ -159,6 +159,21 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
     }
     case LOU_HIR_STMT_BREAK: LLVMBuildBr(llvm->builder, stmt->break_loop->loop.codegen.end); return;
     case LOU_HIR_STMT_CONTINUE: LLVMBuildBr(llvm->builder, stmt->break_loop->loop.codegen.begin); return;
+    case LOU_HIR_STMT_CAST_INT: {
+      lou_hir_type_t *source = lou_hir_value_typeof(stmt->cast_int.value);
+      lou_hir_type_t *to = stmt->cast_int.to;
+      LLVMValueRef value = lou_llvm_emit_value(llvm, stmt->cast_int.value);
+      LLVMTypeRef type = lou_llvm_emit_type(llvm, to);
+      if (to->integer.size <= source->integer.size) {
+        value = LLVMBuildTruncOrBitCast(llvm->builder, value, type, "");
+      } else if (to->integer.is_signed) {
+        value = LLVMBuildSExt(llvm->builder, value, type, "");
+      } else {
+        value = LLVMBuildZExt(llvm->builder, value, type, "");
+      }
+      lou_llvm_store(llvm, stmt->cast_int.output, value);
+      return;
+    }
   }
   UNREACHABLE();
 }

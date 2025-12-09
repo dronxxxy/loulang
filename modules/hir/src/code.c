@@ -10,6 +10,15 @@ lou_hir_stmt_t *lou_hir_stmt_new_arg(lou_mempool_t *mempool, lou_hir_local_t *ou
   return stmt;
 }
 
+lou_hir_stmt_t *lou_hir_stmt_cast_int(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *value, lou_hir_type_t *to) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_CAST_INT;
+  stmt->cast_int.output = output;
+  stmt->cast_int.value = value;
+  stmt->cast_int.to = to;
+  return stmt;
+}
+
 lou_hir_stmt_t *lou_hir_stmt_new_call(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *callable, lou_hir_value_t **args) {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_CALL;

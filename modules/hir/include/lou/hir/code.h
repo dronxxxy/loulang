@@ -78,6 +78,7 @@ typedef enum {
   LOU_HIR_STMT_LOOP,
   LOU_HIR_STMT_BREAK,
   LOU_HIR_STMT_CONTINUE,
+  LOU_HIR_STMT_CAST_INT,
 } lou_hir_stmt_kind_t;
 
 typedef struct lou_hir_local_t {
@@ -107,6 +108,12 @@ typedef struct lou_hir_stmt_t {
 
     lou_hir_stmt_t *break_loop;
     lou_hir_stmt_t *continue_loop;
+
+    struct {
+      lou_hir_local_t *output;
+      lou_hir_value_t *value;
+      lou_hir_type_t *to;
+    } cast_int;
 
     struct {
       lou_hir_local_t *output;
@@ -151,6 +158,7 @@ typedef struct lou_hir_stmt_t {
 } lou_hir_stmt_t;
 
 lou_hir_stmt_t *lou_hir_stmt_new_arg(lou_mempool_t *mempool, lou_hir_local_t *output, size_t num);
+lou_hir_stmt_t *lou_hir_stmt_cast_int(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *value, lou_hir_type_t *to);
 lou_hir_stmt_t *lou_hir_stmt_new_call(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *callable, lou_hir_value_t **args);
 lou_hir_stmt_t *lou_hir_stmt_new_ret(lou_mempool_t *mempool, lou_hir_value_t *value);
 lou_hir_stmt_t *lou_hir_stmt_new_code(lou_mempool_t *mempool, lou_hir_code_t *code);
