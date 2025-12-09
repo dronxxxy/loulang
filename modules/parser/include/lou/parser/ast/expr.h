@@ -15,6 +15,10 @@ typedef struct {
 } lou_ast_expr_func_arg_t;
 
 typedef enum {
+  LOU_AST_UNARY_MINUS,
+} lou_ast_unary_t;
+
+typedef enum {
   LOU_AST_BINOP_ADD,
   LOU_AST_BINOP_SUBTRACT,
   LOU_AST_BINOP_MULTIPLY,
@@ -36,6 +40,7 @@ typedef enum {
   LOU_AST_EXPR_CHAR,
   LOU_AST_EXPR_ASSIGN,
   LOU_AST_EXPR_BINOP,
+  LOU_AST_EXPR_UNARY,
   LOU_AST_EXPR_SCOPE,
 } lou_ast_expr_kind_t;
 
@@ -84,6 +89,11 @@ typedef struct lou_ast_expr_t {
     } assign;
 
     struct {
+      lou_ast_unary_t kind;
+      lou_ast_expr_t *inner;
+    } unary;
+
+    struct {
       lou_ast_binop_t kind;
       lou_ast_expr_t *left;
       lou_ast_expr_t *right;
@@ -94,6 +104,7 @@ typedef struct lou_ast_expr_t {
 } lou_ast_expr_t;
 
 lou_ast_expr_t *lou_ast_expr_new_ident(lou_mempool_t *mempool, lou_slice_t ident);
+lou_ast_expr_t *lou_ast_expr_new_unary(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_unary_t kind, lou_ast_expr_t *inner);
 lou_ast_expr_t *lou_ast_expr_new_get_ident(lou_mempool_t *mempool, lou_ast_expr_t *inner, lou_slice_t ident);
 lou_ast_expr_t *lou_ast_expr_new_array(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_t **values);
 lou_ast_expr_t *lou_ast_expr_new_call(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_t *inner, lou_ast_expr_t **args);

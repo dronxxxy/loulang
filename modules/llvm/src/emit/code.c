@@ -176,6 +176,9 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       lou_llvm_store(llvm, stmt->cast_int.output, value);
       return;
     }
+    case LOU_HIR_STMT_NEGATIVE_INT:
+      lou_llvm_store(llvm, stmt->negative_int.output, LLVMBuildNeg(llvm->builder, lou_llvm_emit_value(llvm, stmt->negative_int.value), ""));
+      return;
   }
   UNREACHABLE();
 }

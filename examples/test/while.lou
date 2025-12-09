@@ -2,8 +2,7 @@ const putChar = @externFun("putchar", @procFun(u8))
 
 const putInt = fun (var int: i32) {
   if int < 0 {
-    # TODO: unary operators
-    int = 0 - int
+    int = -int
     putChar('-')
   }
   if int == 0 {
@@ -17,7 +16,7 @@ const putInt = fun (var int: i32) {
 
 @global("main", fun () -> i32 {
   # TODO: unary operators
-  var i = 0 - 10
+  var i = -10
   
   while i <= 10 {
     putInt(i)

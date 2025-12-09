@@ -8,6 +8,14 @@ lou_ast_expr_t *lou_ast_expr_new_ident(lou_mempool_t *mempool, lou_slice_t ident
   return expr;
 }
 
+lou_ast_expr_t *lou_ast_expr_new_unary(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_unary_t kind, lou_ast_expr_t *inner) {
+  lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
+  expr->kind = LOU_AST_EXPR_UNARY;
+  expr->unary.inner = inner;
+  expr->unary.kind = kind;
+  return expr;
+}
+
 lou_ast_expr_t *lou_ast_expr_new_get_ident(lou_mempool_t *mempool, lou_ast_expr_t *inner, lou_slice_t ident) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_GET_IDENT;

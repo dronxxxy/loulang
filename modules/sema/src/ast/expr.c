@@ -175,6 +175,15 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
       return lou_sema_value_new_local(sema->mempool, LOU_SEMA_IMMUTABLE, type, lou_sema_add_local_final(sema, type),
         lou_sema_current_scope_stack(sema));
     }
+    case LOU_AST_EXPR_UNARY: {
+      lou_sema_type_t *type = lou_sema_value_is_runtime(NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->binop.left, ctx)));
+      if (type->kind != LOU_SEMA_TYPE_INTEGER) {
+        lou_sema_err(sema, expr->slice, "this unary operator can be applied to integers only but value has type #T", type);
+        return NULL;
+      }
+      return lou_sema_value_new_local(sema->mempool, LOU_SEMA_IMMUTABLE, type, lou_sema_add_local_final(sema, type),
+        lou_sema_current_scope_stack(sema));
+    }
   }
   UNREACHABLE();
 }
@@ -339,6 +348,12 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
         case LOU_AST_BINOP_LESS_OR_EQUALS: return lou_sema_analyze_binop_order(sema, LOU_HIR_BINOP_ORDER_LESS_OR_EQUALS, left, right, expr);
       }
       UNREACHABLE();
+    }
+    case LOU_AST_EXPR_UNARY: {
+      lou_sema_value_t *value = NOT_NULL(lou_sema_expr_finalize(sema, expr->unary.inner, false));
+      lou_sema_value_local_t *to = lou_sema_value_is_local(expr->sema_value);
+      lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_negative_int(sema->mempool, to->hir, lou_sema_value_as_hir(sema->mempool, value)));
+      return expr->sema_value;
     }
   }
   UNREACHABLE();
