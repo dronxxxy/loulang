@@ -218,8 +218,15 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       lou_sema_const_t *constant = lou_sema_value_is_const(value);
       lou_hir_func_t *func = constant->func;
       lou_sema_push_scope_stack(sema, constant->type->func.returns);
-      lou_hir_func_init(func, lou_sema_emit_body(sema, expr->func.body)->code);
+      lou_sema_scope_t *scope = lou_sema_emit_body(sema, expr->func.body);
       lou_sema_pop_scope_stack(sema);
+      if (!scope->break_kind) {
+        if (constant->type->func.returns) {
+          lou_sema_err(sema, expr->slice, "function returns a value so there is should be return statement");
+        }
+        lou_hir_code_append_stmt(scope->code, lou_hir_stmt_new_ret(sema->mempool, NULL));
+      }
+      lou_hir_func_init(func, scope->code);
       return value;
     }
     case LOU_AST_EXPR_GET_IDENT:
