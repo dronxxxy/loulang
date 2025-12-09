@@ -1,4 +1,5 @@
 #include "stmt.h"
+#include "lou/core/assertions.h"
 #include "lou/lexer/token.h"
 #include "lou/parser/ast/stmt.h"
 #include "parse/body.h"
@@ -30,7 +31,7 @@ lou_ast_stmt_t *lou_parser_parse_stmt(lou_parser_t *parser) {
       }
       return lou_ast_stmt_new_ret(parser->mempool, lou_parser_slice(parser, token.slice), token.slice, expr);
     }
-    default: return lou_ast_stmt_new_node(parser->mempool, lou_parser_slice(parser, token.slice), lou_parser_parse_node(parser));
+    default: return lou_ast_stmt_new_node(parser->mempool, lou_parser_slice(parser, token.slice), NOT_NULL(lou_parser_parse_node(parser)));
   }
 }
 

@@ -92,7 +92,7 @@ bool lou_llvm_module_print(lou_llvm_module_t *llvm, const char *output) {
   char *error = NULL;
   LLVMPrintModuleToFile(llvm->module, output, &error);
   if (error) {
-    lou_log_fmt(LOG_ERROR, "failed to print file: \n#s", error);
+    lou_log_fmt(LOU_LOG_ERROR, "failed to print file: \n#s", error);
     return false;
   }
   return true;
@@ -102,7 +102,7 @@ bool lou_llvm_module_dump(lou_llvm_module_t *llvm, const char *output) {
   char *error = NULL;
   LLVMTargetMachineEmitToFile(llvm->machine, llvm->module, output, LLVMObjectFile, &error);
   if (error) {
-    lou_log_fmt(LOG_ERROR, "failed to emit file: \n#s", error);
+    lou_log_fmt(LOU_LOG_ERROR, "failed to emit file: \n#s", error);
     return false;
   }
   return true;

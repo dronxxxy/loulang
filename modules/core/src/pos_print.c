@@ -5,24 +5,25 @@
 #define START_LINE_FROM 0
 #define START_COLUMN_FROM 1
 
-#define ERROR_START_COLOR "\033[31m"
+#define ERROR_START_COLOR(STREAM, COLOR) fprintf(STREAM, "\033[%dm", COLOR)
 #define START_COLOR "\033[94m"
 #define PRINT_START " \033[90m| "
 #define PRINT_BEGIN PRINT_START START_COLOR 
 
-static inline void lou_pos_print_content(FILE *stream, const char *ptr, size_t length, bool is_error) {
+static inline void lou_pos_print_content(FILE *stream, int color, const char *ptr, size_t length, bool is_error) {
   if (!is_error) {
     fprintf(stream, START_COLOR);
   }
   for (size_t i = 0; i < length; i++) {
     fputc(ptr[i], stream);
     if (ptr[i] == '\n') {
-      fprintf(stream, is_error ? PRINT_START ERROR_START_COLOR : PRINT_BEGIN);
+      fprintf(stream, is_error ? PRINT_START : PRINT_BEGIN);
+      if (is_error) ERROR_START_COLOR(stream, color);
     }
   }
 }
 
-void lou_pos_print(FILE *stream, lou_slice_t path, lou_slice_t file, lou_slice_t part) {
+void lou_pos_print(FILE *stream, int color, lou_slice_t path, lou_slice_t file, lou_slice_t part) {
   assert(part.ptr >= file.ptr);
   assert(part.ptr + part.length <= file.ptr + file.length);
 
@@ -62,11 +63,11 @@ void lou_pos_print(FILE *stream, lou_slice_t path, lou_slice_t file, lou_slice_t
   fwrite(path.ptr, 1, path.length, stderr);
   fprintf(stderr, ":%lu:%lu\n", line, column);
   fprintf(stream, PRINT_BEGIN);
-  lou_pos_print_content(stream, file.ptr + start, highlight_begin - start, false);
-  fprintf(stream, ERROR_START_COLOR);
-  lou_pos_print_content(stream, file.ptr + highlight_begin, highlight_end - highlight_begin, true);
+  lou_pos_print_content(stream, color, file.ptr + start, highlight_begin - start, false);
+  ERROR_START_COLOR(stream, color);
+  lou_pos_print_content(stream, color, file.ptr + highlight_begin, highlight_end - highlight_begin, true);
   fprintf(stream, START_COLOR);
-  lou_pos_print_content(stream, file.ptr + highlight_end, end - highlight_end, false);
+  lou_pos_print_content(stream, color, file.ptr + highlight_end, end - highlight_end, false);
   fprintf(stream, "\033[0m");
 }
 

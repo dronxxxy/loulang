@@ -13,6 +13,7 @@ typedef struct lou_parser_t {
 } lou_parser_t;
 
 void lou_parser_err(lou_parser_t *parser, lou_slice_t slice, const char *fmt, ...);
+void lou_parser_warn(lou_parser_t *parser, lou_slice_t slice, const char *fmt, ...);
 
 lou_token_t lou_parser_take(lou_parser_t *parser);
 lou_token_t lou_parser_peek(lou_parser_t *parser);

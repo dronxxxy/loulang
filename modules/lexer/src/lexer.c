@@ -36,12 +36,12 @@ lou_lexer_t *lou_lexer_new(lou_slice_t path) {
   new_path[path.length] = '\0';
   FILE *file = fopen(new_path, "r");
   if (!file) {
-    lou_log_fmt(LOG_ERROR, "failed to open the file: #E"); 
+    lou_log_fmt(LOU_LOG_ERROR, "failed to open the file: #E"); 
     goto error;
   }
 
   if (!lou_file_read_all(mempool, file, &lexer->content)) {
-    lou_log_fmt(LOG_ERROR, "failed to read file content: #E"); 
+    lou_log_fmt(LOU_LOG_ERROR, "failed to read file content: #E"); 
     goto error;
   }
   fclose(file);
@@ -132,10 +132,18 @@ bool lou_lexer_failed(const lou_lexer_t *lexer) {
   return lexer->failed;
 }
 
-void lou_lexer_log_error(const lou_lexer_t *lexer, lou_slice_t slice, const char *fmt, va_list list) {
-  lou_log_fmt_va(LOG_ERROR, fmt, list);
-  lou_pos_print(stderr, lexer->path, lexer->content, slice);
+static inline void lou_lexer_log(const lou_lexer_t *lexer, lou_log_level_t level, lou_slice_t slice, const char *fmt, va_list list) {
+  lou_log_fmt_va(level, fmt, list);
+  lou_pos_print(stderr, lou_log_level_color(level), lexer->path, lexer->content, slice);
   fprintf(stderr, "\n\n");
+}
+
+void lou_lexer_log_error(const lou_lexer_t *lexer, lou_slice_t slice, const char *fmt, va_list list) {
+  lou_lexer_log(lexer, LOU_LOG_ERROR, slice, fmt, list);
+}
+
+void lou_lexer_log_warning(const lou_lexer_t *lexer, lou_slice_t slice, const char *fmt, va_list list) {
+  lou_lexer_log(lexer, LOU_LOG_WARNING, slice, fmt, list);
 }
 
 static inline lou_token_t lou_lexer_new_simple(lou_lexer_t *lexer, lou_token_kind_t kind) {
@@ -208,6 +216,7 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '*': return lou_lexer_new_simple(lexer, LOU_TOKEN_STAR);
     case '/': return lou_lexer_new_simple(lexer, LOU_TOKEN_SLASH);
     case '%': return lou_lexer_new_simple(lexer, LOU_TOKEN_PERCENT);
+    case ';': return lou_lexer_new_simple(lexer, LOU_TOKEN_SEMICOLON);
     case '\'': {
       char c = lou_lexer_take_escaped(lexer, '\'');
       if (lou_lexer_take(lexer) != '\'') {

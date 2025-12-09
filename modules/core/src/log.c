@@ -1,10 +1,11 @@
 #include "lou/core/log.h"
+#include <stdbool.h>
 #include <stdio.h>
 
 static lou_log_callback_t log_callbacks[0xFF] = { NULL };
 
 typedef struct {
-  FILE *output;
+  bool is_stderr;
   const char *name;
   int color;
 } log_level_info_t;
@@ -25,19 +26,24 @@ inline void lou_log_puts_va(FILE *stream, const char *fmt, va_list list) {
   }
 }
 
-inline void lou_log_fmt_va(lou_log_level_t level, const char *fmt, va_list list) {
-  log_level_info_t infos[] = {
-    [LOG_DEBUG]   = { .output = stdout, .name = "debug",   .color = 34 },
-    [LOG_INFO]    = { .output = stdout, .name = "info",    .color = 32 },
-    [LOG_WARNING] = { .output = stderr, .name = "warning", .color = 33 },
-    [LOG_ERROR]   = { .output = stderr, .name = "error",   .color = 31 },
-  };
+log_level_info_t infos[] = {
+  [LOU_LOG_DEBUG]   = { .is_stderr = false, .name = "debug",   .color = 34 },
+  [LOU_LOG_INFO]    = { .is_stderr = false, .name = "info",    .color = 32 },
+  [LOU_LOG_WARNING] = { .is_stderr = true,  .name = "warning", .color = 33 },
+  [LOU_LOG_ERROR]   = { .is_stderr = true,  .name = "error",   .color = 31 },
+};
 
+inline void lou_log_fmt_va(lou_log_level_t level, const char *fmt, va_list list) {
   log_level_info_t *info = &infos[level];
 
-  fprintf(info->output, "\033[1;%dm" "%s: " "\033[0m", info->color, info->name);
-  lou_log_puts_va(info->output, fmt, list);
-  fputc('\n', info->output);
+  FILE *output = info->is_stderr ? stderr : stdout;
+  fprintf(output, "\033[1;%dm" "%s: " "\033[0m", info->color, info->name);
+  lou_log_puts_va(output, fmt, list);
+  fputc('\n', output);
+}
+
+int lou_log_level_color(lou_log_level_t level) {
+  return infos[level].color;
 }
 
 void lou_log_fmt(lou_log_level_t level, const char *fmt, ...) {

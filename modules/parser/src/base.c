@@ -41,6 +41,10 @@ lou_ast_node_t *lou_parser_next(lou_parser_t *parser) {
   return NULL;
 }
 
+void lou_parser_log_warning(const lou_parser_t *parser, lou_slice_t slice, const char *fmt, va_list list) {
+  lou_lexer_log_warning(parser->lexer, slice, fmt, list);
+}
+
 void lou_parser_log_error(const lou_parser_t *parser, lou_slice_t slice, const char *fmt, va_list list) {
   lou_lexer_log_error(parser->lexer, slice, fmt, list);
 }

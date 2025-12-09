@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
   };
   int exec_status;
   if (!lou_exec("/usr/bin/gcc", args, sizeof(args) / sizeof(args[0]), &exec_status) || exec_status != 0) {
-    lou_log_fmt(LOG_ERROR, "linking failed with the error");
+    lou_log_fmt(LOU_LOG_ERROR, "linking failed with the error");
     return 1;
   }
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
   }
 
   if (exec_status != 0) {
-    lou_log_fmt(LOG_ERROR, "running failed with status #i", exec_status);
+    lou_log_fmt(LOU_LOG_ERROR, "running failed with status #i", exec_status);
   }
 
   return exec_status;

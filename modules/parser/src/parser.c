@@ -17,6 +17,13 @@ void lou_parser_err(lou_parser_t *parser, lou_slice_t slice, const char *fmt, ..
   parser->failed = true;
 }
 
+void lou_parser_warn(lou_parser_t *parser, lou_slice_t slice, const char *fmt, ...) {
+  va_list list;
+  va_start(list, fmt);
+  lou_parser_log_warning(parser, slice, fmt, list);
+  va_end(list);
+}
+
 static inline lou_token_t lou_parser_queue(lou_parser_t *parser, lou_token_t token) {
   *LOU_VEC_PUSH(&parser->queue) = token;
   return token;
