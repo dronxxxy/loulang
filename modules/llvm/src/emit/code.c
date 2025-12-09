@@ -66,6 +66,32 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
           }
           UNREACHABLE();
         }
+        case LOU_HIR_BINOP_EQ: {
+          assert(output->type->kind == LOU_HIR_TYPE_INT || output->type->kind == LOU_HIR_TYPE_BOOL);
+          switch (stmt->binop.eq) {
+            case LOU_HIR_BINOP_EQUALS: lou_llvm_store(llvm, output, LLVMBuildICmp(llvm->builder, LLVMIntEQ, l, r, "")); return;
+            case LOU_HIR_BINOP_NOT_EQUALS: lou_llvm_store(llvm, output, LLVMBuildICmp(llvm->builder, LLVMIntNE, l, r, "")); return;
+          }
+          UNREACHABLE();
+        }
+        case LOU_HIR_BINOP_ORDER:
+          assert(output->type->kind == LOU_HIR_TYPE_INT);
+          bool is_signed = output->type->integer.is_signed;
+          switch (stmt->binop.order) {
+            case LOU_HIR_BINOP_ORDER_GREATER_OR_EQUALS:
+              lou_llvm_store(llvm, output, LLVMBuildICmp(llvm->builder, is_signed ? LLVMIntSGE : LLVMIntUGE, l, r, ""));
+              return;
+            case LOU_HIR_BINOP_ORDER_LESS_OR_EQUALS:
+              lou_llvm_store(llvm, output, LLVMBuildICmp(llvm->builder, is_signed ? LLVMIntSLE : LLVMIntULE, l, r, ""));
+              return;
+            case LOU_HIR_BINOP_ORDER_GREATER:
+              lou_llvm_store(llvm, output, LLVMBuildICmp(llvm->builder, is_signed ? LLVMIntSGT : LLVMIntUGT, l, r, ""));
+              return;
+            case LOU_HIR_BINOP_ORDER_LESS:
+              lou_llvm_store(llvm, output, LLVMBuildICmp(llvm->builder, is_signed ? LLVMIntSLT : LLVMIntULT, l, r, ""));
+              return;
+          }
+          UNREACHABLE();
       }
       UNREACHABLE();
     }
