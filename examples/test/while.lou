@@ -1,15 +1,29 @@
-const putChar = fun (char: u8) {
-  @externFun("putchar", @procFun(u8))(char)
+const putChar = @externFun("putchar", @procFun(u8))
+
+const putInt = fun (var int: i32) {
+  if int < 0 {
+    # TODO: unary operators
+    int = 0 - int
+    putChar('-')
+  }
+  if int == 0 {
+    putChar('0')
+  }
+  while int > 0 {
+    putChar('0' + @intCast(int % 10, u8))
+    int = int / 10
+  }
 }
 
 @global("main", fun () -> i32 {
-  var char = 'a'
+  # TODO: unary operators
+  var i = 0 - 10
   
-  while char <= 'z' {
-    putChar(char)
-    char = char + 1
+  while i <= 10 {
+    putInt(i)
+    putChar('\n')
+    i = i + 1
   }
-  putChar('\n')
 
   return 0
 })

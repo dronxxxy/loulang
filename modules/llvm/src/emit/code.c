@@ -43,12 +43,14 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       LLVMBasicBlockRef initial = LLVMGetInsertBlock(llvm->builder);
 
       LLVMBasicBlockRef then = lou_llvm_emit_code(llvm, stmt->cond.code);
-      LLVMBasicBlockRef or_else = stmt->cond.fallback ? lou_llvm_emit_code(llvm, stmt->cond.fallback) : NULL;
       LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
+      LLVMBasicBlockRef or_else = stmt->cond.fallback ? lou_llvm_emit_code(llvm, stmt->cond.fallback) : end;
       bool has_end = !stmt->cond.fallback;
 
-      LLVMPositionBuilderAtEnd(llvm->builder, or_else);
-      if (lou_llvm_br(llvm, end)) has_end = true;
+      if (stmt->cond.fallback) {
+        LLVMPositionBuilderAtEnd(llvm->builder, or_else);
+        if (lou_llvm_br(llvm, end)) has_end = true;
+      }
       
       LLVMPositionBuilderAtEnd(llvm->builder, then);
       if (lou_llvm_br(llvm, end)) has_end = true;
@@ -194,7 +196,7 @@ inline void lou_llvm_emit_code_in(lou_llvm_module_t *llvm, LLVMBasicBlockRef blo
 }
 
 LLVMBasicBlockRef lou_llvm_emit_code(lou_llvm_module_t *llvm, lou_hir_code_t *code) {
-  LLVMBasicBlockRef block = LLVMAppendBasicBlock(llvm->function, "");
+  LLVMBasicBlockRef block = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
   lou_llvm_emit_code_in(llvm, block, code);
   return block;
 }
