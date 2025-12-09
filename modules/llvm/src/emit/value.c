@@ -33,6 +33,7 @@ LLVMValueRef llvm_extract_from_mutablity(lou_llvm_module_t *llvm, lou_hir_type_t
 
 LLVMValueRef lou_llvm_emit_value(lou_llvm_module_t *llvm, lou_hir_value_t *value) {
   switch (value->kind) {
+    case LOU_HIR_VALUE_ARGUMENT: return LLVMGetParam(llvm->function, value->arg_index);
     case LOU_HIR_VALUE_CONST: return lou_llvm_emit_const(llvm, value->constant);
     case LOU_HIR_VALUE_LOCAL:
       return llvm_extract_from_mutablity(llvm,

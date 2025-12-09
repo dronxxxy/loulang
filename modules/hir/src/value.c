@@ -5,7 +5,7 @@
 
 lou_hir_type_t *lou_hir_value_typeof(lou_hir_value_t *value) {
   switch (value->kind) {
-    case LOU_HIR_VALUE_CONST: return value->constant->type;
+    case LOU_HIR_VALUE_ARGUMENT: case LOU_HIR_VALUE_CONST: return value->constant->type;
     case LOU_HIR_VALUE_LOCAL: return value->local->type;
   }
   UNREACHABLE();
@@ -13,7 +13,7 @@ lou_hir_type_t *lou_hir_value_typeof(lou_hir_value_t *value) {
 
 lou_hir_mutability_t lou_hir_value_mutability(lou_hir_value_t *value) {
   switch (value->kind) {
-    case LOU_HIR_VALUE_CONST: return LOU_HIR_IMMUTABLE;
+    case LOU_HIR_VALUE_ARGUMENT: case LOU_HIR_VALUE_CONST: return LOU_HIR_IMMUTABLE;
     case LOU_HIR_VALUE_LOCAL: return value->local->mutability;
   }
   UNREACHABLE();
