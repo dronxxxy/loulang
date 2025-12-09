@@ -29,7 +29,7 @@ void lou_sema_free(lou_sema_t *sema) {
 }
 
 bool lou_sema_failed(const lou_sema_t *sema) {
-  return sema->failed;
+  return lou_parser_failed(sema->parser) || sema->failed;
 }
 
 lou_hir_t *lou_sema_hir(const lou_sema_t *sema) {
