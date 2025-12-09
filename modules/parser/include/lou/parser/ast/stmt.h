@@ -28,10 +28,17 @@ typedef struct lou_ast_stmt_t {
     struct {
       lou_ast_expr_t *condition;
       lou_ast_body_t *body;
+      lou_ast_body_t *else_body;
     } if_else;
   };
 } lou_ast_stmt_t;
 
-lou_ast_stmt_t *lou_ast_stmt_new_if(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_t *condition, lou_ast_body_t *body);
+lou_ast_stmt_t *lou_ast_stmt_new_if(
+  lou_mempool_t *mempool,
+  lou_slice_t slice,
+  lou_ast_expr_t *condition,
+  lou_ast_body_t *body,
+  lou_ast_body_t *else_body
+);
 lou_ast_stmt_t *lou_ast_stmt_new_node(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_node_t *node);
 lou_ast_stmt_t *lou_ast_stmt_new_ret(lou_mempool_t *mempool, lou_slice_t slice, lou_slice_t ret_slice, lou_ast_expr_t *value);

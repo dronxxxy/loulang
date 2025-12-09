@@ -83,7 +83,7 @@ lou_hir_stmt_t *lou_hir_stmt_new_binop_eq(
 ) {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_BINOP;
-  stmt->binop.kind = LOU_HIR_BINOP_ARITHM;
+  stmt->binop.kind = LOU_HIR_BINOP_EQ;
   stmt->binop.output = output;
   stmt->binop.left = left;
   stmt->binop.right = right;
@@ -101,7 +101,7 @@ lou_hir_stmt_t *lou_hir_stmt_new_binop_order(
 ) {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_BINOP;
-  stmt->binop.kind = LOU_HIR_BINOP_ARITHM;
+  stmt->binop.kind = LOU_HIR_BINOP_ORDER;
   stmt->binop.output = output;
   stmt->binop.left = left;
   stmt->binop.right = right;

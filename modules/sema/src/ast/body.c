@@ -29,7 +29,14 @@ static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
       lou_sema_type_t *boolean = lou_sema_type_new_bool(sema->mempool);
       lou_sema_value_t *value = RET_ON_NULL(lou_sema_expr_analyze_runtime(sema, stmt->if_else.condition, lou_sema_expr_ctx_new_runtime(boolean), false));
       lou_sema_scope_t *scope = lou_sema_emit_body(sema, stmt->if_else.body);
-      lou_sema_push_stmt(sema, stmt->slice, lou_hir_stmt_new_cond(sema->mempool, lou_sema_value_as_hir(sema->mempool, value), scope->code, NULL));
+      lou_sema_scope_t *else_scope = stmt->if_else.else_body ? lou_sema_emit_body(sema, stmt->if_else.else_body) : NULL;
+      if (scope->break_kind && else_scope->break_kind) {
+        lou_sema_break_scope(sema, else_scope->break_kind < scope->break_kind ? else_scope->break_kind : scope->break_kind);
+      }
+      lou_sema_push_stmt(sema, stmt->slice, lou_hir_stmt_new_cond(sema->mempool, lou_sema_value_as_hir(sema->mempool, value),
+        scope->code,
+        else_scope ? else_scope->code : NULL
+      ));
       return;
     }
   }

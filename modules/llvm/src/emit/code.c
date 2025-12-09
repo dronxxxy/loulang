@@ -11,9 +11,13 @@
 #include <llvm-c/Core.h>
 #include <llvm-c/Types.h>
 
-static inline void lou_llvm_br(lou_llvm_module_t *llvm, LLVMBasicBlockRef or) {
+static inline bool lou_llvm_br(lou_llvm_module_t *llvm, LLVMBasicBlockRef or) {
   LLVMValueRef instr = LLVMGetLastInstruction(LLVMGetInsertBlock(llvm->builder));
-  if (!instr || !LLVMIsATerminatorInst(instr)) LLVMBuildBr(llvm->builder, or);
+  if (!instr || !LLVMIsATerminatorInst(instr)) {
+    LLVMBuildBr(llvm->builder, or);
+    return true;
+  }
+  return false;
 }
 
 static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *stmt) {
@@ -23,21 +27,21 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       LLVMBasicBlockRef initial = LLVMGetInsertBlock(llvm->builder);
 
       LLVMBasicBlockRef then = lou_llvm_emit_code(llvm, stmt->cond.code);
-      LLVMBasicBlockRef end = LLVMAppendBasicBlock(llvm->function, "");
-      LLVMBasicBlockRef or_else = stmt->cond.fallback ? LLVMAppendBasicBlock(llvm->function, "") : end;
+      LLVMBasicBlockRef or_else = stmt->cond.fallback ? lou_llvm_emit_code(llvm, stmt->cond.fallback) : NULL;
+      LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
+      bool has_end = !stmt->cond.fallback;
 
-      lou_llvm_br(llvm, end);
+      LLVMPositionBuilderAtEnd(llvm->builder, or_else);
+      if (lou_llvm_br(llvm, end)) has_end = true;
       
+      LLVMPositionBuilderAtEnd(llvm->builder, then);
+      if (lou_llvm_br(llvm, end)) has_end = true;
+
       LLVMPositionBuilderAtEnd(llvm->builder, initial);
       LLVMBuildCondBr(llvm->builder, condition, then, or_else);
 
-      if (stmt->cond.fallback) {
-        LLVMPositionBuilderAtEnd(llvm->builder, or_else);
-        lou_llvm_emit_code(llvm, stmt->cond.fallback);
-        lou_llvm_br(llvm, end);
-      }
-
       LLVMPositionBuilderAtEnd(llvm->builder, end);
+      if (!has_end) LLVMBuildUnreachable(llvm->builder);
       return;
     }
     case LOU_HIR_STMT_ARG:
