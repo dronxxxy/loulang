@@ -123,9 +123,7 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
       return lou_sema_value_new_const(sema->mempool, constant);
     }
     case LOU_AST_EXPR_SCOPE: return lou_sema_expr_outline(sema, expr->scope_inner, ctx);
-    case LOU_AST_EXPR_GET_IDENT:
-    case LOU_AST_EXPR_ARRAY:
-      NOT_IMPLEMENTED;
+    case LOU_AST_EXPR_GET_IDENT: case LOU_AST_EXPR_ARRAY: NOT_IMPLEMENTED;
     case LOU_AST_EXPR_ASSIGN: {
       lou_sema_value_t *what_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.what, ctx));
       lou_sema_value_t *to_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.to, ctx));
@@ -144,13 +142,31 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
     }
     case LOU_AST_EXPR_BINOP: {
       lou_sema_type_t *left = lou_sema_value_is_runtime(NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->binop.left, ctx)));
-      lou_sema_type_t *right = lou_sema_value_is_runtime(NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->binop.right, ctx)));
+      lou_sema_type_t *right = lou_sema_value_is_runtime(NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->binop.right, lou_sema_expr_ctx_new_runtime(left))));
       if (!lou_sema_type_eq(left, right)) {
         lou_sema_err(sema, expr->binop.right->slice, "binop operates with equal types only but trying to apply it to values of type #T != #T", left, right);
         return NULL;
       }
       lou_sema_type_t *type = left;
-      return lou_sema_value_new_local(sema->mempool, LOU_SEMA_IMMUTABLE, type, lou_sema_add_local_final(sema, type), lou_sema_current_scope_stack(sema));
+      switch (expr->binop.kind) {
+        case LOU_AST_BINOP_ADD:
+        case LOU_AST_BINOP_SUBTRACT:
+        case LOU_AST_BINOP_MULTIPLY:
+        case LOU_AST_BINOP_DIVIDE:
+        case LOU_AST_BINOP_MOD:
+          break;
+
+        case LOU_AST_BINOP_EQUALS:
+        case LOU_AST_BINOP_NOT_EQUALS:
+        case LOU_AST_BINOP_GREATER:
+        case LOU_AST_BINOP_LESS:
+        case LOU_AST_BINOP_GREATER_OR_EQUALS:
+        case LOU_AST_BINOP_LESS_OR_EQUALS:
+          type = lou_sema_type_new_bool(sema->mempool);
+          break;
+      }
+      return lou_sema_value_new_local(sema->mempool, LOU_SEMA_IMMUTABLE, type, lou_sema_add_local_final(sema, type),
+        lou_sema_current_scope_stack(sema));
     }
   }
   UNREACHABLE();
@@ -269,7 +285,7 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       lou_sema_push_scope_stack(sema, constant->type->func.returns);
       lou_sema_scope_t *scope = lou_sema_emit_body(sema, expr->func.body);
       lou_sema_pop_scope_stack(sema);
-      if (!scope->break_kind) {
+      if (scope->break_kind != LOU_SEMA_SCOPE_BREAK_RETURN) {
         if (constant->type->func.returns) {
           lou_sema_err(sema, expr->slice, "function returns a value so there is should be return statement");
         }

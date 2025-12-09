@@ -26,11 +26,13 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       LLVMBasicBlockRef begin = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
       LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
 
+      LLVMBuildBr(llvm->builder, begin);
+
       stmt->loop.codegen.begin = begin;
       stmt->loop.codegen.end = end;
 
-      lou_llvm_emit_code_in(llvm, begin, stmt->cond.code);
-      bool has_end = lou_llvm_br(llvm, end);
+      lou_llvm_emit_code_in(llvm, begin, stmt->loop.code);
+      bool has_end = lou_llvm_br(llvm, begin);
 
       LLVMPositionBuilderAtEnd(llvm->builder, end);
       if (!has_end) LLVMBuildUnreachable(llvm->builder);
@@ -130,8 +132,7 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
         case LOU_HIR_BINOP_ORDER:
           switch (stmt->binop.order.of) {
             case LOU_HIR_BINOP_ORDER_OF_INT:
-              assert(output->type->kind == LOU_HIR_TYPE_INT);
-              bool is_signed = output->type->integer.is_signed;
+              bool is_signed = lou_hir_value_typeof(stmt->binop.left)->integer.is_signed;
               switch (stmt->binop.order.kind) {
                 case LOU_HIR_BINOP_ORDER_GREATER_OR_EQUALS:
                   lou_llvm_store(llvm, output, LLVMBuildICmp(llvm->builder, is_signed ? LLVMIntSGE : LLVMIntUGE, l, r, ""));

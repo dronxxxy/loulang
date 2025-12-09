@@ -36,6 +36,7 @@ typedef struct {
 
 typedef enum {
   LOU_SEMA_SCOPE_BREAK_NONE = 0,
+  LOU_SEMA_SCOPE_BREAK_LOOP,
   LOU_SEMA_SCOPE_BREAK_RETURN,
 } lou_sema_scope_break_t;
 

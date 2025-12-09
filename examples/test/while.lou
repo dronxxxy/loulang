@@ -1,0 +1,15 @@
+final putChar = @externFun("putchar", @procFun(u8))
+
+@global("main", fun () -> i32 {
+  var char = 'a'
+  
+  while char <= 'z' {
+    putChar(char)
+    char = char + 1
+  }
+  putChar('\n')
+
+  return 0
+})
+
+

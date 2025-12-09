@@ -16,6 +16,20 @@ lou_ast_stmt_t *lou_ast_stmt_new_if(
   return stmt;
 }
 
+lou_ast_stmt_t *lou_ast_stmt_new_while(
+  lou_mempool_t *mempool,
+  lou_slice_t slice,
+  lou_ast_expr_t *condition,
+  lou_ast_body_t *body
+) {
+  lou_ast_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_ast_stmt_t);
+  stmt->kind = LOU_AST_STMT_WHILE;
+  stmt->slice = slice;
+  stmt->while_loop.body = body;
+  stmt->while_loop.condition = condition;
+  return stmt;
+}
+
 lou_ast_stmt_t *lou_ast_stmt_new_node(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_node_t *node) {
   lou_ast_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_ast_stmt_t);
   stmt->kind = LOU_AST_STMT_NODE;

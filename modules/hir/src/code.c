@@ -126,14 +126,14 @@ lou_hir_stmt_t *lou_hir_stmt_new_loop(lou_mempool_t *mempool, lou_hir_value_t *c
   return stmt;
 }
 
-lou_hir_stmt_t *lou_hir_stmt_new_break(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_stmt_t *break_loop) {
+lou_hir_stmt_t *lou_hir_stmt_new_break(lou_mempool_t *mempool, lou_hir_stmt_t *break_loop) {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_BREAK;
   stmt->break_loop = break_loop;
   return stmt;
 }
 
-lou_hir_stmt_t *lou_hir_stmt_new_continue(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_stmt_t *continue_loop) {
+lou_hir_stmt_t *lou_hir_stmt_new_continue(lou_mempool_t *mempool, lou_hir_stmt_t *continue_loop) {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_CONTINUE;
   stmt->continue_loop = continue_loop;
@@ -146,7 +146,6 @@ lou_hir_code_t *lou_hir_code_new(lou_mempool_t *mempool)  {
   code->locals = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_local_t*);
   return code;
 }
-
 
 void lou_hir_code_append_stmt(lou_hir_code_t *code, lou_hir_stmt_t *stmt) {
   *LOU_VEC_PUSH(&code->stmts) = stmt;

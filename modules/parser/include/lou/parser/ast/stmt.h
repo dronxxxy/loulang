@@ -11,6 +11,7 @@ typedef enum {
   LOU_AST_STMT_RETURN,
   LOU_AST_STMT_NODE,
   LOU_AST_STMT_IF,
+  LOU_AST_STMT_WHILE,
 } lou_ast_stmt_kind_t;
 
 typedef struct lou_ast_stmt_t {
@@ -28,11 +29,22 @@ typedef struct lou_ast_stmt_t {
     struct {
       lou_ast_expr_t *condition;
       lou_ast_body_t *body;
+    } while_loop;
+
+    struct {
+      lou_ast_expr_t *condition;
+      lou_ast_body_t *body;
       lou_ast_body_t *else_body;
     } if_else;
   };
 } lou_ast_stmt_t;
 
+lou_ast_stmt_t *lou_ast_stmt_new_while(
+  lou_mempool_t *mempool,
+  lou_slice_t slice,
+  lou_ast_expr_t *condition,
+  lou_ast_body_t *body
+);
 lou_ast_stmt_t *lou_ast_stmt_new_if(
   lou_mempool_t *mempool,
   lou_slice_t slice,

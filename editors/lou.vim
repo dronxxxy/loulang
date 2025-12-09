@@ -1,6 +1,7 @@
 syn keyword louKeywords public global extern
 syn keyword louKeywords meta const final var
 syn keyword louKeywords if else
+syn keyword louKeywords while
 syn keyword louKeywords return
 syn keyword louKeywords fun
 

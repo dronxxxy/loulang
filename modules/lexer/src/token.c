@@ -41,6 +41,7 @@ void lou_token_write(const lou_token_t *token, FILE *stream) {
     WRITE_TOKEN(RETURN);
     WRITE_TOKEN(IF);
     WRITE_TOKEN(ELSE);
+    WRITE_TOKEN(WHILE);
     WRITE_TOKEN(IDENT);
     WRITE_TOKEN(STRING);
     WRITE_TOKEN(CHAR);
