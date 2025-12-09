@@ -84,3 +84,12 @@ lou_ast_expr_t *lou_ast_expr_new_func(
   return expr;
 }
 
+lou_ast_expr_t *lou_ast_expr_new_binop(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_binop_t kind, lou_ast_expr_t *left, lou_ast_expr_t *right) {
+  lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
+  expr->kind = LOU_AST_EXPR_BINOP;
+  expr->slice = slice;
+  expr->binop.kind = kind;
+  expr->binop.left = left;
+  expr->binop.right = right;
+  return expr;
+}

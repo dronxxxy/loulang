@@ -141,12 +141,66 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
       }
       return what_value;
     }
+    case LOU_AST_EXPR_BINOP: {
+      lou_sema_type_t *left = lou_sema_value_is_runtime(NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->binop.left, ctx)));
+      lou_sema_type_t *right = lou_sema_value_is_runtime(NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->binop.right, ctx)));
+      if (!lou_sema_type_eq(left, right)) {
+        lou_sema_err(sema, expr->binop.right->slice, "binop operates with equal types only but trying to apply it to values of type #T != #T", left, right);
+        return NULL;
+      }
+      lou_sema_type_t *type = left;
+      return lou_sema_value_new_local(sema->mempool, LOU_SEMA_IMMUTABLE, type, lou_sema_add_local_final(sema, type), lou_sema_current_scope_stack(sema));
+    }
   }
   UNREACHABLE();
 }
 
 lou_sema_value_t *lou_sema_expr_outline(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
   return expr->sema_value = lou_sema_expr_outline_internal(sema, expr, ctx);
+}
+
+static inline lou_sema_value_t *lou_sema_analyze_binop_arithm_int(
+  lou_sema_t *sema,
+  lou_hir_binop_arithm_int_t kind,
+  lou_sema_value_t *left,
+  lou_sema_value_t *right,
+  lou_ast_expr_t *expr
+) {
+  lou_hir_local_t *output = lou_sema_value_is_local(expr->sema_value)->hir;
+  lou_sema_type_t *type = lou_sema_value_is_runtime(left);
+  if (type->kind != LOU_SEMA_TYPE_INTEGER) {
+    lou_sema_err(sema, expr->slice, "this binop can be applied to integers only");
+    return NULL;
+  }
+  if (lou_sema_is_global_scope(sema)) {
+    lou_sema_err(sema, expr->slice, "non-constant expression in global scope");
+    return NULL;
+  }
+  lou_sema_push_stmt(sema, lou_hir_stmt_new_binop_arithm_int(sema->mempool, kind, output, lou_sema_value_as_hir(sema->mempool, left),
+    lou_sema_value_as_hir(sema->mempool, right)));
+  return expr->sema_value;
+}
+
+static inline lou_sema_value_t *lou_sema_analyze_binop_arithm(
+  lou_sema_t *sema,
+  lou_hir_binop_arithm_t kind,
+  lou_sema_value_t *left,
+  lou_sema_value_t *right,
+  lou_ast_expr_t *expr
+) {
+  lou_hir_local_t *output = lou_sema_value_is_local(expr->sema_value)->hir;
+  lou_sema_type_t *type = lou_sema_value_is_runtime(left);
+  if (type->kind != LOU_SEMA_TYPE_INTEGER) {
+    lou_sema_err(sema, expr->slice, "this binop can be applied to integers only");
+    return NULL;
+  }
+  if (lou_sema_is_global_scope(sema)) {
+    lou_sema_err(sema, expr->slice, "non-constant expression in global scope");
+    return NULL;
+  }
+  lou_sema_push_stmt(sema, lou_hir_stmt_new_binop_arithm(sema->mempool, kind, output, lou_sema_value_as_hir(sema->mempool, left),
+    lou_sema_value_as_hir(sema->mempool, right)));
+  return expr->sema_value;
 }
 
 lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr, bool weak) {
@@ -184,6 +238,18 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       lou_sema_value_local_t *to = lou_sema_value_is_local(NOT_NULL(lou_sema_expr_finalize(sema, expr->assign.to, false)));
       lou_sema_push_stmt(sema, lou_hir_stmt_new_store_var(sema->mempool, to->hir, lou_sema_value_as_hir(sema->mempool, what)));
       return what;
+    }
+    case LOU_AST_EXPR_BINOP: {
+      lou_sema_value_t *left = NOT_NULL(lou_sema_expr_finalize(sema, expr->binop.left, false));
+      lou_sema_value_t *right = NOT_NULL(lou_sema_expr_finalize(sema, expr->binop.right, false));
+      switch (expr->binop.kind) {
+        case LOU_AST_BINOP_ADD: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr);
+        case LOU_AST_BINOP_SUBTRACT: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr);
+        case LOU_AST_BINOP_MULTIPLY: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr);
+        case LOU_AST_BINOP_DIVIDE: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr);
+        case LOU_AST_BINOP_MOD: return lou_sema_analyze_binop_arithm_int(sema, LOU_HIR_BINOP_ARITHM_INT_MOD, left, right, expr);
+      }
+      UNREACHABLE();
     }
   }
   UNREACHABLE();
