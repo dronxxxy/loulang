@@ -93,3 +93,11 @@ lou_ast_expr_t *lou_ast_expr_new_binop(lou_mempool_t *mempool, lou_slice_t slice
   expr->binop.right = right;
   return expr;
 }
+
+lou_ast_expr_t *lou_ast_expr_new_scope(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_t *inner) {
+  lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
+  expr->kind = LOU_AST_EXPR_SCOPE;
+  expr->slice = slice;
+  expr->scope_inner = inner;
+  return expr;
+}
