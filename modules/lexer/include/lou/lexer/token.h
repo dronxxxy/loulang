@@ -16,7 +16,11 @@ typedef enum {
   LOU_TOKEN_DOT,
 
   // Math
+  LOU_TOKEN_PLUS,
   LOU_TOKEN_MINUS,
+  LOU_TOKEN_STAR,
+  LOU_TOKEN_SLASH,
+  LOU_TOKEN_PERCENT,
 
   // Keywords
   LOU_TOKEN_FUN,

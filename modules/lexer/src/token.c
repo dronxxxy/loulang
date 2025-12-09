@@ -20,6 +20,10 @@ void lou_token_write(const lou_token_t *token, FILE *stream) {
     WRITE_TOKEN(COMMA);
     WRITE_TOKEN(DOT);
     WRITE_TOKEN(MINUS);
+    WRITE_TOKEN(PLUS);
+    WRITE_TOKEN(STAR);
+    WRITE_TOKEN(SLASH);
+    WRITE_TOKEN(PERCENT);
     WRITE_TOKEN(FUN);
     WRITE_TOKEN(PUBLIC);
     WRITE_TOKEN(META);

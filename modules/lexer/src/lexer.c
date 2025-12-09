@@ -204,6 +204,10 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case '=': return lou_lexer_new_simple(lexer, LOU_TOKEN_ASSIGN);
     case ',': return lou_lexer_new_simple(lexer, LOU_TOKEN_COMMA);
     case '.': return lou_lexer_new_simple(lexer, LOU_TOKEN_DOT);
+    case '+': return lou_lexer_new_simple(lexer, LOU_TOKEN_PLUS);
+    case '*': return lou_lexer_new_simple(lexer, LOU_TOKEN_STAR);
+    case '/': return lou_lexer_new_simple(lexer, LOU_TOKEN_SLASH);
+    case '%': return lou_lexer_new_simple(lexer, LOU_TOKEN_PERCENT);
     case '\'': {
       char c = lou_lexer_take_escaped(lexer, '\'');
       if (lou_lexer_take(lexer) != '\'') {

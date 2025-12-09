@@ -1,8 +1,9 @@
-final putCString = @externFun("puts", @procFun(@ptr(u8)))
-
 const main = @global("main", fun () -> i32 {
   var a = 12
-  a = 0
+  a = a +
+    2 / 2 -
+    1 * 2 * 2 / 4 - 
+    32 % 20
   return a
 })
 

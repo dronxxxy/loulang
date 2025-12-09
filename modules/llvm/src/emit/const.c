@@ -13,15 +13,9 @@ LLVMValueRef lou_llvm_emit_const(lou_llvm_module_t *llvm, const lou_hir_const_t 
   switch (constant->kind) {
     case LOU_HIR_CONST_INTEGER:
       assert(constant->type->kind == LOU_HIR_TYPE_INT);
-      return LLVMConstInt(
-        lou_llvm_emit_type(llvm, constant->type),
-        constant->integer.value,
-        constant->type->integer.is_signed
-      );
-    case LOU_HIR_CONST_FUNCTION:
-      return constant->func->codegen;
-    case LOU_HIR_CONST_EXTERNAL:
-      return constant->external->codegen;
+      return LLVMConstInt(lou_llvm_emit_type(llvm, constant->type), constant->integer.value, constant->type->integer.is_signed);
+    case LOU_HIR_CONST_FUNCTION: return constant->func->codegen;
+    case LOU_HIR_CONST_EXTERNAL: return constant->external->codegen;
     case LOU_HIR_CONST_STRING: {
       LLVMValueRef string = LLVMAddGlobal(llvm->module, LLVMPointerTypeInContext(llvm->context, 0), "");
       LLVMSetInitializer(string, LLVMConstStringInContext(llvm->context,

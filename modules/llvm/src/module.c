@@ -34,7 +34,7 @@ static inline LLVMTargetMachineRef llvm_default_target_machine() {
     features,
     LLVMCodeGenLevelNone,
     LLVMRelocDefault,
-    LLVMCodeModelDefault 
+    LLVMCodeModelDefault
   );
   assert(machine);
   LLVMDisposeMessage(cpu);
@@ -86,6 +86,16 @@ void lou_llvm_module_emit(lou_llvm_module_t *llvm) {
   for (size_t i = 0; i < lou_vec_len(llvm->hir->functions); i++) {
     lou_llvm_emit_function(llvm, llvm->hir->functions[i]);
   }
+}
+
+bool lou_llvm_module_print(lou_llvm_module_t *llvm, const char *output) {
+  char *error = NULL;
+  LLVMPrintModuleToFile(llvm->module, output, &error);
+  if (error) {
+    lou_log_fmt(LOG_ERROR, "failed to print file: \n#s", error);
+    return false;
+  }
+  return true;
 }
 
 bool lou_llvm_module_dump(lou_llvm_module_t *llvm, const char *output) {

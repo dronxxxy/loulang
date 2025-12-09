@@ -37,7 +37,7 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
     case LOU_HIR_STMT_STORE_VAR:
       assert(stmt->store_var.output->mutability == LOU_HIR_MUTABLE);
       LLVMBuildStore(llvm->builder, lou_llvm_emit_value(llvm, stmt->store_var.value), stmt->store_var.output->codegen);
-      break;
+      return;
     case LOU_HIR_STMT_BINOP: {
       LLVMValueRef l = lou_llvm_emit_value(llvm, stmt->binop.left);
       LLVMValueRef r = lou_llvm_emit_value(llvm, stmt->binop.right);
@@ -47,13 +47,14 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
           assert(output->type->kind == LOU_HIR_TYPE_INT);
           bool is_signed = output->type->integer.is_signed;
           switch (stmt->binop.arithm) {
-            case LOU_HIR_BINOP_ARITHM_ADD: lou_llvm_store(llvm, output, LLVMBuildAdd(llvm->builder, l, r, "")); break;
-            case LOU_HIR_BINOP_ARITHM_SUBTRACT: lou_llvm_store(llvm, output, LLVMBuildSub(llvm->builder, l, r, "")); break;
-            case LOU_HIR_BINOP_ARITHM_MULTIPLY: lou_llvm_store(llvm, output, LLVMBuildMul(llvm->builder, l, r, "")); break;
+            case LOU_HIR_BINOP_ARITHM_ADD: lou_llvm_store(llvm, output, LLVMBuildAdd(llvm->builder, l, r, "")); return;
+            case LOU_HIR_BINOP_ARITHM_SUBTRACT: lou_llvm_store(llvm, output, LLVMBuildSub(llvm->builder, l, r, "")); return;
+            case LOU_HIR_BINOP_ARITHM_MULTIPLY: lou_llvm_store(llvm, output, LLVMBuildMul(llvm->builder, l, r, "")); return;
             case LOU_HIR_BINOP_ARITHM_DIVIDE:
               lou_llvm_store(llvm, output, (is_signed ? LLVMBuildSDiv : LLVMBuildUDiv)(llvm->builder, l, r, ""));
-              break;
+              return;
           }
+          UNREACHABLE();
         }
         case LOU_HIR_BINOP_ARITHM_INT: {
           assert(output->type->kind == LOU_HIR_TYPE_INT);
@@ -61,11 +62,12 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
           switch (stmt->binop.arithm_int) {
             case LOU_HIR_BINOP_ARITHM_INT_MOD:
               lou_llvm_store(llvm, output, (is_signed ? LLVMBuildSRem : LLVMBuildURem)(llvm->builder, l, r, ""));
-              break;
+              return;
           }
+          UNREACHABLE();
         }
       }
-      break;
+      UNREACHABLE();
     }
   }
   UNREACHABLE();
@@ -78,9 +80,7 @@ LLVMBasicBlockRef lou_llvm_emit_code(lou_llvm_module_t *llvm, lou_hir_code_t *co
   for (size_t i = 0; i < lou_vec_len(code->locals); i++) {
     lou_hir_local_t *local = code->locals[i];
     switch (local->mutability) {
-      case LOU_HIR_MUTABLE:
-        local->codegen = LLVMBuildAlloca(llvm->builder, lou_llvm_emit_type(llvm, local->type), "");
-        break;
+      case LOU_HIR_MUTABLE: local->codegen = LLVMBuildAlloca(llvm->builder, lou_llvm_emit_type(llvm, local->type), ""); break;
       case LOU_HIR_IMMUTABLE: break;
     }
   }

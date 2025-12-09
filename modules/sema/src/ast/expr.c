@@ -244,9 +244,9 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       lou_sema_value_t *right = NOT_NULL(lou_sema_expr_finalize(sema, expr->binop.right, false));
       switch (expr->binop.kind) {
         case LOU_AST_BINOP_ADD: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr);
-        case LOU_AST_BINOP_SUBTRACT: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr);
-        case LOU_AST_BINOP_MULTIPLY: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr);
-        case LOU_AST_BINOP_DIVIDE: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr);
+        case LOU_AST_BINOP_SUBTRACT: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_SUBTRACT, left, right, expr);
+        case LOU_AST_BINOP_MULTIPLY: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_MULTIPLY, left, right, expr);
+        case LOU_AST_BINOP_DIVIDE: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_DIVIDE, left, right, expr);
         case LOU_AST_BINOP_MOD: return lou_sema_analyze_binop_arithm_int(sema, LOU_HIR_BINOP_ARITHM_INT_MOD, left, right, expr);
       }
       UNREACHABLE();
