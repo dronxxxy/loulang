@@ -1,4 +1,5 @@
 #include "expr.h"
+#include "lou/core/assertions.h"
 #include "lou/core/slice.h"
 #include "lou/core/vec.h"
 #include "lou/lexer/token.h"
@@ -36,14 +37,15 @@ lou_ast_expr_t *lou_parser_parse_post_expr(lou_parser_t *parser, lou_ast_expr_t 
     case LOU_TOKEN_DOT: {
       lou_parser_take(parser);
       lou_slice_t ident = LOU_PARSER_EXPECT(parser, LOU_TOKEN_IDENT).slice;
-      return lou_ast_expr_new_get_ident(parser->mempool, (lou_ast_expr_get_ident_t) {
-        .inner = expr,
-        .ident = ident,
-      });
+      return lou_ast_expr_new_get_ident(parser->mempool, expr, ident);
+    }
+    case LOU_TOKEN_ASSIGN: {
+      lou_parser_take(parser);
+      lou_ast_expr_t *value = NOT_NULL(lou_parser_parse_expr(parser));
+      return lou_ast_expr_new_assign(parser->mempool, lou_slice_union(expr->slice, value->slice), expr, value);
     }
     default: break;
   }
-  // may parse dot e.t.c. here
   if (lou_parser_is_nl(parser)) {
     return NULL;
   }
@@ -61,10 +63,7 @@ lou_ast_expr_t *lou_parser_parse_post_expr(lou_parser_t *parser, lou_ast_expr_t 
         } while (!lou_parser_is_list_end(parser, LOU_TOKEN_CLOSING_CIRCLE_BRACE));
       }
 
-      return lou_ast_expr_new_call(parser->mempool, lou_parser_slice(parser, expr->slice), (lou_ast_expr_call_t) {
-        .inner = expr,
-        .args = args,
-      });
+      return lou_ast_expr_new_call(parser->mempool, lou_parser_slice(parser, expr->slice), expr, args);
     }
     default: return NULL;
   }
@@ -91,9 +90,7 @@ lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
         } while (!lou_parser_is_list_end(parser, LOU_TOKEN_CLOSING_SQUARE_BRACE));
       }
 
-      return lou_ast_expr_new_array(parser->mempool, lou_parser_slice(parser, token.slice), (lou_ast_expr_array_t) {
-        .values = values,
-      });
+      return lou_ast_expr_new_array(parser->mempool, lou_parser_slice(parser, token.slice), values);
     }
     default:
       lou_parser_err(parser, token.slice, "expected expression");

@@ -27,6 +27,10 @@ static void log_cstr(FILE *stream, va_list list) {
   fprintf(stream, "%s", va_arg(list, const char *));
 }
 
+static void log_int(FILE *stream, va_list list) {
+  fprintf(stream, "%d", va_arg(list, int));
+}
+
 static void log_size_t(FILE *stream, va_list list) {
   fprintf(stream, "%lu", va_arg(list, size_t));
 }
@@ -38,5 +42,6 @@ void log_init() {
   lou_log_register('S', log_slice);
   lou_log_register('s', log_cstr);
   lou_log_register('l', log_size_t);
+  lou_log_register('i', log_int);
   lou_sema_init_log();
 }

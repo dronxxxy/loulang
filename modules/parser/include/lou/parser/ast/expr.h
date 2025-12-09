@@ -9,30 +9,9 @@
 typedef struct lou_ast_expr_t lou_ast_expr_t;
 
 typedef struct {
-  lou_ast_expr_t *inner;
-  lou_ast_expr_t **args;
-} lou_ast_expr_call_t;
-
-typedef struct {
   lou_slice_t name;
   lou_ast_expr_t *type;
 } lou_ast_expr_func_arg_t;
-
-typedef struct {
-  lou_ast_expr_func_arg_t *args;
-  lou_ast_expr_t *returns;
-  lou_ast_body_t *body;
-  lou_slice_t fun_slice;
-} lou_ast_expr_func_t;
-
-typedef struct {
-  lou_ast_expr_t *inner; 
-  lou_slice_t ident;
-} lou_ast_expr_get_ident_t;
-
-typedef struct {
-  lou_ast_expr_t **values; 
-} lou_ast_expr_array_t;
 
 typedef enum {
   LOU_AST_EXPR_IDENT,
@@ -43,6 +22,7 @@ typedef enum {
   LOU_AST_EXPR_CALL,
   LOU_AST_EXPR_ARRAY,
   LOU_AST_EXPR_CHAR,
+  LOU_AST_EXPR_ASSIGN,
 } lou_ast_expr_kind_t;
 
 // this is bad, of course, but who cares?)
@@ -54,29 +34,52 @@ typedef struct lou_ast_expr_t {
 
   union {
     lou_slice_t ident;
+    char character;
+    uint64_t integer;
+
+    struct {
+      lou_ast_expr_func_arg_t *args;
+      lou_ast_expr_t *returns;
+      lou_ast_body_t *body;
+      lou_slice_t fun_slice;
+    } func;
+
+    struct {
+      lou_ast_expr_t *inner; 
+      lou_slice_t ident;
+    } get_ident;
+
+    struct {
+      lou_ast_expr_t **values; 
+    } array;
+
+    struct {
+      lou_ast_expr_t *inner;
+      lou_ast_expr_t **args;
+    } call;
+
     struct {
       lou_slice_t content;
       lou_token_string_kind_t kind;
     } string;
-    char character;
-    lou_ast_expr_func_t func;
-    uint64_t integer;
-    lou_ast_expr_call_t call;
-    lou_ast_expr_t **elements; 
-    lou_ast_expr_get_ident_t get_ident;
-    lou_ast_expr_array_t array;
+
+    struct {
+      lou_ast_expr_t *to;
+      lou_ast_expr_t *what;
+    } assign;
   };
 
   lou_sema_value_t *sema_value;
 } lou_ast_expr_t;
 
 lou_ast_expr_t *lou_ast_expr_new_ident(lou_mempool_t *mempool, lou_slice_t ident);
-lou_ast_expr_t *lou_ast_expr_new_get_ident(lou_mempool_t *mempool, lou_ast_expr_get_ident_t get_ident);
-lou_ast_expr_t *lou_ast_expr_new_array(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_array_t array);
-lou_ast_expr_t *lou_ast_expr_new_call(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_call_t call);
+lou_ast_expr_t *lou_ast_expr_new_get_ident(lou_mempool_t *mempool, lou_ast_expr_t *inner, lou_slice_t ident);
+lou_ast_expr_t *lou_ast_expr_new_array(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_t **values);
+lou_ast_expr_t *lou_ast_expr_new_call(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_t *inner, lou_ast_expr_t **args);
 lou_ast_expr_t *lou_ast_expr_new_integer(lou_mempool_t *mempool, lou_slice_t slice, uint64_t integer);
 lou_ast_expr_t *lou_ast_expr_new_char(lou_mempool_t *mempool, lou_slice_t slice, char character);
 lou_ast_expr_t *lou_ast_expr_new_string(lou_mempool_t *mempool, lou_slice_t slice, lou_slice_t string, lou_token_string_kind_t kind);
+lou_ast_expr_t *lou_ast_expr_new_assign(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_t *to, lou_ast_expr_t *what);
 lou_ast_expr_t *lou_ast_expr_new_func(
   lou_mempool_t *mempool,
   lou_slice_t slice,

@@ -13,40 +13,40 @@
 #include "value.h"
 #include <assert.h>
 
-static inline lou_sema_type_t *lou_sema_infer_func_type(lou_sema_t *sema, lou_ast_expr_func_t *func, lou_sema_expr_ctx_t ctx) {
+static inline lou_sema_type_t *lou_sema_infer_func_type(lou_sema_t *sema, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
   lou_sema_type_t **args = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_type_t*);
-  for (size_t i = 0; i < lou_vec_len(func->args); i++) {
-    if (!func->args[i].type) {
-      lou_sema_err(sema, func->args[i].name, "cannot infer function argument type");
+  for (size_t i = 0; i < lou_vec_len(expr->func.args); i++) {
+    if (!expr->func.args[i].type) {
+      lou_sema_err(sema, expr->func.args[i].name, "cannot infer function argument type");
       return NULL;
     }
-    *LOU_VEC_PUSH(&args) = lou_sema_expr_analyze_type(sema, func->args[i].type, lou_sema_expr_ctx_nested(ctx, NULL), true);
+    *LOU_VEC_PUSH(&args) = lou_sema_expr_analyze_type(sema, expr->func.args[i].type, lou_sema_expr_ctx_nested(ctx, NULL), true);
   }
-  lou_sema_type_t *returns = func->returns ?
-    NOT_NULL(lou_sema_expr_analyze_type(sema, func->returns, lou_sema_expr_ctx_nested(ctx, NULL), true)) : NULL;
+  lou_sema_type_t *returns = expr->func.returns ?
+    NOT_NULL(lou_sema_expr_analyze_type(sema, expr->func.returns, lou_sema_expr_ctx_nested(ctx, NULL), true)) : NULL;
 
   lou_sema_type_t *type = lou_sema_type_new_func(sema->mempool);
   lou_sema_type_init_func(type, args, returns);
   return type;
 }
 
-static inline bool lou_sema_check_func_inferring(lou_sema_t *sema, lou_slice_t slice, lou_ast_expr_func_t *func, lou_sema_expr_ctx_t ctx) {
-  if (lou_vec_len(ctx.expectation->func.args) != lou_vec_len(func->args)) {
-    lou_sema_err(sema, slice, "expected #l arguments but got #l", lou_vec_len(ctx.expectation->func.args), lou_vec_len(func->args));
+static inline bool lou_sema_check_func_inferring(lou_sema_t *sema, lou_slice_t slice, lou_ast_expr_t *expr, lou_sema_expr_ctx_t ctx) {
+  if (lou_vec_len(ctx.expectation->func.args) != lou_vec_len(expr->func.args)) {
+    lou_sema_err(sema, slice, "expected #l arguments but got #l", lou_vec_len(ctx.expectation->func.args), lou_vec_len(expr->func.args));
     return false;
   }
 
-  for (size_t i = 0; i < lou_vec_len(func->args); i++) {
-    if (!func->args[i].type) continue;
-    lou_sema_type_t *type = lou_sema_expr_analyze_type(sema, func->args[i].type, lou_sema_expr_ctx_nested(ctx, NULL), false);
+  for (size_t i = 0; i < lou_vec_len(expr->func.args); i++) {
+    if (!expr->func.args[i].type) continue;
+    lou_sema_type_t *type = lou_sema_expr_analyze_type(sema, expr->func.args[i].type, lou_sema_expr_ctx_nested(ctx, NULL), false);
 
     if (!type) continue;
     if (!lou_sema_type_eq(type, ctx.expectation->func.args[i])) {
-      lou_sema_err(sema, func->args[i].type->slice, "expected argument of type #T but got argument of type #T", ctx.expectation->func.args[i], type);
+      lou_sema_err(sema, expr->func.args[i].type->slice, "expected argument of type #T but got argument of type #T", ctx.expectation->func.args[i], type);
       return false;
     }
   }
-  lou_sema_type_t *returns = func->returns ? lou_sema_expr_analyze_type(sema, func->returns, lou_sema_expr_ctx_nested(ctx, NULL), false) : NULL;
+  lou_sema_type_t *returns = expr->func.returns ? lou_sema_expr_analyze_type(sema, expr->func.returns, lou_sema_expr_ctx_nested(ctx, NULL), false) : NULL;
   if (returns && !lou_sema_type_eq(ctx.expectation->func.returns, returns)) {
     lou_sema_err(sema, slice, "expected return value of type #T but got value returning #T", ctx.expectation->func.returns, returns);
     return false;
@@ -114,9 +114,9 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
     case LOU_AST_EXPR_FUNC: {
       lou_sema_type_t *type = ctx.expectation;
       if (!type || type->kind != LOU_SEMA_TYPE_FUNCTION) {
-        type = NOT_NULL(lou_sema_infer_func_type(sema, &expr->func, ctx));
+        type = NOT_NULL(lou_sema_infer_func_type(sema, expr, ctx));
       } else {
-        NOT_NULL(lou_sema_check_func_inferring(sema, expr->slice, &expr->func, ctx));
+        NOT_NULL(lou_sema_check_func_inferring(sema, expr->slice, expr, ctx));
       }
       lou_sema_const_t *constant = lou_sema_const_new_func(sema->mempool, type, lou_hir_func_add(sema->hir,
         lou_sema_type_as_hir(sema->mempool, type)));
@@ -125,6 +125,22 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
     case LOU_AST_EXPR_GET_IDENT:
     case LOU_AST_EXPR_ARRAY:
       NOT_IMPLEMENTED;
+    case LOU_AST_EXPR_ASSIGN: {
+      lou_sema_value_t *what_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.what, ctx));
+      lou_sema_value_t *to_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.to, ctx));
+      lou_sema_type_t *what = lou_sema_value_is_runtime(what_value);
+      lou_sema_type_t *to = lou_sema_value_is_runtime(to_value);
+      if (!lou_sema_type_eq(what, to)) {
+        lou_sema_err(sema, expr->assign.what->slice, "value of type #T was expected but got value of type #T", to, what);
+        return NULL;
+      }
+      lou_sema_value_local_t *local = lou_sema_value_is_local(to_value);
+      if (!local || local->mutability != LOU_SEMA_MUTABLE) {
+        lou_sema_err(sema, expr->assign.to->slice, "#V is not assignable", local);
+        return NULL;
+      }
+      return what_value;
+    }
   }
   UNREACHABLE();
 }
@@ -163,6 +179,12 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
     case LOU_AST_EXPR_GET_IDENT:
     case LOU_AST_EXPR_ARRAY:
       NOT_IMPLEMENTED;
+    case LOU_AST_EXPR_ASSIGN: {
+      lou_sema_value_t *what = NOT_NULL(lou_sema_expr_finalize(sema, expr->assign.what, false));
+      lou_sema_value_local_t *to = lou_sema_value_is_local(NOT_NULL(lou_sema_expr_finalize(sema, expr->assign.to, false)));
+      lou_sema_push_stmt(sema, lou_hir_stmt_new_store_var(sema->mempool, to->hir, lou_sema_value_as_hir(sema->mempool, what)));
+      return what;
+    }
   }
   UNREACHABLE();
 }
