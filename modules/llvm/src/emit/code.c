@@ -22,6 +22,20 @@ static inline bool lou_llvm_br(lou_llvm_module_t *llvm, LLVMBasicBlockRef or) {
 
 static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *stmt) {
   switch (stmt->kind) {
+    case LOU_HIR_STMT_LOOP: {
+      LLVMBasicBlockRef begin = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
+      LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
+
+      stmt->loop.codegen.begin = begin;
+      stmt->loop.codegen.end = end;
+
+      lou_llvm_emit_code_in(llvm, begin, stmt->cond.code);
+      bool has_end = lou_llvm_br(llvm, end);
+
+      LLVMPositionBuilderAtEnd(llvm->builder, end);
+      if (!has_end) LLVMBuildUnreachable(llvm->builder);
+      return;
+    }
     case LOU_HIR_STMT_COND: {
       LLVMValueRef condition = lou_llvm_emit_value(llvm, stmt->cond.condition);
       LLVMBasicBlockRef initial = LLVMGetInsertBlock(llvm->builder);
@@ -138,12 +152,13 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       }
       UNREACHABLE();
     }
+    case LOU_HIR_STMT_BREAK: LLVMBuildBr(llvm->builder, stmt->break_loop->loop.codegen.end); return;
+    case LOU_HIR_STMT_CONTINUE: LLVMBuildBr(llvm->builder, stmt->break_loop->loop.codegen.begin); return;
   }
   UNREACHABLE();
 }
 
-LLVMBasicBlockRef lou_llvm_emit_code(lou_llvm_module_t *llvm, lou_hir_code_t *code) {
-  LLVMBasicBlockRef block = LLVMAppendBasicBlock(llvm->function, "");
+inline void lou_llvm_emit_code_in(lou_llvm_module_t *llvm, LLVMBasicBlockRef block, lou_hir_code_t *code) {
   LLVMPositionBuilderAtEnd(llvm->builder, block);
   // TODO: fix stack leak in loops
   for (size_t i = 0; i < lou_vec_len(code->locals); i++) {
@@ -156,6 +171,11 @@ LLVMBasicBlockRef lou_llvm_emit_code(lou_llvm_module_t *llvm, lou_hir_code_t *co
   for (size_t i = 0; i < lou_vec_len(code->stmts); i++) {
     lou_llvm_emit_stmt(llvm, code->stmts[i]);
   }
+}
+
+LLVMBasicBlockRef lou_llvm_emit_code(lou_llvm_module_t *llvm, lou_hir_code_t *code) {
+  LLVMBasicBlockRef block = LLVMAppendBasicBlock(llvm->function, "");
+  lou_llvm_emit_code_in(llvm, block, code);
   return block;
 }
 

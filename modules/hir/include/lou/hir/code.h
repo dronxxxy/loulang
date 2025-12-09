@@ -75,6 +75,9 @@ typedef enum {
   LOU_HIR_STMT_STORE_VAR,
   LOU_HIR_STMT_BINOP,
   LOU_HIR_STMT_COND,
+  LOU_HIR_STMT_LOOP,
+  LOU_HIR_STMT_BREAK,
+  LOU_HIR_STMT_CONTINUE,
 } lou_hir_stmt_kind_t;
 
 typedef struct lou_hir_local_t {
@@ -90,7 +93,9 @@ typedef struct {
   lou_hir_code_t *fallback;
 } lou_hir_cond_code_t;
 
-typedef struct {
+typedef struct lou_hir_stmt_t lou_hir_stmt_t;
+
+typedef struct lou_hir_stmt_t {
   lou_hir_stmt_kind_t kind;
 
   union {
@@ -100,10 +105,22 @@ typedef struct {
     lou_hir_code_t *code;
     lou_hir_cond_code_t cond;
 
+    lou_hir_stmt_t *break_loop;
+    lou_hir_stmt_t *continue_loop;
+
     struct {
       lou_hir_local_t *output;
       lou_hir_value_t *value;
     } store_var;
+
+    struct {
+      lou_hir_code_t *code;
+
+      struct {
+        void *begin;
+        void *end;
+      } codegen;
+    } loop;
 
     struct {
       lou_hir_binop_kind_t kind;
@@ -139,6 +156,9 @@ lou_hir_stmt_t *lou_hir_stmt_new_ret(lou_mempool_t *mempool, lou_hir_value_t *va
 lou_hir_stmt_t *lou_hir_stmt_new_code(lou_mempool_t *mempool, lou_hir_code_t *code);
 lou_hir_stmt_t *lou_hir_stmt_new_store_var(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *value);
 lou_hir_stmt_t *lou_hir_stmt_new_cond(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_code_t *code, lou_hir_code_t *fallback);
+lou_hir_stmt_t *lou_hir_stmt_new_loop(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_code_t *code);
+lou_hir_stmt_t *lou_hir_stmt_new_break(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_stmt_t *break_loop);
+lou_hir_stmt_t *lou_hir_stmt_new_continue(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_stmt_t *continue_loop);
 lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm_int(
   lou_mempool_t *mempool,
   lou_hir_binop_arithm_int_t kind,
