@@ -40,7 +40,6 @@ LLVMValueRef lou_llvm_emit_value(lou_llvm_module_t *llvm, lou_hir_value_t *value
         value->local->codegen,
         value->local->mutability
       );
-    case LOU_HIR_VALUE_FUNCTION: return value->func->codegen;
   }
   UNREACHABLE();
 }
