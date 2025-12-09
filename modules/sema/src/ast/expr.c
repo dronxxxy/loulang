@@ -125,8 +125,9 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
     case LOU_AST_EXPR_SCOPE: return lou_sema_expr_outline(sema, expr->scope_inner, ctx);
     case LOU_AST_EXPR_GET_IDENT: case LOU_AST_EXPR_ARRAY: NOT_IMPLEMENTED;
     case LOU_AST_EXPR_ASSIGN: {
-      lou_sema_value_t *what_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.what, ctx));
       lou_sema_value_t *to_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.to, ctx));
+      lou_sema_value_t *what_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.what,
+        lou_sema_expr_ctx_nested(ctx, lou_sema_value_is_runtime(to_value))));
       lou_sema_type_t *what = lou_sema_value_is_runtime(what_value);
       lou_sema_type_t *to = lou_sema_value_is_runtime(to_value);
       if (!lou_sema_type_eq(what, to)) {

@@ -1,5 +1,5 @@
-const putChar = fun (var int: u8) {
-  @externFun("putchar", @procFun(u8))(int)
+const putChar = fun (char: u8) {
+  @externFun("putchar", @procFun(u8))(char)
 }
 
 @global("main", fun () -> i32 {
