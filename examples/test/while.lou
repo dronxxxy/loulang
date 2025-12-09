@@ -15,7 +15,6 @@ const putInt = fun (var int: i32) {
 }
 
 @global("main", fun () -> i32 {
-  # TODO: unary operators
   var i = -10
   
   while i <= 10 {
