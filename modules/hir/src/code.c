@@ -40,6 +40,38 @@ lou_hir_stmt_t *lou_hir_stmt_new_store_var(lou_mempool_t *mempool, lou_hir_local
   return stmt;
 }
 
+lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm_int(
+  lou_mempool_t *mempool,
+  lou_hir_binop_arithm_int_t kind,
+  lou_hir_local_t *output,
+  lou_hir_value_t *left, lou_hir_value_t *right
+) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_BINOP;
+  stmt->binop.kind = LOU_HIR_BINOP_ARITHM_INT;
+  stmt->binop.output = output;
+  stmt->binop.left = left;
+  stmt->binop.right = right;
+  stmt->binop.arithm_int = kind;
+  return stmt;
+}
+
+lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm(
+  lou_mempool_t *mempool,
+  lou_hir_binop_arithm_t kind,
+  lou_hir_local_t *output,
+  lou_hir_value_t *left, lou_hir_value_t *right
+) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_BINOP;
+  stmt->binop.kind = LOU_HIR_BINOP_ARITHM;
+  stmt->binop.output = output;
+  stmt->binop.left = left;
+  stmt->binop.right = right;
+  stmt->binop.arithm = kind;
+  return stmt;
+}
+
 lou_hir_code_t *lou_hir_code_new(lou_mempool_t *mempool)  {
   lou_hir_code_t *code = LOU_MEMPOOL_ALLOC(mempool, lou_hir_code_t);
   code->stmts = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_stmt_t*);
