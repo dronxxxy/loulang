@@ -76,7 +76,11 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       return;
     }
     case LOU_HIR_STMT_RETURN:
-      LLVMBuildRet(llvm->builder, lou_llvm_emit_value(llvm, stmt->ret.value));
+      if (stmt->ret.value) {
+        LLVMBuildRet(llvm->builder, lou_llvm_emit_value(llvm, stmt->ret.value));
+      } else {
+        LLVMBuildRetVoid(llvm->builder);
+      }
       return;
     case LOU_HIR_STMT_CODE:
       lou_llvm_emit_code(llvm, stmt->code);
