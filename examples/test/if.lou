@@ -1,10 +1,12 @@
 @global("main", fun () -> i32 {
   var a = 12
 
-  if a != 0 {
+  if a == 0 {
+    return 10
+  } else if a == 12 {
     return 0
   } else {
-    return a
+    return 12
   }
 })
 

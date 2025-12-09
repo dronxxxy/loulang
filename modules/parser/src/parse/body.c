@@ -21,3 +21,14 @@ lou_ast_body_t *lou_parser_parse_body(lou_parser_t *parser) {
   return lou_ast_body_new(parser->mempool, stmts);
 }
 
+lou_ast_body_t *lou_parser_parse_body_one_stmt(lou_parser_t *parser) {
+  if (lou_parser_peek(parser).kind == LOU_TOKEN_OPENING_FIGURE_BRACE) {
+    return lou_parser_parse_body(parser);
+  } else {
+    lou_ast_stmt_t **stmts = LOU_MEMPOOL_VEC_NEW(parser->mempool, lou_ast_stmt_t*);
+    lou_ast_stmt_t *stmt = lou_parser_parse_stmt(parser);
+    if (stmt) *LOU_VEC_PUSH(&stmts) = stmt;
+    return lou_ast_body_new(parser->mempool, stmts);
+  }
+}
+
