@@ -110,6 +110,15 @@ lou_hir_stmt_t *lou_hir_stmt_new_binop_order(
   return stmt;
 }
 
+lou_hir_stmt_t *lou_hir_stmt_new_cond(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_code_t *code, lou_hir_code_t *fallback) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_COND;
+  stmt->cond.condition = condition;
+  stmt->cond.code = code;
+  stmt->cond.fallback = fallback;
+  return stmt;
+}
+
 lou_hir_code_t *lou_hir_code_new(lou_mempool_t *mempool)  {
   lou_hir_code_t *code = LOU_MEMPOOL_ALLOC(mempool, lou_hir_code_t);
   code->stmts = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_stmt_t*);

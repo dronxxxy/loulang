@@ -13,6 +13,24 @@
 
 static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *stmt) {
   switch (stmt->kind) {
+    case LOU_HIR_STMT_COND: {
+      LLVMValueRef condition = lou_llvm_emit_value(llvm, stmt->cond.condition);
+      LLVMBasicBlockRef then = LLVMAppendBasicBlock(llvm->function, "");
+      LLVMBasicBlockRef or_else = LLVMAppendBasicBlock(llvm->function, "");
+      LLVMBasicBlockRef end = LLVMAppendBasicBlock(llvm->function, "");
+      LLVMBuildCondBr(llvm->builder, condition, then, or_else);
+
+      LLVMPositionBuilderAtEnd(llvm->builder, then);
+      lou_llvm_emit_code(llvm, stmt->cond.code);
+      if (LLVMIsATerminatorInst(LLVMGetLastInstruction(then))) LLVMBuildBr(llvm->builder, end);
+      
+      LLVMPositionBuilderAtEnd(llvm->builder, or_else);
+      lou_llvm_emit_code(llvm, stmt->cond.fallback);
+      if (LLVMIsATerminatorInst(LLVMGetLastInstruction(or_else))) LLVMBuildBr(llvm->builder, end);
+
+      LLVMPositionBuilderAtEnd(llvm->builder, end);
+      return;
+    }
     case LOU_HIR_STMT_ARG:
       lou_llvm_store(llvm, stmt->arg.output, LLVMGetParam(llvm->function, stmt->arg.num));
       return;
