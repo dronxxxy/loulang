@@ -16,6 +16,7 @@ static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
       lou_sema_expr_analyze(sema, stmt->expr, lou_sema_expr_ctx_new_runtime(NULL), true);
       return;
     case LOU_AST_STMT_RETURN: {
+      lou_sema_break_scope(sema, LOU_SEMA_SCOPE_BREAK_RETURN);
       lou_sema_type_t *returns = lou_sema_returns(sema);
       lou_sema_value_t *value = RET_ON_NULL(lou_sema_expr_analyze_runtime(sema, stmt->ret.value, lou_sema_expr_ctx_new_runtime(NULL), false));
       lou_sema_type_t *type = lou_sema_value_is_runtime(value);
@@ -43,6 +44,10 @@ static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
 lou_sema_scope_t *lou_sema_emit_body(lou_sema_t *sema, lou_ast_body_t *body) {
   lou_sema_push_scope(sema);
   for (size_t i = 0; i < lou_vec_len(body->stmts); i++) {
+    if (lou_sema_current_scope(sema)->break_kind) {
+      lou_sema_err(sema, lou_slice_union(body->stmts[i]->slice, (*LOU_VEC_LAST(body->stmts))->slice), "unreachable code");
+      break;
+    }
     lou_sema_emit_stmt(sema, body->stmts[i]);
     // TODO: control flow checks
   }

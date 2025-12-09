@@ -24,6 +24,10 @@ void lou_sema_err(lou_sema_t *sema, lou_slice_t slice, const char *fmt, ...) {
   sema->failed = true;
 }
 
+inline lou_sema_scope_t *lou_sema_current_scope(lou_sema_t *sema) {
+  return *LOU_VEC_LAST((*LOU_VEC_LAST(sema->scope_stacks))->scopes);
+}
+
 lou_sema_decl_t *lou_sema_add_decl(lou_sema_t *sema, lou_sema_visibility_t visibility, lou_slice_t name, lou_ast_node_t *node) {
   lou_sema_decl_t *decl = LOU_MEMPOOL_ALLOC(sema->mempool, lou_sema_decl_t);
   decl->name = name;
@@ -39,7 +43,7 @@ lou_sema_decl_t *lou_sema_add_decl(lou_sema_t *sema, lou_sema_visibility_t visib
     if (visibility == LOU_SEMA_PUBLIC) {
       lou_sema_err(sema, name, "trying to specify declaration as public in local scope");
     }
-    *LOU_VEC_PUSH(&(*LOU_VEC_LAST((*LOU_VEC_LAST(sema->scope_stacks))->scopes))->decls) = decl;
+    *LOU_VEC_PUSH(&lou_sema_current_scope(sema)->decls) = decl;
   }
 
   return decl;
@@ -82,17 +86,17 @@ lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema) {
 }
 
 lou_hir_local_t *lou_sema_add_local_final(lou_sema_t *sema, lou_sema_type_t *type) {
-  return lou_hir_code_local_add(sema->mempool, (*LOU_VEC_LAST((*LOU_VEC_LAST(sema->scope_stacks))->scopes))->code, LOU_HIR_IMMUTABLE,
+  return lou_hir_code_local_add(sema->mempool, lou_sema_current_scope(sema)->code, LOU_HIR_IMMUTABLE,
     lou_sema_type_as_hir(sema->mempool, type));
 }
 
 lou_hir_local_t *lou_sema_add_local_var(lou_sema_t *sema, lou_sema_type_t *type) {
-  return lou_hir_code_local_add(sema->mempool, (*LOU_VEC_LAST((*LOU_VEC_LAST(sema->scope_stacks))->scopes))->code, LOU_HIR_MUTABLE,
+  return lou_hir_code_local_add(sema->mempool, lou_sema_current_scope(sema)->code, LOU_HIR_MUTABLE,
     lou_sema_type_as_hir(sema->mempool, type));
 }
 
 void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt) {
-  lou_hir_code_append_stmt((*LOU_VEC_LAST((*LOU_VEC_LAST(sema->scope_stacks))->scopes))->code, stmt);
+  lou_hir_code_append_stmt(lou_sema_current_scope(sema)->code, stmt);
 }
 
 lou_sema_type_t *lou_sema_returns(lou_sema_t *sema) {
@@ -198,6 +202,7 @@ void lou_sema_push_scope(lou_sema_t *sema) {
   lou_sema_scope_t *scope = LOU_MEMPOOL_ALLOC(sema->mempool, lou_sema_scope_t);
   scope->decls = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_decl_t*);
   scope->code = lou_hir_code_new(sema->mempool);
+  scope->break_kind = LOU_SEMA_SCOPE_BREAK_NONE;
   *LOU_VEC_PUSH(&(*LOU_VEC_LAST(sema->scope_stacks))->scopes) = scope;
 }
 
@@ -206,4 +211,8 @@ lou_sema_scope_t *lou_sema_pop_scope(lou_sema_t *sema) {
   lou_sema_scope_t *scope = *LOU_VEC_LAST(stack->scopes);
   LOU_VEC_POP(&stack->scopes);
   return scope;
+}
+
+void lou_sema_break_scope(lou_sema_t *sema, lou_sema_scope_break_t break_kind) {
+  lou_sema_current_scope(sema)->break_kind = break_kind;
 }

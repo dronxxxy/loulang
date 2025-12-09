@@ -34,9 +34,15 @@ typedef struct {
   lou_sema_visibility_t visibility;
 } lou_sema_global_decl_t;
 
+typedef enum {
+  LOU_SEMA_SCOPE_BREAK_NONE = 0,
+  LOU_SEMA_SCOPE_BREAK_RETURN,
+} lou_sema_scope_break_t;
+
 typedef struct {
   lou_sema_decl_t **decls;
   lou_hir_code_t *code;
+  lou_sema_scope_break_t break_kind;
 } lou_sema_scope_t;
 
 typedef struct lou_sema_scope_stack_t {
@@ -87,8 +93,9 @@ void lou_sema_pop_analysing_node(lou_sema_t *sema);
 void lou_sema_push_scope_stack(lou_sema_t *sema, lou_sema_type_t *returns);
 void lou_sema_pop_scope_stack(lou_sema_t *sema);
 lou_sema_scope_stack_t *lou_sema_current_scope_stack(lou_sema_t *sema);
-
 void lou_sema_push_scope(lou_sema_t *sema);
 lou_sema_scope_t *lou_sema_pop_scope(lou_sema_t *sema);
+void lou_sema_break_scope(lou_sema_t *sema, lou_sema_scope_break_t break_kind);
+lou_sema_scope_t *lou_sema_current_scope(lou_sema_t *sema);
 
 lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema);
