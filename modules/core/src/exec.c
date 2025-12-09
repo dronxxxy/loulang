@@ -23,6 +23,7 @@ bool lou_exec(const char *binary, char *const *args, size_t length, int *status)
   }
 
   waitpid(pid, status, 0);
+  *status = WEXITSTATUS(*status);
   lou_vec_free(built_args);
   return true;
 }
