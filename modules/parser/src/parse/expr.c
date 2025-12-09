@@ -16,10 +16,12 @@ static inline lou_ast_expr_t *lou_parser_parse_func_expr(lou_parser_t *parser, l
 
   if (!lou_parser_take_if(parser, LOU_TOKEN_CLOSING_CIRCLE_BRACE)) {
     do {
+      bool is_var = lou_parser_take_if(parser, LOU_TOKEN_VAR);
       lou_slice_t name = LOU_PARSER_EXPECT(parser, LOU_TOKEN_IDENT).slice;
       lou_ast_expr_t *type = lou_parser_take_if(parser, LOU_TOKEN_COLON) ? lou_parser_parse_expr(parser) : NULL;
 
       *LOU_VEC_PUSH(&args) = (lou_ast_expr_func_arg_t) {
+        .is_var = is_var,
         .type = type,
         .name = name,
       };

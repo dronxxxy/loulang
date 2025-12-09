@@ -282,16 +282,28 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       lou_sema_value_t *value = expr->sema_value;
       lou_sema_const_t *constant = lou_sema_value_is_const(value);
       lou_hir_func_t *func = constant->func;
+
       lou_sema_push_scope_stack(sema, constant->type->func.returns);
+      lou_sema_push_scope(sema);
+      for (size_t i = 0; i < lou_vec_len(expr->func.args); i++) {
+        lou_ast_expr_func_arg_t *arg = &expr->func.args[i];
+        lou_sema_type_t *type = constant->type->func.args[i];
+        lou_hir_local_t *local = arg->is_var ? lou_sema_add_local_var(sema, type) : lou_sema_add_local_final(sema, type);
+        lou_sema_mutability_t mutability = arg->is_var ? LOU_SEMA_MUTABLE : LOU_SEMA_IMMUTABLE;
+        lou_sema_add_full_decl(sema, arg->name, lou_sema_value_new_local(sema->mempool, mutability, type, local, lou_sema_current_scope_stack(sema)));
+        lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_arg(sema->mempool, local, i));
+      }
       lou_sema_scope_t *scope = lou_sema_emit_body(sema, expr->func.body);
+      lou_sema_break_scope(sema, scope->break_kind);
+      lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_code(sema->mempool, scope->code));
+      lou_sema_scope_t *full_scope = lou_sema_pop_scope(sema);
       lou_sema_pop_scope_stack(sema);
+
       if (scope->break_kind != LOU_SEMA_SCOPE_BREAK_RETURN) {
-        if (constant->type->func.returns) {
-          lou_sema_err(sema, expr->slice, "function returns a value so there is should be return statement");
-        }
+        if (constant->type->func.returns) lou_sema_err(sema, expr->slice, "function returns a value so there is should be return statement");
         lou_hir_code_append_stmt(scope->code, lou_hir_stmt_new_ret(sema->mempool, NULL));
       }
-      lou_hir_func_init(func, scope->code);
+      lou_hir_func_init(func, full_scope->code);
       return value;
     }
     case LOU_AST_EXPR_GET_IDENT:

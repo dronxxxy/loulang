@@ -9,6 +9,7 @@
 typedef struct lou_ast_expr_t lou_ast_expr_t;
 
 typedef struct {
+  bool is_var;
   lou_slice_t name;
   lou_ast_expr_t *type;
 } lou_ast_expr_func_arg_t;

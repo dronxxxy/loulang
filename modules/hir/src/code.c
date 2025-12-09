@@ -2,10 +2,11 @@
 #include "lou/core/mempool.h"
 #include "lou/core/vec.h"
 
-lou_hir_stmt_t *lou_hir_stmt_new_arg(lou_mempool_t *mempool, size_t num, lou_hir_stmt_arg_t arg)  {
+lou_hir_stmt_t *lou_hir_stmt_new_arg(lou_mempool_t *mempool, lou_hir_local_t *output, size_t num)  {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_ARG;
-  stmt->arg = arg;
+  stmt->arg.num = num;
+  stmt->arg.output = output;
   return stmt;
 }
 

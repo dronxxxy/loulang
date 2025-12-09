@@ -11,7 +11,6 @@ typedef struct lou_hir_local_t lou_hir_local_t;
 typedef enum {
   LOU_HIR_VALUE_CONST,
   LOU_HIR_VALUE_LOCAL,
-  LOU_HIR_VALUE_ARGUMENT,
 } lou_hir_value_kind_t;
 
 typedef struct lou_hir_value_t {
@@ -20,7 +19,6 @@ typedef struct lou_hir_value_t {
   union {
     lou_hir_const_t *constant; 
     lou_hir_local_t *local; 
-    size_t arg_index;
   };
 } lou_hir_value_t;
 

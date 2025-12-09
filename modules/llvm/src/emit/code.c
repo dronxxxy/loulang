@@ -83,7 +83,7 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       }
       return;
     case LOU_HIR_STMT_CODE:
-      lou_llvm_emit_code(llvm, stmt->code);
+      lou_llvm_emit_code_in(llvm, LLVMGetInsertBlock(llvm->builder), stmt->code);
       return;
     case LOU_HIR_STMT_STORE_VAR:
       assert(stmt->store_var.output->mutability == LOU_HIR_MUTABLE);

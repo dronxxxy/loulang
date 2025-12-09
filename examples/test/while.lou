@@ -1,4 +1,6 @@
-final putChar = @externFun("putchar", @procFun(u8))
+const putChar = fun (var int: u8) {
+  @externFun("putchar", @procFun(u8))(int)
+}
 
 @global("main", fun () -> i32 {
   var char = 'a'

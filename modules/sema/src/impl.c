@@ -80,6 +80,18 @@ void lou_sema_add_internal_decl(lou_sema_t *sema, const char *name, lou_sema_val
   };
 }
 
+void lou_sema_add_full_decl(lou_sema_t *sema, lou_slice_t name, lou_sema_value_t *value) {
+  assert(!lou_sema_is_global_scope(sema));
+
+  lou_sema_decl_t *decl = LOU_MEMPOOL_ALLOC(sema->mempool, lou_sema_decl_t);
+  decl->name = name;
+  decl->stage = LOU_SEMA_DECL_STAGE_COMPLETE;
+  decl->node = NULL;
+  decl->value = value;
+
+  *LOU_VEC_PUSH(&lou_sema_current_scope(sema)->decls) = decl;
+}
+
 lou_sema_type_t *lou_sema_type_default_int(lou_sema_t *sema) {
   // TODO: select integer size depending on target architecture
   return lou_sema_type_new_int(sema->mempool, LOU_SEMA_INT_32, true);

@@ -150,7 +150,7 @@ typedef struct lou_hir_stmt_t {
   };
 } lou_hir_stmt_t;
 
-lou_hir_stmt_t *lou_hir_stmt_new_arg(lou_mempool_t *mempool, size_t num, lou_hir_stmt_arg_t arg);
+lou_hir_stmt_t *lou_hir_stmt_new_arg(lou_mempool_t *mempool, lou_hir_local_t *output, size_t num);
 lou_hir_stmt_t *lou_hir_stmt_new_call(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *callable, lou_hir_value_t **args);
 lou_hir_stmt_t *lou_hir_stmt_new_ret(lou_mempool_t *mempool, lou_hir_value_t *value);
 lou_hir_stmt_t *lou_hir_stmt_new_code(lou_mempool_t *mempool, lou_hir_code_t *code);
@@ -159,6 +159,7 @@ lou_hir_stmt_t *lou_hir_stmt_new_cond(lou_mempool_t *mempool, lou_hir_value_t *c
 lou_hir_stmt_t *lou_hir_stmt_new_loop(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_code_t *code);
 lou_hir_stmt_t *lou_hir_stmt_new_break(lou_mempool_t *mempool, lou_hir_stmt_t *break_loop);
 lou_hir_stmt_t *lou_hir_stmt_new_continue(lou_mempool_t *mempool, lou_hir_stmt_t *continue_loop);
+lou_hir_stmt_t *lou_hir_stmt_new_get_argument(lou_mempool_t *mempool, lou_hir_local_t *output, size_t idx);
 lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm_int(
   lou_mempool_t *mempool,
   lou_hir_binop_arithm_int_t kind,
