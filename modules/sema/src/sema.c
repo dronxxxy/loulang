@@ -57,9 +57,9 @@ void lou_sema_analyze(lou_sema_t *sema) {
     //       - declaration search begins at [currentNodeId, 0]
     //       - if not found, search in [nodes.length, currentNodeId + 1]
     lou_sema_node_record_t *record = &sema->nodes[i];
-    if (record->decl->stage == LOU_SEMA_DECL_STAGE_KILLED) continue;
+    if (record->decl && record->decl->stage == LOU_SEMA_DECL_STAGE_KILLED) continue;
     lou_sema_outline_node(sema, record->node, record->decl);
-    if (record->decl->stage == LOU_SEMA_DECL_STAGE_KILLED) continue;
+    if (record->decl && record->decl->stage == LOU_SEMA_DECL_STAGE_KILLED) continue;
     lou_sema_finalize_node(sema, record->node, record->decl);
   }
 }

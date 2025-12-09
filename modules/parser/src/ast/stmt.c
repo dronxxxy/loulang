@@ -1,13 +1,5 @@
 #include "lou/parser/ast/stmt.h"
 
-lou_ast_stmt_t *lou_ast_stmt_new_expr(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_expr_t *expr) {
-  lou_ast_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_ast_stmt_t);
-  stmt->kind = LOU_AST_STMT_EXPR;
-  stmt->slice = slice;
-  stmt->expr = expr;
-  return stmt;
-}
-
 lou_ast_stmt_t *lou_ast_stmt_new_if(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_stmt_if_t if_else) {
   lou_ast_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_ast_stmt_t);
   stmt->kind = LOU_AST_STMT_IF;

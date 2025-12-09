@@ -3,7 +3,7 @@ meta testType = @retFun(testType)
 final putCStringUnused = @externFun("puts", testType)
 final putCString = @externFun("puts", @procFun(@ptr(u8)))
 
-const main = @global("main", fun () -> i32 {
+@global("main", fun () -> i32 {
   const putCString1 = putCString
   return fun () -> i32 {
     const putCString4 = putCString

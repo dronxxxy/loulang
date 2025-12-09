@@ -10,6 +10,7 @@
 lou_sema_decl_t *lou_sema_declare_node(lou_sema_t *sema, lou_ast_node_t *node) {
   switch (node->kind) {
     case LOU_AST_NODE_DECL: return lou_sema_add_decl(sema, node->decl.is_public ? LOU_SEMA_PUBLIC : LOU_SEMA_PRIVATE, node->decl.name, node);
+    case LOU_AST_NODE_EXPR: return NULL;
   }
   UNREACHABLE();
 }
@@ -126,6 +127,7 @@ static inline void lou_sema_outline_node_internal(lou_sema_t *sema, lou_ast_node
       }
       return;
     }
+    case LOU_AST_NODE_EXPR: lou_sema_expr_outline(sema, node->expr, lou_sema_expr_ctx_new_runtime(NULL)); return;
   }
   UNREACHABLE();
 }
@@ -157,7 +159,8 @@ static inline void lou_sema_finalize_var_decl(lou_sema_t *sema, lou_ast_node_t *
       lou_sema_kill_decl(decl);
       return;
     }
-    lou_sema_push_stmt(sema, lou_hir_stmt_new_store_var(sema->mempool, local, lou_sema_value_as_hir(sema->mempool, value)));
+    lou_sema_push_stmt(sema, node->decl.initializer->slice,
+      lou_hir_stmt_new_store_var(sema->mempool, local, lou_sema_value_as_hir(sema->mempool, value)));
     lou_sema_finalize_decl(decl);
   }
 }
@@ -181,6 +184,7 @@ static inline void lou_sema_finalize_node_internal(lou_sema_t *sema, lou_ast_nod
       }
       UNREACHABLE();
     }
+    case LOU_AST_NODE_EXPR: lou_sema_expr_finalize(sema, node->expr, true); return;
   }
   UNREACHABLE();
 }
@@ -189,4 +193,12 @@ void lou_sema_finalize_node(lou_sema_t *sema, lou_ast_node_t *node, lou_sema_dec
   lou_sema_push_analysing_node(sema, node);
   lou_sema_finalize_node_internal(sema, node, decl);
   lou_sema_pop_analysing_node(sema);
+}
+
+void lou_sema_analyze_node(lou_sema_t *sema, lou_ast_node_t *node) {
+  lou_sema_decl_t *decl = lou_sema_declare_node(sema, node);
+  if (decl && decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return;
+  lou_sema_outline_node(sema, node, decl);
+  if (decl && decl->stage == LOU_SEMA_DECL_STAGE_KILLED) return;
+  lou_sema_finalize_node(sema, node, decl);
 }

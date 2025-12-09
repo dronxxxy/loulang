@@ -95,7 +95,7 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
             lou_sema_expr_ctx_new_runtime(runtime->func.args[i]), false)));
         }
 
-        lou_sema_push_stmt(sema, lou_hir_stmt_new_call(sema->mempool, output, lou_sema_value_as_hir(sema->mempool, value), args));
+        lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_call(sema->mempool, output, lou_sema_value_as_hir(sema->mempool, value), args));
         // TODO: prevent void assignment
         return runtime->func.returns ?
           lou_sema_value_new_local(sema->mempool, LOU_SEMA_IMMUTABLE, runtime->func.returns, output, lou_sema_current_scope_stack(sema)) :
@@ -172,11 +172,7 @@ static inline lou_sema_value_t *lou_sema_analyze_binop_arithm_int(
     lou_sema_err(sema, expr->slice, "this binop can be applied to integers only");
     return NULL;
   }
-  if (lou_sema_is_global_scope(sema)) {
-    lou_sema_err(sema, expr->slice, "non-constant expression in global scope");
-    return NULL;
-  }
-  lou_sema_push_stmt(sema, lou_hir_stmt_new_binop_arithm_int(sema->mempool, kind, output, lou_sema_value_as_hir(sema->mempool, left),
+  lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_binop_arithm_int(sema->mempool, kind, output, lou_sema_value_as_hir(sema->mempool, left),
     lou_sema_value_as_hir(sema->mempool, right)));
   return expr->sema_value;
 }
@@ -194,11 +190,7 @@ static inline lou_sema_value_t *lou_sema_analyze_binop_arithm(
     lou_sema_err(sema, expr->slice, "this binop can be applied to integers only");
     return NULL;
   }
-  if (lou_sema_is_global_scope(sema)) {
-    lou_sema_err(sema, expr->slice, "non-constant expression in global scope");
-    return NULL;
-  }
-  lou_sema_push_stmt(sema, lou_hir_stmt_new_binop_arithm(sema->mempool, kind, output, lou_sema_value_as_hir(sema->mempool, left),
+  lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_binop_arithm(sema->mempool, kind, output, lou_sema_value_as_hir(sema->mempool, left),
     lou_sema_value_as_hir(sema->mempool, right)));
   return expr->sema_value;
 }
@@ -236,7 +228,7 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
     case LOU_AST_EXPR_ASSIGN: {
       lou_sema_value_t *what = NOT_NULL(lou_sema_expr_finalize(sema, expr->assign.what, false));
       lou_sema_value_local_t *to = lou_sema_value_is_local(NOT_NULL(lou_sema_expr_finalize(sema, expr->assign.to, false)));
-      lou_sema_push_stmt(sema, lou_hir_stmt_new_store_var(sema->mempool, to->hir, lou_sema_value_as_hir(sema->mempool, what)));
+      lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_store_var(sema->mempool, to->hir, lou_sema_value_as_hir(sema->mempool, what)));
       return what;
     }
     case LOU_AST_EXPR_BINOP: {

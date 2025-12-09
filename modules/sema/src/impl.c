@@ -95,7 +95,11 @@ lou_hir_local_t *lou_sema_add_local_var(lou_sema_t *sema, lou_sema_type_t *type)
     lou_sema_type_as_hir(sema->mempool, type));
 }
 
-void lou_sema_push_stmt(lou_sema_t *sema, lou_hir_stmt_t *stmt) {
+void lou_sema_push_stmt(lou_sema_t *sema, lou_slice_t slice, lou_hir_stmt_t *stmt) {
+  if (lou_sema_is_global_scope(sema)) {
+    lou_sema_err(sema, slice, "statements or expressions are not allowed in global scope");
+    return;
+  }
   lou_hir_code_append_stmt(lou_sema_current_scope(sema)->code, stmt);
 }
 
