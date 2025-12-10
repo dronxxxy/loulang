@@ -23,7 +23,7 @@ void lou_llvm_store(lou_llvm_module_t *llvm, lou_hir_local_t *local, LLVMValueRe
   UNREACHABLE();
 }
 
-LLVMValueRef llvm_extract_from_mutablity(lou_llvm_module_t *llvm, lou_hir_type_t *type, LLVMValueRef value, lou_hir_mutability_t mutability) {
+static inline LLVMValueRef llvm_extract_from_mutablity(lou_llvm_module_t *llvm, lou_hir_type_t *type, LLVMValueRef value, lou_hir_mutability_t mutability) {
   switch (mutability) {
     case LOU_HIR_MUTABLE: return LLVMBuildLoad2(llvm->builder, lou_llvm_emit_type(llvm, type), value, "");
     case LOU_HIR_IMMUTABLE: return value;

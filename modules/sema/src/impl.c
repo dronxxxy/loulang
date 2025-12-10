@@ -102,6 +102,10 @@ lou_hir_local_t *lou_sema_add_local_final(lou_sema_t *sema, lou_sema_type_t *typ
     lou_sema_type_as_hir(sema->mempool, type));
 }
 
+lou_hir_local_t *lou_sema_add_local_pseudo_var(lou_sema_t *sema, lou_sema_type_t *type) {
+  return lou_hir_code_local_add_pseudo_var(sema->mempool, lou_sema_current_scope(sema)->code, lou_sema_type_as_hir(sema->mempool, type));
+}
+
 lou_hir_local_t *lou_sema_add_local_var(lou_sema_t *sema, lou_sema_type_t *type) {
   return lou_hir_code_local_add(sema->mempool, lou_sema_current_scope(sema)->code, LOU_HIR_MUTABLE,
     lou_sema_type_as_hir(sema->mempool, type));

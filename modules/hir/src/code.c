@@ -158,6 +158,32 @@ lou_hir_stmt_t *lou_hir_stmt_new_continue(lou_mempool_t *mempool, lou_hir_stmt_t
   return stmt;
 }
 
+lou_hir_stmt_t *lou_hir_stmt_new_set_pseudo_var(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *value) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_SET_PSEUDO_VAR;
+  stmt->set_pseudo_var.output = output;
+  stmt->set_pseudo_var.value = value;
+  return stmt;
+}
+
+lou_hir_stmt_t *lou_hir_stmt_new_idx_array(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *array, lou_hir_value_t *value) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_IDX_ARRAY;
+  stmt->idx_array.output = output;
+  stmt->idx_array.array = array;
+  stmt->idx_array.value = value;
+  return stmt;
+}
+
+lou_hir_stmt_t *lou_hir_stmt_new_idx_var_array(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_local_t *array, lou_hir_value_t *value) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_IDX_VAR_ARRAY;
+  stmt->idx_var_array.output = output;
+  stmt->idx_var_array.array = array;
+  stmt->idx_var_array.value = value;
+  return stmt;
+}
+
 lou_hir_code_t *lou_hir_code_new(lou_mempool_t *mempool)  {
   lou_hir_code_t *code = LOU_MEMPOOL_ALLOC(mempool, lou_hir_code_t);
   code->stmts = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_stmt_t*);
@@ -169,10 +195,30 @@ void lou_hir_code_append_stmt(lou_hir_code_t *code, lou_hir_stmt_t *stmt) {
   *LOU_VEC_PUSH(&code->stmts) = stmt;
 }
 
-lou_hir_local_t *lou_hir_code_local_add(lou_mempool_t *mempool, lou_hir_code_t *code, lou_hir_mutability_t mutability, lou_hir_type_t *type) {
+static inline lou_hir_local_t *lou_hir_code_local_add_internal(
+  lou_mempool_t *mempool,
+  lou_hir_code_t *code,
+  lou_hir_mutability_t mutability,
+  bool pseudo,
+  lou_hir_type_t *type
+) {
   lou_hir_local_t *local = LOU_MEMPOOL_ALLOC(mempool, lou_hir_local_t); 
   local->type = type;
+  local->pseudo = pseudo;
   local->mutability = mutability;
   *LOU_VEC_PUSH(&code->locals) = local;
   return local;
+}
+
+lou_hir_local_t *lou_hir_code_local_add_pseudo_var(lou_mempool_t *mempool, lou_hir_code_t *code, lou_hir_type_t *type) {
+  return lou_hir_code_local_add_internal(mempool, code, LOU_HIR_MUTABLE, true, type);
+}
+
+lou_hir_local_t *lou_hir_code_local_add(
+  lou_mempool_t *mempool,
+  lou_hir_code_t *code,
+  lou_hir_mutability_t mutability,
+  lou_hir_type_t *type
+) {
+  return lou_hir_code_local_add_internal(mempool, code, mutability, false, type);
 }

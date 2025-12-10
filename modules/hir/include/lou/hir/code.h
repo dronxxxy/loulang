@@ -80,11 +80,15 @@ typedef enum {
   LOU_HIR_STMT_CONTINUE,
   LOU_HIR_STMT_CAST_INT,
   LOU_HIR_STMT_NEGATIVE_INT,
+  LOU_HIR_STMT_SET_PSEUDO_VAR,
+  LOU_HIR_STMT_IDX_ARRAY,
+  LOU_HIR_STMT_IDX_VAR_ARRAY,
 } lou_hir_stmt_kind_t;
 
 typedef struct lou_hir_local_t {
   lou_hir_mutability_t mutability;
   lou_hir_type_t *type;
+  bool pseudo;
 
   void *codegen;
 } lou_hir_local_t;
@@ -124,7 +128,24 @@ typedef struct lou_hir_stmt_t {
     struct {
       lou_hir_local_t *output;
       lou_hir_value_t *value;
+    } set_pseudo_var;
+
+    struct {
+      lou_hir_local_t *output;
+      lou_hir_value_t *value;
     } store_var;
+
+    struct {
+      lou_hir_local_t *output;
+      lou_hir_value_t *array;
+      lou_hir_value_t *value;
+    } idx_array;
+
+    struct {
+      lou_hir_local_t *output;
+      lou_hir_local_t *array;
+      lou_hir_value_t *value;
+    } idx_var_array;
 
     struct {
       lou_hir_code_t *code;
@@ -174,7 +195,9 @@ lou_hir_stmt_t *lou_hir_stmt_new_cond(lou_mempool_t *mempool, lou_hir_value_t *c
 lou_hir_stmt_t *lou_hir_stmt_new_loop(lou_mempool_t *mempool, lou_hir_value_t *condition, lou_hir_code_t *code);
 lou_hir_stmt_t *lou_hir_stmt_new_break(lou_mempool_t *mempool, lou_hir_stmt_t *break_loop);
 lou_hir_stmt_t *lou_hir_stmt_new_continue(lou_mempool_t *mempool, lou_hir_stmt_t *continue_loop);
-lou_hir_stmt_t *lou_hir_stmt_new_get_argument(lou_mempool_t *mempool, lou_hir_local_t *output, size_t idx);
+lou_hir_stmt_t *lou_hir_stmt_new_set_pseudo_var(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *value);
+lou_hir_stmt_t *lou_hir_stmt_new_idx_array(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *array, lou_hir_value_t *value);
+lou_hir_stmt_t *lou_hir_stmt_new_idx_var_array(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_local_t *array, lou_hir_value_t *value);
 lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm_int(
   lou_mempool_t *mempool,
   lou_hir_binop_arithm_int_t kind,
@@ -211,3 +234,4 @@ typedef struct lou_hir_code_t {
 lou_hir_code_t *lou_hir_code_new(lou_mempool_t *mempool);
 void lou_hir_code_append_stmt(lou_hir_code_t *code, lou_hir_stmt_t *stmt);
 lou_hir_local_t *lou_hir_code_local_add(lou_mempool_t *mempool, lou_hir_code_t *code, lou_hir_mutability_t mutability, lou_hir_type_t *type);
+lou_hir_local_t *lou_hir_code_local_add_pseudo_var(lou_mempool_t *mempool, lou_hir_code_t *code, lou_hir_type_t *type);

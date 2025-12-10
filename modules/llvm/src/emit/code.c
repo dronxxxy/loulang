@@ -189,6 +189,30 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
     case LOU_HIR_STMT_NEGATIVE_INT:
       lou_llvm_store(llvm, stmt->negative_int.output, LLVMBuildNeg(llvm->builder, lou_llvm_emit_value(llvm, stmt->negative_int.value), ""));
       return;
+    case LOU_HIR_STMT_SET_PSEUDO_VAR:
+      assert(stmt->set_pseudo_var.output->pseudo);
+      assert(lou_hir_value_typeof(stmt->set_pseudo_var.value)->kind == LOU_HIR_TYPE_POINTER);
+      stmt->set_pseudo_var.output->codegen = lou_llvm_emit_value(llvm, stmt->set_pseudo_var.value);
+      return;
+    case LOU_HIR_STMT_IDX_ARRAY:
+      lou_llvm_store(llvm, stmt->idx_array.output, LLVMBuildExtractElement(
+        llvm->builder,
+        lou_llvm_emit_value(llvm, stmt->idx_array.value),
+        lou_llvm_emit_value(llvm, stmt->idx_array.array),
+        ""
+      ));
+      return;
+    case LOU_HIR_STMT_IDX_VAR_ARRAY: {
+      LLVMValueRef idx = lou_llvm_emit_value(llvm, stmt->idx_var_array.value);
+      assert(stmt->idx_var_array.array->mutability == LOU_HIR_MUTABLE);
+      LLVMValueRef value = stmt->idx_var_array.array->codegen;
+      LLVMTypeRef array_type = lou_llvm_emit_type(llvm, stmt->idx_var_array.array->type);
+      assert(stmt->idx_var_array.output->pseudo);
+
+      LLVMValueRef indexes[] = { LLVMConstInt(LLVMInt32TypeInContext(llvm->context), 0, false), idx };
+      stmt->idx_var_array.output->codegen = LLVMBuildGEP2(llvm->builder, array_type, value, indexes, sizeof(indexes) / sizeof(indexes[0]), "");
+      return;
+    }
   }
   UNREACHABLE();
 }
@@ -198,7 +222,9 @@ inline void lou_llvm_emit_code_in(lou_llvm_module_t *llvm, LLVMBasicBlockRef blo
   for (size_t i = 0; i < lou_vec_len(code->locals); i++) {
     lou_hir_local_t *local = code->locals[i];
     switch (local->mutability) {
-      case LOU_HIR_MUTABLE: local->codegen = LLVMBuildAlloca(llvm->builder, lou_llvm_emit_type(llvm, local->type), ""); break;
+      case LOU_HIR_MUTABLE:
+        if (!local->pseudo) local->codegen = LLVMBuildAlloca(llvm->builder, lou_llvm_emit_type(llvm, local->type), "");
+        break;
       case LOU_HIR_IMMUTABLE: break;
     }
   }

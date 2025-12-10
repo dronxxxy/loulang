@@ -284,10 +284,11 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       return lou_sema_resolve(sema, expr->ident);
     }
     case LOU_AST_EXPR_CALL: {
-      lou_sema_value_t *callable = expr->call.inner->sema_value;
+      // TODO: `outline` and `finalize` works with its context without sema_value in the AST
+      lou_sema_value_t *callable = NOT_NULL(expr->call.inner->sema_value);
 
       lou_sema_plugin_t *plugin = lou_sema_value_is_plugin(callable);
-      if (plugin) {
+      if (plugin && plugin->finalize) {
         NOT_NULL(plugin->finalize(lou_sema_plugin_ctx_new(sema, expr->call.inner->slice, expr->call.args), expr->sema_value));
       }
 
