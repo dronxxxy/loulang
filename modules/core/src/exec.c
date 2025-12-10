@@ -3,6 +3,7 @@
 #include "lou/core/vec.h"
 #include "lou/core/assertions.h"
 #include <assert.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -17,13 +18,25 @@ bool lou_exec(const char *binary, char *const *args, size_t length, int *status)
   if (pid == 0) {
     if (execv(binary, built_args) < 0) {
       lou_log_fmt(LOU_LOG_ERROR, "failed to run child process: #E");
-      return false;
+      exit(1);
     }
     UNREACHABLE();
   }
 
   waitpid(pid, status, 0);
-  *status = WEXITSTATUS(*status);
   lou_vec_free(built_args);
+
+  if (WIFSIGNALED(*status)) {
+    int term_sig = WTERMSIG(*status);
+    if (term_sig == SIGSEGV) {
+      lou_log_fmt(LOU_LOG_ERROR, "the process was terminated with a segmentation fault");
+    } else if (term_sig == SIGKILL) {
+      lou_log_fmt(LOU_LOG_ERROR, "the process was killed");
+    }  else {
+      lou_log_fmt(LOU_LOG_ERROR, "the process was terminated with unknown signal #l", term_sig);
+    }
+    return false;
+  }
+  *status = WEXITSTATUS(*status);
   return true;
 }
