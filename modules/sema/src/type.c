@@ -19,6 +19,15 @@ lou_sema_type_t *lou_sema_type_new_func(lou_mempool_t *mempool) {
   return type;
 }
 
+lou_sema_type_t *lou_sema_type_new_array(lou_mempool_t *mempool, lou_sema_type_t *of, size_t length) {
+  lou_sema_type_t *type = lou_sema_type_new(mempool);
+  type->complete = true;
+  type->kind = LOU_SEMA_TYPE_ARRAY;
+  type->array.of = of;
+  type->array.length = length;
+  return type;
+}
+
 lou_sema_type_t *lou_sema_type_new_pointer(lou_mempool_t *mempool) {
   lou_sema_type_t *type = lou_sema_type_new(mempool);
   type->complete = false;
@@ -77,6 +86,8 @@ bool lou_sema_type_eq(const lou_sema_type_t *a, const lou_sema_type_t *b) {
       return ((a->func.returns == NULL) == (b->func.returns == NULL)) &&
         (a->func.returns == NULL || lou_sema_type_eq(a->func.returns, b->func.returns)) &&
         lou_vec_eq(a->func.args, b->func.args, (lou_veq_func_t)lou_sema_type_eq);
+    case LOU_SEMA_TYPE_ARRAY:
+      return a->array.length == b->array.length && lou_sema_type_eq(a->array.of, b->array.of);
   }
   UNREACHABLE();
 }
@@ -107,6 +118,7 @@ lou_hir_type_t *lou_sema_type_as_hir(lou_mempool_t *mempool, lou_sema_type_t *ty
       return result;
     }
     case LOU_SEMA_TYPE_BOOL: return lou_hir_type_new_bool(mempool);
+    case LOU_SEMA_TYPE_ARRAY: return lou_hir_type_new_array(mempool, lou_sema_type_as_hir(mempool, type->array.of), type->array.length);
   }
   UNREACHABLE();
 }
@@ -148,6 +160,9 @@ void lou_sema_type_log(FILE *stream, lou_sema_type_t *type) {
       return;
     case LOU_SEMA_TYPE_BOOL:
       lou_log_puts(stream, "bool");
+      return;
+    case LOU_SEMA_TYPE_ARRAY:
+      lou_log_puts(stream, "@array(#l, #T)", type->array.length, type->array.of);
       return;
   }
   UNREACHABLE();

@@ -1,6 +1,9 @@
 const putChar = @externFun("putchar", @procFun(u8))
 
 const putInt = fun (var int: i32) {
+  const BufferSize = 16
+  var buffer: @array(BufferSize, u8)
+  
   if int < 0 {
     int = -int
     putChar('-')
