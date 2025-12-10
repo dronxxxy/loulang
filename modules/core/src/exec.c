@@ -16,11 +16,9 @@ bool lou_exec(const char *binary, char *const *args, size_t length, int *status)
   pid_t pid = fork();
   assert(pid >= 0);
   if (pid == 0) {
-    if (execv(binary, built_args) < 0) {
-      lou_log_fmt(LOU_LOG_ERROR, "failed to run child process: #E");
-      exit(1);
-    }
-    UNREACHABLE();
+    execv(binary, built_args);
+    lou_log_fmt(LOU_LOG_ERROR, "failed to run child process: #E");
+    exit(1);
   }
 
   waitpid(pid, status, 0);
