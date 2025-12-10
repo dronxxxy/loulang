@@ -23,6 +23,14 @@ lou_hir_type_t *lou_hir_type_new_integer(lou_mempool_t *mempool, lou_hir_int_siz
   return type;
 }
 
+lou_hir_type_t *lou_hir_type_new_array(lou_mempool_t *mempool, lou_hir_type_t *of, size_t length) {
+  lou_hir_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_hir_type_t);
+  type->kind = LOU_HIR_TYPE_ARRAY;
+  type->array.of = of;
+  type->array.length = length;
+  return type;
+}
+
 lou_hir_type_t *lou_hir_type_new_bool(lou_mempool_t *mempool) {
   lou_hir_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_hir_type_t);
   type->kind = LOU_HIR_TYPE_BOOL;
