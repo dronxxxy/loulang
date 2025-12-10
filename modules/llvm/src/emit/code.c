@@ -23,16 +23,21 @@ static inline bool lou_llvm_br(lou_llvm_module_t *llvm, LLVMBasicBlockRef or) {
 static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *stmt) {
   switch (stmt->kind) {
     case LOU_HIR_STMT_LOOP: {
+      LLVMBasicBlockRef loop_setup = LLVMGetInsertBlock(llvm->builder);
       LLVMBasicBlockRef begin = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "loop.begin");
       LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "loop.end");
-
-      LLVMBuildBr(llvm->builder, begin);
 
       stmt->loop.codegen.begin = begin;
       stmt->loop.codegen.end = end;
 
+      bool is_root_loop = !llvm->loop_vars;
+      if (is_root_loop) llvm->loop_vars = loop_setup;
       lou_llvm_emit_code_in(llvm, begin, stmt->loop.code);
       bool has_end = lou_llvm_br(llvm, begin);
+      if (is_root_loop) llvm->loop_vars = NULL;
+
+      LLVMPositionBuilderAtEnd(llvm->builder, loop_setup);
+      LLVMBuildBr(llvm->builder, begin);
 
       LLVMPositionBuilderAtEnd(llvm->builder, end);
       if (!has_end) LLVMBuildUnreachable(llvm->builder);
@@ -189,8 +194,7 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
 }
 
 inline void lou_llvm_emit_code_in(lou_llvm_module_t *llvm, LLVMBasicBlockRef block, lou_hir_code_t *code) {
-  LLVMPositionBuilderAtEnd(llvm->builder, block);
-  // TODO: fix stack leak in loops
+  LLVMPositionBuilderAtEnd(llvm->builder, llvm->loop_vars ? llvm->loop_vars : block);
   for (size_t i = 0; i < lou_vec_len(code->locals); i++) {
     lou_hir_local_t *local = code->locals[i];
     switch (local->mutability) {
@@ -198,6 +202,8 @@ inline void lou_llvm_emit_code_in(lou_llvm_module_t *llvm, LLVMBasicBlockRef blo
       case LOU_HIR_IMMUTABLE: break;
     }
   }
+
+  LLVMPositionBuilderAtEnd(llvm->builder, block);
   for (size_t i = 0; i < lou_vec_len(code->stmts); i++) {
     lou_llvm_emit_stmt(llvm, code->stmts[i]);
   }

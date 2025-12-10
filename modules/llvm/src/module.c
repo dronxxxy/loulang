@@ -53,6 +53,7 @@ lou_llvm_module_t *lou_llvm_module_new(lou_hir_t *hir) {
   llvm->machine = llvm_default_target_machine();
   llvm->module = LLVMModuleCreateWithNameInContext("main", llvm->context);
   llvm->builder = LLVMCreateBuilderInContext(llvm->context);
+  llvm->loop_vars = NULL;
   return llvm;
 }
 

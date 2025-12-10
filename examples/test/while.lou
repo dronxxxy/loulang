@@ -17,10 +17,9 @@ const putInt = fun (var int: i32) {
   var i = -10
   
   while i <= 10 {
-    var a = i
-    #putInt(i)
-    #putChar('\n')
-    # i = i + 1
+    putInt(i)
+    putChar('\n')
+    i = i + 1
   }
 
   return 0

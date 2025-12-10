@@ -12,5 +12,6 @@ typedef struct lou_llvm_module_t {
   LLVMModuleRef module;
   LLVMContextRef context;
   LLVMBuilderRef builder;
+  LLVMBasicBlockRef loop_vars;
 } lou_llvm_module_t;
 
