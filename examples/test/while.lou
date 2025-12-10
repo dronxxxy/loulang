@@ -4,8 +4,7 @@ const putInt = fun (var int: i32) {
   if int < 0 {
     int = -int
     putChar('-')
-  }
-  if int == 0 {
+  } else if int == 0 {
     putChar('0')
   }
   while int > 0 {

@@ -58,8 +58,8 @@ static inline void lou_sema_emit_stmt(lou_sema_t *sema, lou_ast_stmt_t *stmt) {
         lou_sema_current_scope(sema)->code);
 
       lou_sema_scope_t *scope = lou_sema_emit_body(sema, stmt->while_loop.body);
-      if (scope->break_kind) {
-        lou_sema_break_scope(sema, scope->break_kind);
+      if (scope->break_kind == LOU_SEMA_SCOPE_BREAK_RETURN) {
+        lou_sema_break_scope(sema, LOU_SEMA_SCOPE_BREAK_RETURN);
       }
 
       lou_hir_code_t *break_code = lou_hir_code_new(sema->mempool);

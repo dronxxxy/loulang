@@ -23,8 +23,8 @@ static inline bool lou_llvm_br(lou_llvm_module_t *llvm, LLVMBasicBlockRef or) {
 static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *stmt) {
   switch (stmt->kind) {
     case LOU_HIR_STMT_LOOP: {
-      LLVMBasicBlockRef begin = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
-      LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
+      LLVMBasicBlockRef begin = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "loop.begin");
+      LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "loop.end");
 
       LLVMBuildBr(llvm->builder, begin);
 
@@ -43,16 +43,21 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       LLVMBasicBlockRef initial = LLVMGetInsertBlock(llvm->builder);
 
       LLVMBasicBlockRef then = lou_llvm_emit_code(llvm, stmt->cond.code);
-      LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "");
+      LLVMBasicBlockRef then_end = LLVMGetInsertBlock(llvm->builder);
+
+      LLVMBasicBlockRef end = LLVMAppendBasicBlockInContext(llvm->context, llvm->function, "if.after");
+
       LLVMBasicBlockRef or_else = stmt->cond.fallback ? lou_llvm_emit_code(llvm, stmt->cond.fallback) : end;
-      bool has_end = !stmt->cond.fallback;
+      LLVMBasicBlockRef or_else_end = LLVMGetInsertBlock(llvm->builder);
+
+      bool has_end = stmt->cond.fallback == NULL;
 
       if (stmt->cond.fallback) {
-        LLVMPositionBuilderAtEnd(llvm->builder, or_else);
+        LLVMPositionBuilderAtEnd(llvm->builder, or_else_end);
         if (lou_llvm_br(llvm, end)) has_end = true;
       }
       
-      LLVMPositionBuilderAtEnd(llvm->builder, then);
+      LLVMPositionBuilderAtEnd(llvm->builder, then_end);
       if (lou_llvm_br(llvm, end)) has_end = true;
 
       LLVMPositionBuilderAtEnd(llvm->builder, initial);
