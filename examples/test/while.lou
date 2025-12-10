@@ -28,10 +28,12 @@ const putInt = fun (var int: i32) {
   var i = -10
   
   while i <= 10 {
-    putInt(i)
-    putChar('\n')
+    putInt(i * 1)
+    putChar(';')
+    putChar(' ')
     i = i + 1
   }
+  putChar('\n')
 
   return 0
 })
