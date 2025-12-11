@@ -1,11 +1,25 @@
-meta MyStruct = struct {
-  a: u8,
-  b: @ptr(MyStruct),
+meta ExitStatus = i32
+
+meta Options = struct {
+  characterToPrint: u8,
+  exitStatus: ExitStatus,
+  self: @ptr(Options),
 }
 
-@global("main", fun () -> i32 {
-  var test: MyStruct
-  return 0
+const superMain = fun (options: Options) -> ExitStatus {
+  const putChar = @externFun("putchar", @procFun(u8))
+
+  putChar(options.characterToPrint)
+  putChar('\n')
+  
+  return options.exitStatus
+}
+
+@global("main", fun () -> ExitStatus {
+  var options: Options
+  options.characterToPrint = 'a'
+  options.exitStatus = 0
+  return superMain(options)
 })
 
 

@@ -69,6 +69,8 @@ lou_sema_type_t *lou_sema_type_new_string(lou_mempool_t *mempool);
 lou_sema_type_t *lou_sema_type_new_struct(lou_mempool_t *mempool, lou_sema_struct_field_t *fields);
 lou_sema_type_t *lou_sema_type_new_bool(lou_mempool_t *mempool);
 
+size_t lou_sema_type_struct_get_member(lou_sema_type_t *type, lou_slice_t name); 
+
 void lou_sema_type_init_func(lou_sema_type_t *type, lou_sema_type_t **args, lou_sema_type_t *returns);
 void lou_sema_type_init_pointer(lou_sema_type_t *type, lou_sema_type_t *to);
 

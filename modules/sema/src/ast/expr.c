@@ -130,7 +130,32 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
       return lou_sema_value_new_const(sema->mempool, constant);
     }
     case LOU_AST_EXPR_SCOPE: return lou_sema_expr_outline(sema, expr->scope_inner, ctx);
-    case LOU_AST_EXPR_GET_IDENT: case LOU_AST_EXPR_ARRAY: NOT_IMPLEMENTED;
+    case LOU_AST_EXPR_GET_IDENT: {
+      lou_sema_value_t *value = NOT_NULL(lou_sema_expr_analyze(sema, expr->get_ident.inner, lou_sema_expr_ctx_nested(ctx, NULL), false));
+
+      lou_sema_type_t *type = lou_sema_value_is_runtime(value);
+      if (type) {
+        if (type->kind == LOU_SEMA_TYPE_STRUCT) {
+          size_t field_idx = lou_sema_type_struct_get_member(type, expr->get_ident.ident);
+          if (field_idx != -1) {
+            lou_sema_struct_field_t *field = &type->structure.fields[field_idx];
+            lou_sema_value_local_t *local = lou_sema_value_is_local(value);
+            bool is_var = local && local->mutability == LOU_SEMA_MUTABLE;
+            lou_hir_local_t *output = is_var ? lou_sema_add_local_pseudo_var(sema, field->type) : lou_sema_add_local_final(sema, field->type);
+            lou_sema_push_stmt(sema, expr->get_ident.ident, is_var ?
+              lou_hir_stmt_new_var_struct_field(sema->mempool, output, local->hir, field_idx) : 
+              lou_hir_stmt_new_struct_field(sema->mempool, output, lou_sema_value_as_hir(sema->mempool, value), field_idx)
+            );
+            return lou_sema_value_new_local(sema->mempool, local->mutability, field->type, output, lou_sema_current_scope_stack(sema));
+          }
+        }
+      }
+
+      lou_sema_err(sema, expr->get_ident.ident, "there is no member with name `#S` in #V", expr->get_ident.ident, value);
+      return NULL;
+    }
+    case LOU_AST_EXPR_ARRAY:
+      NOT_IMPLEMENTED;
     case LOU_AST_EXPR_ASSIGN: {
       lou_sema_value_t *to_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.to, ctx));
       lou_sema_value_t *what_value = NOT_NULL(lou_sema_expr_outline_runtime(sema, expr->assign.what,
@@ -352,7 +377,7 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       lou_hir_func_init(func, full_scope->code);
       return value;
     }
-    case LOU_AST_EXPR_GET_IDENT:
+    case LOU_AST_EXPR_GET_IDENT: return expr->sema_value;
     case LOU_AST_EXPR_ARRAY:
       NOT_IMPLEMENTED;
     case LOU_AST_EXPR_ASSIGN: {

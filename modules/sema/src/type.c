@@ -207,3 +207,13 @@ void lou_sema_type_log(FILE *stream, lou_sema_type_t *type) {
   }
   UNREACHABLE();
 }
+
+size_t lou_sema_type_struct_get_member(lou_sema_type_t *type, lou_slice_t name) {
+  assert(type->kind == LOU_SEMA_TYPE_STRUCT);
+  for (size_t i = 0; i < lou_vec_len(type->structure.fields); i++) {
+    if (lou_slice_eq(type->structure.fields[i].name, name)) {
+      return i;
+    }
+  }
+  return -1;
+}
