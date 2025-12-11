@@ -1,6 +1,6 @@
 meta MyStruct = struct {
   a: u8,
-  b: i32,
+  b: @ptr(MyStruct),
 }
 
 @global("main", fun () -> i32 {
