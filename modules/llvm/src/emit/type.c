@@ -1,5 +1,6 @@
 #include "type.h"
 #include "lou/core/assertions.h"
+#include "lou/core/mempool.h"
 #include "lou/core/vec.h"
 #include <llvm-c/Core.h>
 
@@ -19,6 +20,13 @@ LLVMTypeRef lou_llvm_emit_type(lou_llvm_module_t *llvm, lou_hir_type_t *type) {
     case LOU_HIR_TYPE_POINTER: case LOU_HIR_TYPE_FUNC: return LLVMPointerTypeInContext(llvm->context, 0);
     case LOU_HIR_TYPE_BOOL: return LLVMInt1TypeInContext(llvm->context);
     case LOU_HIR_TYPE_ARRAY: return LLVMArrayType2(lou_llvm_emit_type(llvm, type->array.of), type->array.length);
+    case LOU_HIR_TYPE_STRUCT: {
+      LLVMTypeRef *fields = LOU_MEMPOOL_VEC_NEW(llvm->mempool, LLVMTypeRef);
+      for (size_t i = 0; i < lou_vec_len(type->structure.fields); i++) {
+        *LOU_VEC_PUSH(&fields) = lou_llvm_emit_type(llvm, type->structure.fields[i]);
+      }
+      return LLVMStructTypeInContext(llvm->context, fields, lou_vec_len(fields), false);
+    }
   }
   UNREACHABLE();
 }

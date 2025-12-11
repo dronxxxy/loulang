@@ -36,3 +36,10 @@ lou_hir_type_t *lou_hir_type_new_bool(lou_mempool_t *mempool) {
   type->kind = LOU_HIR_TYPE_BOOL;
   return type;
 }
+
+lou_hir_type_t *lou_hir_type_new_structure(lou_mempool_t *mempool, lou_hir_type_t **fields) {
+  lou_hir_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_hir_type_t);
+  type->kind = LOU_HIR_TYPE_STRUCT;
+  type->structure.fields = fields;
+  return type;
+}
