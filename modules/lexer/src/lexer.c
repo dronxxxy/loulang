@@ -216,10 +216,18 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
       return lou_lexer_new_simple(lexer, LOU_TOKEN_ASSIGN);
     case ',': return lou_lexer_new_simple(lexer, LOU_TOKEN_COMMA);
     case '.': return lou_lexer_new_simple(lexer, LOU_TOKEN_DOT);
-    case '+': return lou_lexer_new_simple(lexer, LOU_TOKEN_PLUS);
-    case '*': return lou_lexer_new_simple(lexer, LOU_TOKEN_STAR);
-    case '/': return lou_lexer_new_simple(lexer, LOU_TOKEN_SLASH);
-    case '%': return lou_lexer_new_simple(lexer, LOU_TOKEN_PERCENT);
+    case '+':
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_PLUS_ASSIGN);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_PLUS);
+    case '*':
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_STAR_ASSIGN);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_STAR);
+    case '/':
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_SLASH_ASSIGN);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_SLASH);
+    case '%': 
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_PERCENT_ASSIGN);
+      return lou_lexer_new_simple(lexer, LOU_TOKEN_PERCENT);
     case ';': return lou_lexer_new_simple(lexer, LOU_TOKEN_SEMICOLON);
     case '!':
       if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_NOT_EQUALS);
@@ -243,6 +251,7 @@ static inline lou_token_t lou_lexer_try_next(lou_lexer_t *lexer) {
     case EOI: return lou_lexer_new_simple(lexer, LOU_TOKEN_EOI);
     case '-':
       if (lou_lexer_take_if(lexer, '>')) return lou_lexer_new_simple(lexer, LOU_TOKEN_FUNCTION_RETURNS);
+      if (lou_lexer_take_if(lexer, '=')) return lou_lexer_new_simple(lexer, LOU_TOKEN_MINUS_ASSIGN);
       return lou_lexer_new_simple(lexer, LOU_TOKEN_MINUS);
 
     default: {

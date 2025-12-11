@@ -41,10 +41,13 @@ static inline int lou_expr_binop_level(lou_ast_binop_t binop) {
     case LOU_AST_BINOP_GREATER_OR_EQUALS: case LOU_AST_BINOP_LESS_OR_EQUALS:
       return 40;
     case LOU_AST_BINOP_ADD: case LOU_AST_BINOP_SUBTRACT:
+    case LOU_AST_BINOP_SHORT_ADD: case LOU_AST_BINOP_SHORT_SUBTRACT:
       return 50;
     case LOU_AST_BINOP_MOD:
+    case LOU_AST_BINOP_SHORT_MOD:
       return 60;
     case LOU_AST_BINOP_MULTIPLY: case LOU_AST_BINOP_DIVIDE:
+    case LOU_AST_BINOP_SHORT_MULTIPLY: case LOU_AST_BINOP_SHORT_DIVIDE:
       return 70;
     }
   UNREACHABLE();
@@ -77,7 +80,7 @@ static inline lou_ast_expr_t *lou_parser_add_right_binop(lou_parser_t *parser, l
   return lou_expr_binop_level_swap_left(result);
 }
 
-lou_ast_expr_t *lou_parser_parse_post_expr(lou_parser_t *parser, lou_ast_expr_t *expr) {
+lou_ast_expr_t *lou_parser_parse_post_expr(lou_parser_t *parser, lou_ast_expr_t *expr, bool skip_binop) {
   lou_token_t next = lou_parser_peek(parser);
   switch (next.kind) {
     case LOU_TOKEN_DOT: {
@@ -111,22 +114,33 @@ lou_ast_expr_t *lou_parser_parse_post_expr(lou_parser_t *parser, lou_ast_expr_t 
 
       return lou_ast_expr_new_call(parser->mempool, lou_parser_slice(parser, expr->slice), expr, args);
     }
-    case LOU_TOKEN_PLUS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_ADD);
-    case LOU_TOKEN_MINUS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_SUBTRACT);
-    case LOU_TOKEN_STAR: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_MULTIPLY);
-    case LOU_TOKEN_SLASH: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_DIVIDE);
-    case LOU_TOKEN_PERCENT: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_MOD);
-    case LOU_TOKEN_EQUALS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_EQUALS);
-    case LOU_TOKEN_NOT_EQUALS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_NOT_EQUALS);
-    case LOU_TOKEN_GREATER: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_GREATER);
-    case LOU_TOKEN_LESS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_LESS);
-    case LOU_TOKEN_GREATER_OR_EQUALS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_GREATER_OR_EQUALS);
-    case LOU_TOKEN_LESS_OR_EQUALS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_LESS_OR_EQUALS);
-    default: return NULL;
+    default:
+      if (!skip_binop) {
+        switch (next.kind) {
+          case LOU_TOKEN_PLUS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_ADD);
+          case LOU_TOKEN_MINUS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_SUBTRACT);
+          case LOU_TOKEN_STAR: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_MULTIPLY);
+          case LOU_TOKEN_SLASH: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_DIVIDE);
+          case LOU_TOKEN_PERCENT: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_MOD);
+          case LOU_TOKEN_PLUS_ASSIGN: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_SHORT_ADD);
+          case LOU_TOKEN_MINUS_ASSIGN: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_SHORT_SUBTRACT);
+          case LOU_TOKEN_STAR_ASSIGN: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_SHORT_MULTIPLY);
+          case LOU_TOKEN_SLASH_ASSIGN: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_SHORT_DIVIDE);
+          case LOU_TOKEN_PERCENT_ASSIGN: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_SHORT_MOD);
+          case LOU_TOKEN_EQUALS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_EQUALS);
+          case LOU_TOKEN_NOT_EQUALS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_NOT_EQUALS);
+          case LOU_TOKEN_GREATER: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_GREATER);
+          case LOU_TOKEN_LESS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_LESS);
+          case LOU_TOKEN_GREATER_OR_EQUALS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_GREATER_OR_EQUALS);
+          case LOU_TOKEN_LESS_OR_EQUALS: return lou_parser_add_right_binop(parser, expr, LOU_AST_BINOP_LESS_OR_EQUALS);
+          default: break;
+        }
+      }
+      return NULL;
   }
 }
 
-lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
+static lou_ast_expr_t *lou_parser_parse_expr_internal(lou_parser_t *parser, bool skip_binop) {
   lou_token_t token = lou_parser_take(parser);
   lou_ast_expr_t *expr = NULL;
   switch (token.kind) {
@@ -137,7 +151,7 @@ lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
     case LOU_TOKEN_STRING: expr = lou_ast_expr_new_string(parser->mempool, token.slice, token.string.content, token.string.kind); break;
     case LOU_TOKEN_MINUS:
       expr = lou_ast_expr_new_unary(parser->mempool, lou_parser_slice(parser, token.slice), LOU_AST_UNARY_MINUS,
-        NOT_NULL(lou_parser_parse_expr(parser)));
+        NOT_NULL(lou_parser_parse_expr_internal(parser, true)));
       break;
     case LOU_TOKEN_OPENING_CIRCLE_BRACE:
       expr = NOT_NULL(lou_parser_parse_expr(parser));
@@ -163,7 +177,7 @@ lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
       return NULL;
   }
   while (true) {
-    lou_ast_expr_t *post_expr = lou_parser_parse_post_expr(parser, expr);
+    lou_ast_expr_t *post_expr = lou_parser_parse_post_expr(parser, expr, skip_binop);
     if (post_expr) {
       expr = post_expr;
     } else {
@@ -171,4 +185,8 @@ lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
     }
   }
   return expr;
+}
+
+lou_ast_expr_t *lou_parser_parse_expr(lou_parser_t *parser) {
+  return lou_parser_parse_expr_internal(parser, false);
 }

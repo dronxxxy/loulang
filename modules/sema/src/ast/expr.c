@@ -161,6 +161,11 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
         case LOU_AST_BINOP_MULTIPLY:
         case LOU_AST_BINOP_DIVIDE:
         case LOU_AST_BINOP_MOD:
+        case LOU_AST_BINOP_SHORT_ADD:
+        case LOU_AST_BINOP_SHORT_SUBTRACT:
+        case LOU_AST_BINOP_SHORT_MULTIPLY:
+        case LOU_AST_BINOP_SHORT_DIVIDE:
+        case LOU_AST_BINOP_SHORT_MOD:
           break;
 
         case LOU_AST_BINOP_EQUALS:
@@ -228,6 +233,15 @@ static inline lou_sema_value_t *lou_sema_analyze_binop_arithm(
   }
   lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_binop_arithm(sema->mempool, kind, of, output, lou_sema_value_as_hir(sema->mempool, left),
     lou_sema_value_as_hir(sema->mempool, right)));
+  return expr->sema_value;
+}
+
+static inline lou_sema_value_t *lou_sema_analyze_binop_short(lou_sema_t *sema, lou_sema_value_t *left, lou_sema_value_t *value, lou_ast_expr_t *expr) {
+  lou_sema_value_local_t *output = lou_sema_value_is_local(left);
+  if (!output || output->mutability != LOU_SEMA_MUTABLE) {
+    lou_sema_err(sema, expr->slice, "#V is not assignable", left);
+  }
+  lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_new_store_var(sema->mempool, output->hir, lou_sema_value_as_hir(sema->mempool, value)));
   return expr->sema_value;
 }
 
@@ -341,8 +355,16 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
         case LOU_AST_BINOP_MULTIPLY: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_MULTIPLY, left, right, expr);
         case LOU_AST_BINOP_DIVIDE: return lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_DIVIDE, left, right, expr);
         case LOU_AST_BINOP_MOD: return lou_sema_analyze_binop_arithm_int(sema, LOU_HIR_BINOP_ARITHM_INT_MOD, left, right, expr);
+
+        case LOU_AST_BINOP_SHORT_ADD: return lou_sema_analyze_binop_short(sema, left, lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_ADD, left, right, expr), expr);
+        case LOU_AST_BINOP_SHORT_SUBTRACT: return lou_sema_analyze_binop_short(sema, left, lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_SUBTRACT, left, right, expr), expr);
+        case LOU_AST_BINOP_SHORT_MULTIPLY: return lou_sema_analyze_binop_short(sema, left, lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_MULTIPLY, left, right, expr), expr);
+        case LOU_AST_BINOP_SHORT_DIVIDE: return lou_sema_analyze_binop_short(sema, left, lou_sema_analyze_binop_arithm(sema, LOU_HIR_BINOP_ARITHM_DIVIDE, left, right, expr), expr);
+        case LOU_AST_BINOP_SHORT_MOD: return lou_sema_analyze_binop_short(sema, left, lou_sema_analyze_binop_arithm_int(sema, LOU_HIR_BINOP_ARITHM_INT_MOD, left, right, expr), expr);
+
         case LOU_AST_BINOP_EQUALS: return lou_sema_analyze_binop_eq(sema, LOU_HIR_BINOP_EQUALS, left, right, expr);
         case LOU_AST_BINOP_NOT_EQUALS: return lou_sema_analyze_binop_eq(sema, LOU_HIR_BINOP_NOT_EQUALS, left, right, expr);
+
         case LOU_AST_BINOP_GREATER: return lou_sema_analyze_binop_order(sema, LOU_HIR_BINOP_ORDER_GREATER, left, right, expr);
         case LOU_AST_BINOP_LESS: return lou_sema_analyze_binop_order(sema, LOU_HIR_BINOP_ORDER_LESS, left, right, expr);
         case LOU_AST_BINOP_GREATER_OR_EQUALS: return lou_sema_analyze_binop_order(sema, LOU_HIR_BINOP_ORDER_GREATER_OR_EQUALS, left, right, expr);

@@ -1,10 +1,9 @@
 const putChar = @externFun("putchar", @procFun(u8))
 
 const putCString = fun (cstr: @ptr(u8)) {
-  var i = 0
-  while @ptrAt(cstr, i) != '\0' {
+  var i = -1
+  while @ptrAt(cstr, i += 1) != '\0' {
     putChar(@ptrAt(cstr, i))
-    i = i + 1
   }
 }
 
@@ -23,8 +22,8 @@ const putInt = fun (var int: i32) {
   var length = 0
   while int > 0 {
     @arrayAt(buffer, length) = '0' + @intCast(int % 10, u8)
-    int = int / 10
-    length = length + 1
+    int /= 10
+    length += 1
   }
 
   while length > 0 {
@@ -34,15 +33,14 @@ const putInt = fun (var int: i32) {
 
 @global("main", fun () -> i32 {
   const Range = 10
-  var i = -Range
+  var i = -Range - 1
   
   putCString(c"[")
-  while i <= Range {
+  while i += 1 <= Range {
     if i != -Range {
       putCString(c", ")
     }
     putInt(i * 1)
-    i = i + 1
   }
   putCString(c"]\n")
 
