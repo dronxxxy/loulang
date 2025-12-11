@@ -26,8 +26,8 @@ const putInt = fun (var int: i32) {
     length += 1
   }
 
-  while length > 0 {
-    putChar(@arrayAt(buffer, length = length - 1))
+  while length -= 1 >= 0 {
+    putChar(@arrayAt(buffer, length))
   }
 }
 
