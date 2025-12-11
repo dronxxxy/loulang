@@ -222,6 +222,27 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       stmt->idx_ptr.output->codegen = LLVMBuildGEP2(llvm->builder, ptr_type, value, &idx, 1, "");
       return;
     }
+    case LOU_HIR_STMT_STRUCT_FIELD:
+      lou_llvm_store(llvm, stmt->struct_field.output, LLVMBuildExtractValue(
+        llvm->builder,
+        lou_llvm_emit_value(llvm, stmt->struct_field.structure),
+        stmt->struct_field.idx,
+        ""
+      ));
+      return;
+    case LOU_HIR_STMT_VAR_STRUCT_FIELD: {
+      assert(stmt->var_struct_field.structure->mutability == LOU_HIR_MUTABLE);
+      LLVMValueRef value = stmt->var_struct_field.structure->codegen;
+      LLVMTypeRef struct_type = lou_llvm_emit_type(llvm, stmt->var_struct_field.structure->type);
+      assert(stmt->var_struct_field.output->pseudo);
+
+      LLVMValueRef indexes[] = {
+        LLVMConstInt(LLVMInt32TypeInContext(llvm->context), 0, false),
+        LLVMConstInt(LLVMInt32TypeInContext(llvm->context), stmt->var_struct_field.idx, false)
+      };
+      stmt->idx_var_array.output->codegen = LLVMBuildGEP2(llvm->builder, struct_type, value, indexes, sizeof(indexes) / sizeof(indexes[0]), "");
+      return;
+    }
   }
   UNREACHABLE();
 }

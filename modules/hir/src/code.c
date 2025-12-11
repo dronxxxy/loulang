@@ -193,6 +193,24 @@ lou_hir_stmt_t *lou_hir_stmt_new_idx_var_array(lou_mempool_t *mempool, lou_hir_l
   return stmt;
 }
 
+lou_hir_stmt_t *lou_hir_stmt_new_struct_field(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *structure, size_t idx) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_STRUCT_FIELD;
+  stmt->struct_field.output = output;
+  stmt->struct_field.structure = structure;
+  stmt->struct_field.idx = idx;
+  return stmt;
+}
+
+lou_hir_stmt_t *lou_hir_stmt_new_var_struct_field(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_local_t *structure, size_t idx) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_VAR_STRUCT_FIELD;
+  stmt->var_struct_field.output = output;
+  stmt->var_struct_field.structure = structure;
+  stmt->var_struct_field.idx = idx;
+  return stmt;
+}
+
 lou_hir_code_t *lou_hir_code_new(lou_mempool_t *mempool)  {
   lou_hir_code_t *code = LOU_MEMPOOL_ALLOC(mempool, lou_hir_code_t);
   code->stmts = LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_stmt_t*);
