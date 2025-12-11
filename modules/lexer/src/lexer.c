@@ -166,6 +166,7 @@ static lou_lexer_keyword_t lou_lexer_keywords[] = {
   { .name = "if", .kind = LOU_TOKEN_IF },
   { .name = "else", .kind = LOU_TOKEN_ELSE },
   { .name = "while", .kind = LOU_TOKEN_WHILE },
+  { .name = "struct", .kind = LOU_TOKEN_STRUCT },
 };
 
 static inline char lou_lexer_take_escaped(lou_lexer_t *lexer, char end) {

@@ -133,3 +133,8 @@ lou_ast_expr_t *lou_ast_expr_new_func(
   lou_ast_expr_t *returns,
   lou_ast_body_t *body
 );
+lou_ast_expr_t *lou_ast_expr_new_struct_type(
+  lou_mempool_t *mempool,
+  lou_slice_t slice,
+  lou_ast_struct_field_t *fields
+);

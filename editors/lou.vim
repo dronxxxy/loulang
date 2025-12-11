@@ -3,7 +3,7 @@ syn keyword louKeywords meta const final var
 syn keyword louKeywords if else
 syn keyword louKeywords while
 syn keyword louKeywords return
-syn keyword louKeywords fun
+syn keyword louKeywords fun struct
 
 syn keyword louBuiltInTypes u8 u16 u32 u64
 syn keyword louBuiltInTypes i8 i16 i32 i64

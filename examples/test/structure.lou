@@ -1,0 +1,11 @@
+meta MyStruct = struct {
+  a: u8,
+  b: i32,
+}
+
+@global("main", fun () -> i32 {
+  var test: MyStruct
+  return 0
+})
+
+

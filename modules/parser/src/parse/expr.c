@@ -9,6 +9,24 @@
 #include "parse/body.h"
 #include "parser.h"
 
+static inline lou_ast_expr_t *lou_parser_parse_struct_type_expr(lou_parser_t *parser, lou_token_t start_token) {
+  lou_ast_struct_field_t *fields = LOU_MEMPOOL_VEC_NEW(parser->mempool, lou_ast_struct_field_t);
+
+  LOU_PARSER_EXPECT(parser, LOU_TOKEN_OPENING_FIGURE_BRACE);
+
+  if (!lou_parser_take_if(parser, LOU_TOKEN_CLOSING_FIGURE_BRACE)) {
+    do {
+      lou_slice_t name = LOU_PARSER_EXPECT(parser, LOU_TOKEN_IDENT).slice;
+      LOU_PARSER_EXPECT(parser, LOU_TOKEN_COLON);
+      lou_ast_expr_t *type = NOT_NULL(lou_parser_parse_expr(parser));
+
+      *LOU_VEC_PUSH(&fields) = lou_ast_struct_field_new(name, type);
+    } while (!lou_parser_is_list_end(parser, LOU_TOKEN_CLOSING_FIGURE_BRACE));
+  }
+  return lou_ast_expr_new_struct_type(parser->mempool, lou_parser_slice(parser, start_token.slice), fields);
+}
+
+
 static inline lou_ast_expr_t *lou_parser_parse_func_expr(lou_parser_t *parser, lou_token_t start_token) {
   lou_ast_expr_func_arg_t *args = LOU_MEMPOOL_VEC_NEW(parser->mempool, lou_ast_expr_func_arg_t);
 
@@ -146,6 +164,7 @@ static lou_ast_expr_t *lou_parser_parse_expr_internal(lou_parser_t *parser, bool
   switch (token.kind) {
     case LOU_TOKEN_IDENT: expr = lou_ast_expr_new_ident(parser->mempool, token.slice); break;
     case LOU_TOKEN_FUN: expr = lou_parser_parse_func_expr(parser, token); break;
+    case LOU_TOKEN_STRUCT: expr = lou_parser_parse_struct_type_expr(parser, token); break;
     case LOU_TOKEN_INTEGER: expr = lou_ast_expr_new_integer(parser->mempool, token.slice, token.integer); break;
     case LOU_TOKEN_CHAR: expr = lou_ast_expr_new_char(parser->mempool, token.slice, token.character); break;
     case LOU_TOKEN_STRING: expr = lou_ast_expr_new_string(parser->mempool, token.slice, token.string.content, token.string.kind); break;
