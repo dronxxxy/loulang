@@ -30,4 +30,5 @@ void lou_sema_builtin_setup(lou_sema_t *sema) {
   lou_sema_add_internal_decl(sema, "@array", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_array(sema->mempool)));
   lou_sema_add_internal_decl(sema, "@arrayAt", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_array_at(sema->mempool)));
   lou_sema_add_internal_decl(sema, "@deref", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_deref(sema->mempool)));
+  lou_sema_add_internal_decl(sema, "@ptrAt", lou_sema_value_new_plugin(sema->mempool, lou_sema_builtin_ptr_at(sema->mempool)));
 }

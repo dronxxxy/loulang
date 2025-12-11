@@ -83,6 +83,7 @@ typedef enum {
   LOU_HIR_STMT_SET_PSEUDO_VAR,
   LOU_HIR_STMT_IDX_ARRAY,
   LOU_HIR_STMT_IDX_VAR_ARRAY,
+  LOU_HIR_STMT_IDX_PTR,
 } lou_hir_stmt_kind_t;
 
 typedef struct lou_hir_local_t {
@@ -119,6 +120,12 @@ typedef struct lou_hir_stmt_t {
       lou_hir_value_t *value;
       lou_hir_type_t *to;
     } cast_int;
+
+    struct {
+      lou_hir_local_t *output;
+      lou_hir_value_t *ptr;
+      lou_hir_value_t *value;
+    } idx_ptr;
 
     struct {
       lou_hir_local_t *output;
@@ -197,6 +204,7 @@ lou_hir_stmt_t *lou_hir_stmt_new_break(lou_mempool_t *mempool, lou_hir_stmt_t *b
 lou_hir_stmt_t *lou_hir_stmt_new_continue(lou_mempool_t *mempool, lou_hir_stmt_t *continue_loop);
 lou_hir_stmt_t *lou_hir_stmt_new_set_pseudo_var(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *value);
 lou_hir_stmt_t *lou_hir_stmt_new_idx_array(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *array, lou_hir_value_t *value);
+lou_hir_stmt_t *lou_hir_stmt_new_idx_ptr(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *ptr, lou_hir_value_t *value);
 lou_hir_stmt_t *lou_hir_stmt_new_idx_var_array(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_local_t *array, lou_hir_value_t *value);
 lou_hir_stmt_t *lou_hir_stmt_new_binop_arithm_int(
   lou_mempool_t *mempool,

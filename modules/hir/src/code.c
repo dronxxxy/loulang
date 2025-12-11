@@ -175,6 +175,15 @@ lou_hir_stmt_t *lou_hir_stmt_new_idx_array(lou_mempool_t *mempool, lou_hir_local
   return stmt;
 }
 
+lou_hir_stmt_t *lou_hir_stmt_new_idx_ptr(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_value_t *ptr, lou_hir_value_t *value) {
+  lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
+  stmt->kind = LOU_HIR_STMT_IDX_PTR;
+  stmt->idx_ptr.output = output;
+  stmt->idx_ptr.ptr = ptr;
+  stmt->idx_ptr.value = value;
+  return stmt;
+}
+
 lou_hir_stmt_t *lou_hir_stmt_new_idx_var_array(lou_mempool_t *mempool, lou_hir_local_t *output, lou_hir_local_t *array, lou_hir_value_t *value) {
   lou_hir_stmt_t *stmt = LOU_MEMPOOL_ALLOC(mempool, lou_hir_stmt_t);
   stmt->kind = LOU_HIR_STMT_IDX_VAR_ARRAY;

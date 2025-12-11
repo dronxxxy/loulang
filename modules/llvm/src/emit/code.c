@@ -213,6 +213,15 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
       stmt->idx_var_array.output->codegen = LLVMBuildGEP2(llvm->builder, array_type, value, indexes, sizeof(indexes) / sizeof(indexes[0]), "");
       return;
     }
+    case LOU_HIR_STMT_IDX_PTR: {
+      LLVMValueRef idx = lou_llvm_emit_value(llvm, stmt->idx_ptr.value);
+      LLVMValueRef value = lou_llvm_emit_value(llvm, stmt->idx_ptr.ptr);
+      lou_hir_type_t *type = lou_hir_value_typeof(stmt->idx_ptr.ptr);
+      LLVMTypeRef ptr_type = lou_llvm_emit_type(llvm, type->pointer_to);
+      assert(stmt->idx_ptr.output->pseudo);
+      stmt->idx_ptr.output->codegen = LLVMBuildGEP2(llvm->builder, ptr_type, value, &idx, 1, "");
+      return;
+    }
   }
   UNREACHABLE();
 }
