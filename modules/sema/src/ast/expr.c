@@ -394,6 +394,9 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       return expr->sema_value;
     }
     case LOU_AST_EXPR_STRUCT_TYPE: {
+      for (size_t i = 0; i < lou_vec_len(expr->struct_type.fields); i++) {
+        NOT_NULL(lou_sema_expr_finalize(sema, expr->struct_type.fields[i].type, weak));
+      }
       return expr->sema_value;
     }
   }
