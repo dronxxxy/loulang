@@ -4,6 +4,7 @@
 #include "impl.h"
 #include "lou/core/assertions.h"
 #include "lou/core/mempool.h"
+#include "lou/core/slice.h"
 #include "lou/core/vec.h"
 #include "lou/hir/code.h"
 #include "lou/hir/func.h"
@@ -188,6 +189,20 @@ static inline lou_sema_value_t *lou_sema_expr_outline_internal(lou_sema_t *sema,
       }
       return lou_sema_value_new_local(sema->mempool, LOU_SEMA_IMMUTABLE, type, lou_sema_add_local_final(sema, type),
         lou_sema_current_scope_stack(sema));
+    }
+    case LOU_AST_EXPR_STRUCT_TYPE: {
+      lou_sema_struct_field_t *fields = LOU_MEMPOOL_VEC_NEW(sema->mempool, lou_sema_struct_field_t);
+      for (size_t i = 0; i < lou_vec_len(expr->struct_type.fields); i++) {
+        lou_ast_struct_field_t *field = &expr->struct_type.fields[i];
+        for (size_t j = i + 1; j < lou_vec_len(expr->struct_type.fields); j++) {
+          if (lou_slice_eq(field->name, expr->struct_type.fields[j].name)) {
+            lou_sema_err(sema, expr->struct_type.fields[j].name, "field name duplicate");
+          }
+        }
+        *LOU_VEC_PUSH(&fields) = lou_sema_struct_field_new(field->name, lou_sema_expr_outline_type(sema, field->type,
+          lou_sema_expr_ctx_new_comptime()));
+      }
+      return lou_sema_value_new_type(sema->mempool, lou_sema_type_new_struct(sema->mempool, fields));
     }
   }
   UNREACHABLE();
@@ -376,6 +391,9 @@ lou_sema_value_t *lou_sema_expr_finalize(lou_sema_t *sema, lou_ast_expr_t *expr,
       lou_sema_value_t *value = NOT_NULL(lou_sema_expr_finalize(sema, expr->unary.inner, false));
       lou_sema_value_local_t *to = lou_sema_value_is_local(expr->sema_value);
       lou_sema_push_stmt(sema, expr->slice, lou_hir_stmt_negative_int(sema->mempool, to->hir, lou_sema_value_as_hir(sema->mempool, value)));
+      return expr->sema_value;
+    }
+    case LOU_AST_EXPR_STRUCT_TYPE: {
       return expr->sema_value;
     }
   }

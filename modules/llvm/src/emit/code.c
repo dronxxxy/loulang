@@ -240,7 +240,7 @@ static inline void lou_llvm_emit_stmt(lou_llvm_module_t *llvm, lou_hir_stmt_t *s
         LLVMConstInt(LLVMInt32TypeInContext(llvm->context), 0, false),
         LLVMConstInt(LLVMInt32TypeInContext(llvm->context), stmt->var_struct_field.idx, false)
       };
-      stmt->idx_var_array.output->codegen = LLVMBuildGEP2(llvm->builder, struct_type, value, indexes, sizeof(indexes) / sizeof(indexes[0]), "");
+      stmt->var_struct_field.output->codegen = LLVMBuildGEP2(llvm->builder, struct_type, value, indexes, sizeof(indexes) / sizeof(indexes[0]), "");
       return;
     }
   }

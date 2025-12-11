@@ -42,7 +42,13 @@ typedef enum {
   LOU_AST_EXPR_BINOP,
   LOU_AST_EXPR_UNARY,
   LOU_AST_EXPR_SCOPE,
+  LOU_AST_EXPR_STRUCT_TYPE,
 } lou_ast_expr_kind_t;
+
+typedef struct {
+  lou_slice_t name;
+  lou_ast_expr_t *type;
+} lou_ast_struct_field_t;
 
 // this is bad, of course, but who cares?)
 typedef struct lou_sema_value_t lou_sema_value_t;
@@ -89,6 +95,10 @@ typedef struct lou_ast_expr_t {
     } assign;
 
     struct {
+      lou_ast_struct_field_t *fields;
+    } struct_type;
+
+    struct {
       lou_ast_unary_t kind;
       lou_ast_expr_t *inner;
     } unary;
@@ -102,6 +112,8 @@ typedef struct lou_ast_expr_t {
 
   lou_sema_value_t *sema_value;
 } lou_ast_expr_t;
+
+lou_ast_struct_field_t lou_ast_struct_field_new(lou_slice_t name, lou_ast_expr_t *type);
 
 lou_ast_expr_t *lou_ast_expr_new_ident(lou_mempool_t *mempool, lou_slice_t ident);
 lou_ast_expr_t *lou_ast_expr_new_unary(lou_mempool_t *mempool, lou_slice_t slice, lou_ast_unary_t kind, lou_ast_expr_t *inner);

@@ -1,5 +1,12 @@
 #include "lou/parser/ast/expr.h"
 
+lou_ast_struct_field_t lou_ast_struct_field_new(lou_slice_t name, lou_ast_expr_t *type) {
+  return (lou_ast_struct_field_t) {
+    .name = name,
+    .type = type,
+  };
+}
+
 lou_ast_expr_t *lou_ast_expr_new_ident(lou_mempool_t *mempool, lou_slice_t ident) {
   lou_ast_expr_t *expr = LOU_MEMPOOL_ALLOC(mempool, lou_ast_expr_t);
   expr->kind = LOU_AST_EXPR_IDENT;

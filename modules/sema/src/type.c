@@ -6,6 +6,13 @@
 #include "lou/hir/type.h"
 #include <assert.h>
 
+lou_sema_struct_field_t lou_sema_struct_field_new(lou_slice_t name, lou_sema_type_t *type) {
+  return (lou_sema_struct_field_t) {
+    .name = name,
+    .type = type,
+  };
+}
+
 static inline lou_sema_type_t *lou_sema_type_new(lou_mempool_t *mempool) {
   lou_sema_type_t *type = LOU_MEMPOOL_ALLOC(mempool, lou_sema_type_t);
   type->converted_type = NULL;
@@ -58,6 +65,14 @@ lou_sema_type_t *lou_sema_type_new_string(lou_mempool_t *mempool) {
   return type;
 }
 
+lou_sema_type_t *lou_sema_type_new_struct(lou_mempool_t *mempool, lou_sema_struct_field_t *fields) {
+  lou_sema_type_t *type = lou_sema_type_new(mempool);
+  type->complete = true;
+  type->kind = LOU_SEMA_TYPE_STRUCT;
+  type->structure.fields = fields;
+  return type;
+}
+
 void lou_sema_type_init_func(lou_sema_type_t *type, lou_sema_type_t **args, lou_sema_type_t *returns) {
   assert(type->kind == LOU_SEMA_TYPE_FUNCTION);
   type->complete = true;
@@ -69,6 +84,10 @@ void lou_sema_type_init_pointer(lou_sema_type_t *type, lou_sema_type_t *to) {
   assert(type->kind == LOU_SEMA_TYPE_POINTER);
   type->complete = true;
   type->pointer_to = to;
+}
+
+static bool lou_sema_struct_field_eq(const lou_sema_struct_field_t *a, const lou_sema_struct_field_t *b) {
+  return lou_slice_eq(a->name, b->name) && lou_sema_type_eq(a->type, b->type);
 }
 
 bool lou_sema_type_eq(const lou_sema_type_t *a, const lou_sema_type_t *b) {
@@ -88,6 +107,8 @@ bool lou_sema_type_eq(const lou_sema_type_t *a, const lou_sema_type_t *b) {
         lou_vec_eq(a->func.args, b->func.args, (lou_veq_func_t)lou_sema_type_eq);
     case LOU_SEMA_TYPE_ARRAY:
       return a->array.length == b->array.length && lou_sema_type_eq(a->array.of, b->array.of);
+    case LOU_SEMA_TYPE_STRUCT:
+      return lou_vec_eq(a->structure.fields, b->structure.fields, (lou_veq_func_t)lou_sema_struct_field_eq);
   }
   UNREACHABLE();
 }
@@ -119,6 +140,13 @@ lou_hir_type_t *lou_sema_type_as_hir(lou_mempool_t *mempool, lou_sema_type_t *ty
     }
     case LOU_SEMA_TYPE_BOOL: return lou_hir_type_new_bool(mempool);
     case LOU_SEMA_TYPE_ARRAY: return lou_hir_type_new_array(mempool, lou_sema_type_as_hir(mempool, type->array.of), type->array.length);
+    case LOU_SEMA_TYPE_STRUCT: {
+      lou_hir_type_t *result = type->converted_type = lou_hir_type_new_structure(mempool, LOU_MEMPOOL_VEC_NEW(mempool, lou_hir_type_t*));
+      for (size_t i = 0; i < lou_vec_len(type->func.args); i++) {
+        *LOU_VEC_PUSH(&result->structure.fields) = lou_sema_type_as_hir(mempool, type->structure.fields[i].type);
+      }
+      return result;
+    }
   }
   UNREACHABLE();
 }
@@ -149,6 +177,18 @@ void lou_sema_type_log(FILE *stream, lou_sema_type_t *type) {
         lou_log_puts(stream, i == 0 ? "#T" : ", #T", type->func.args[i]);
       }
       lou_log_puts(stream, ")");
+      if (type->func.returns) {
+        lou_log_puts(stream, ", #T", type->func.returns);
+
+      }
+      lou_log_puts(stream, ")");
+      return;
+    case LOU_SEMA_TYPE_STRUCT:
+      lou_log_puts(stream, "struct {");
+      for (size_t i = 0; i < lou_vec_len(type->structure.fields); i++) {
+        lou_log_puts(stream, i == 0 ? " #S: #T" : ", #S: #T", type->structure.fields[i].name, type->structure.fields[i].type);
+      }
+      lou_log_puts(stream, " }");
       if (type->func.returns) {
         lou_log_puts(stream, ", #T", type->func.returns);
 
